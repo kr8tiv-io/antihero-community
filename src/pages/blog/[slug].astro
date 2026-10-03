@@ -1,0 +1,111 @@
+---
+import { getCollection, getEntry, render } from "astro:content";
+import PostLayout from "../../layouts/PostLayout.astro";
+import { SITE_URL } from "../../data/site";
+
+export async function getStaticPaths() {
+	const posts = await getCollection(
+		"blog",
+		({ data }) => !import.meta.env.PROD || data.draft === false,
+	);
+	return posts.map((post) => ({
+		params: { slug: post.id },
+	}));
+}
+
+const slug = Astro.params.slug;
+if (typeof slug !== "string" || slug.length === 0) {
+	throw new Error("Missing post slug.");
+}
+
+const post = await getEntry("blog", slug);
+if (!post || (import.meta.env.PROD && post.data.draft)) {
+	throw new Error(`Post not found: ${slug}`);
+}
+
+function refId(value: unknown): string | null {
+	if (!value) return null;
+	if (typeof value === "string") return value;
+	if (typeof value === "object" && value !== null && "id" in value) {
+		const id = (value as { id: unknown }).id;
+		return typeof id === "string" ? id : null;
+	}
+	return null;
+}
+
+function stamp(date: Date): { iso: string; label: string } {
+	const y = date.getUTCFullYear();
+	const m = String(date.getUTCMonth() + 1).padStart(2, "0");
+	const d = String(date.getUTCDate()).padStart(2, "0");
+	return { iso: `${y}-${m}-${d}`, label: `${y}.${m}.${d}` };
+}
+
+function readingMinutes(body: string | undefined): number {
+	const words = (body ?? "").trim().split(/\s+/).filter(Boolean).length;
+	if (words === 0) return 1;
+	return Math.max(1, Math.ceil(words / 200));
+}
+
+const date = stamp(post.data.date);
+const minutes = readingMinutes(post.body);
+const canonical = new URL(Astro.url.pathname, SITE_URL).href;
+const imagePath = post.data.ogImage ?? "/og/og.jpg";
+const imageUrl = new URL(imagePath, SITE_URL).href;
+
+const guideId = refId(post.data.relatedGuide);
+const guideEntry = guideId ? await getEntry("guides", guideId) : undefined;
+const relatedGuide =
+	guideEntry && guideEntry.data.draft === false
+		? {
+				href: `/guides/${guideEntry.data.slug}`,
+				title: guideEntry.data.title,
+				line: guideEntry.data.summary[0],
+			}
+		: null;
+
+const promptId = refId(post.data.relatedPrompt);
+const promptEntry = promptId ? await getEntry("prompts", promptId) : undefined;
+const relatedPrompt = promptEntry
+	? {
+			href: `/prompts#${encodeURIComponent(promptEntry.id)}`,
+			title: promptEntry.data.title,
+			line: promptEntry.data.useItFor,
+		}
+	: null;
+
+const jsonLd = JSON.stringify({
+	"@context": "https://schema.org",
+	"@type": "BlogPosting",
+	headline: post.data.title,
+	description: post.data.description,
+	datePublished: post.data.date.toISOString(),
+	image: imageUrl,
+	mainEntityOfPage: canonical,
+	author: {
+		"@type": "Organization",
+		name: "AntiHero AI",
+	},
+	publisher: {
+		"@type": "Organization",
+		name: "AntiHero AI",
+	},
+}).replace(/</g, "\\u003c");
+
+const { Content } = await render(post);
+---
+
+<PostLayout
+	title={post.data.title}
+	description={post.data.description}
+	dateLabel={date.label}
+	dateIso={date.iso}
+	minutes={minutes}
+	publishedTime={post.data.date.toISOString()}
+	image={imagePath}
+	jsonLd={jsonLd}
+	draft={post.data.draft && !import.meta.env.PROD}
+	relatedGuide={relatedGuide}
+	relatedPrompt={relatedPrompt}
+>
+	<Content />
+</PostLayout>

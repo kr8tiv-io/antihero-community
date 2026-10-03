@@ -4,6 +4,7 @@ import Header from "../components/Header.astro";
 import JoinBand from "../components/JoinBand.astro";
 import Seo from "../components/Seo.astro";
 import { normalizePath } from "../data/nav";
+import { SITE_URL } from "../data/site";
 import "../styles/global.css";
 import appIconSvg from "../assets/brand/antihero-app-icon.svg?url";
 import appIcon180 from "../assets/brand/antihero-app-icon_180px.png";
@@ -15,11 +16,14 @@ interface Props {
   image?: string;
   canonical?: string;
   type?: string;
+  publishedTime?: string;
+  jsonLd?: string;
 }
 
-const { title, description, image, canonical, type } = Astro.props;
+const { title, description, image, canonical, type, publishedTime, jsonLd } = Astro.props;
 const path = normalizePath(Astro.url.pathname);
 const showJoinBand = path !== "/" && path !== "/join";
+const rssUrl = new URL("/rss.xml", Astro.site ?? SITE_URL).href;
 ---
 
 <html lang="en">
@@ -28,7 +32,16 @@ const showJoinBand = path !== "/" && path !== "/join";
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
 		<meta name="generator" content={Astro.generator} />
 		<meta name="theme-color" content="#0A0A0B" />
-		<Seo title={title} description={description} image={image} canonical={canonical} type={type} />
+		<Seo
+			title={title}
+			description={description}
+			image={image}
+			canonical={canonical}
+			type={type}
+			publishedTime={publishedTime}
+		/>
+		<link rel="alternate" type="application/rss+xml" title="AntiHero AI" href={rssUrl} />
+		{jsonLd && <script is:inline type="application/ld+json" set:html={jsonLd} />}
 		<link rel="preload" href="/fonts/BebasNeue-Regular.woff2" as="font" type="font/woff2" crossorigin />
 		<link rel="preload" href="/fonts/Barlow-Regular.woff2" as="font" type="font/woff2" crossorigin />
 		<link rel="icon" type="image/svg+xml" href={appIconSvg} />

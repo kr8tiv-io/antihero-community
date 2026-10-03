@@ -1,0 +1,321 @@
+---
+import BaseLayout from "./BaseLayout.astro";
+
+interface Related {
+	href: string;
+	title: string;
+	line: string;
+}
+
+interface Props {
+	title: string;
+	description: string;
+	dateLabel: string;
+	dateIso: string;
+	minutes: number;
+	publishedTime: string;
+	image?: string;
+	jsonLd: string;
+	draft?: boolean;
+	relatedGuide?: Related | null;
+	relatedPrompt?: Related | null;
+}
+
+const {
+	title,
+	description,
+	dateLabel,
+	dateIso,
+	minutes,
+	publishedTime,
+	image,
+	jsonLd,
+	draft = false,
+	relatedGuide = null,
+	relatedPrompt = null,
+} = Astro.props;
+
+function titleBoxes(value: string): string[] {
+	const words = value.trim().split(/\s+/).filter(Boolean);
+	const boxes: string[] = [];
+	for (let i = 0; i < words.length; i += 2) {
+		boxes.push(words.slice(i, i + 2).join(" "));
+	}
+	return boxes.length > 0 ? boxes : [value];
+}
+
+const boxes = titleBoxes(title);
+const minuteLabel = `${minutes} min`;
+const hasRelated = Boolean(relatedGuide || relatedPrompt);
+---
+
+<BaseLayout
+	title={title}
+	description={description}
+	image={image ?? "/og/og.jpg"}
+	type="article"
+	publishedTime={publishedTime}
+	jsonLd={jsonLd}
+>
+	<article slot="main" class="post">
+		<header class="post-hero">
+			<p class="post-meta mono">
+				<time datetime={dateIso}>{dateLabel}</time>
+				<span aria-hidden="true"> / </span>
+				<span>{minuteLabel}</span>
+			</p>
+			{draft && <p class="post-draft"><span class="label-box label-box--white">DRAFT</span></p>}
+			<h1 class="post-title label-stack">
+				{boxes.map((line) => <span class="label-box label-box--white">{line}</span>)}
+			</h1>
+		</header>
+
+		<div class="post-prose">
+			<slot />
+		</div>
+
+		{
+			hasRelated && (
+				<aside class="post-refs">
+					{relatedGuide && (
+						<a class="post-ref" href={relatedGuide.href}>
+							<p class="label">Related guide</p>
+							<h2 class="post-ref__title">{relatedGuide.title}</h2>
+							<p class="post-ref__line">{relatedGuide.line}</p>
+						</a>
+					)}
+					{relatedPrompt && (
+						<a class="post-ref post-ref--prompt" href={relatedPrompt.href}>
+							<p class="label">Related prompt</p>
+							<h2 class="post-ref__title">{relatedPrompt.title}</h2>
+							<p class="post-ref__line">{relatedPrompt.line}</p>
+						</a>
+					)}
+				</aside>
+			)
+		}
+	</article>
+</BaseLayout>
+
+<style>
+	.post-hero {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: var(--space-24);
+		padding: calc(var(--header-h) + var(--space-48)) var(--space-16) var(--space-48);
+	}
+
+	.post-meta {
+		margin: 0;
+		color: var(--color-bone);
+		font-size: 0.85rem;
+		letter-spacing: 0.04em;
+	}
+
+	.post-draft {
+		margin: 0;
+	}
+
+	.post-draft .label-box {
+		font-size: 1.35rem;
+	}
+
+	.post-title {
+		margin: var(--space-16) 0 0;
+		max-width: 100%;
+		font-size: clamp(2.6rem, 10vw, 4.5rem);
+	}
+
+	.post-title .label-box {
+		max-width: 100%;
+	}
+
+	.post-prose {
+		padding: 0 var(--space-16) var(--space-64);
+	}
+
+	.post-prose :global(p) {
+		max-width: var(--type-body-measure);
+		margin: 0 0 var(--space-16);
+		color: var(--color-bone);
+		font-size: var(--type-body-size);
+		line-height: var(--type-body-leading);
+	}
+
+	.post-prose :global(p:last-child) {
+		margin-bottom: 0;
+	}
+
+	.post-prose :global(h2),
+	.post-prose :global(h3) {
+		max-width: var(--type-body-measure);
+		margin: var(--space-48) 0 var(--space-16);
+		color: var(--color-hero);
+	}
+
+	.post-prose :global(h2) {
+		font-size: var(--type-h2-size);
+		line-height: var(--type-h2-leading);
+		letter-spacing: var(--type-h2-tracking);
+	}
+
+	.post-prose :global(h3) {
+		font-size: var(--type-h3-size);
+		line-height: var(--type-h3-leading);
+		letter-spacing: var(--type-h3-tracking);
+	}
+
+	.post-prose :global(ul),
+	.post-prose :global(ol) {
+		max-width: var(--type-body-measure);
+		margin: 0 0 var(--space-16);
+		padding-left: 1.25em;
+		color: var(--color-bone);
+		font-size: var(--type-body-size);
+		line-height: var(--type-body-leading);
+	}
+
+	.post-prose :global(li + li) {
+		margin-top: 0.35em;
+	}
+
+	.post-prose :global(blockquote) {
+		max-width: var(--type-body-measure);
+		margin: 0 0 var(--space-24);
+		padding: 0 0 0 var(--space-16);
+		border-left: 3px solid var(--color-ignition);
+		color: var(--color-bone);
+	}
+
+	.post-prose :global(blockquote p) {
+		max-width: none;
+	}
+
+	.post-prose :global(a) {
+		color: var(--color-hero);
+		text-underline-offset: 0.18em;
+	}
+
+	.post-prose :global(code) {
+		font-family: var(--font-mono);
+		background: var(--color-carbon);
+		color: var(--color-bone);
+	}
+
+	.post-prose :global(:not(pre) > code) {
+		padding: 0.1em 0.35em;
+		font-size: 0.92em;
+	}
+
+	.post-prose :global(pre) {
+		max-width: var(--type-body-measure);
+		margin: 0 0 var(--space-24);
+		padding: var(--space-16);
+		overflow-x: auto;
+		background: var(--color-carbon);
+		color: var(--color-bone);
+		font-family: var(--font-mono);
+		font-size: var(--type-mono-size);
+		line-height: var(--type-mono-leading);
+	}
+
+	.post-prose :global(pre code) {
+		padding: 0;
+		background: transparent;
+		font-size: inherit;
+	}
+
+	.post-refs {
+		display: grid;
+		gap: var(--space-16);
+		padding: 0 var(--space-16) var(--space-96);
+	}
+
+	.post-ref {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: var(--space-16);
+		padding: var(--space-32) var(--space-24);
+		background: var(--color-carbon);
+		color: inherit;
+		text-decoration: none;
+	}
+
+	.post-ref .label {
+		color: var(--color-bone);
+	}
+
+	.post-ref__title {
+		max-width: 9em;
+		margin: 0;
+	}
+
+	.post-ref__line {
+		max-width: 34ch;
+		margin: 0;
+		color: var(--color-bone);
+	}
+
+	.post-ref:focus-visible {
+		outline: 2px solid var(--color-hero);
+		outline-offset: 4px;
+	}
+
+	@media (min-width: 768px) {
+		.post-hero {
+			display: grid;
+			grid-template-columns: 16vw minmax(0, 1fr);
+			align-items: start;
+			padding: calc(var(--header-h) + var(--space-96)) 8vw var(--space-64) 0;
+		}
+
+		.post-meta {
+			grid-column: 1;
+			padding-top: 0.35em;
+			padding-left: var(--space-24);
+		}
+
+		.post-draft {
+			grid-column: 2;
+		}
+
+		.post-title {
+			grid-column: 2;
+			margin-top: var(--space-48);
+			font-size: clamp(3.5rem, 6vw, 5.8rem);
+		}
+
+		.post-prose {
+			max-width: calc(22vw + var(--type-body-measure));
+			margin-left: 22vw;
+			padding: 0 var(--space-24) var(--space-96) 0;
+		}
+
+		.post-refs {
+			grid-template-columns: minmax(0, 0.62fr) minmax(0, 0.38fr);
+			gap: var(--space-24);
+			align-items: start;
+			padding: 0 8vw var(--space-128) 6vw;
+		}
+
+		.post-ref {
+			padding: var(--space-48) var(--space-32);
+		}
+
+		.post-ref--prompt {
+			margin-top: var(--space-96);
+		}
+	}
+
+	@media (min-width: 768px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+		.post-ref {
+			transition: opacity 0.3s linear;
+		}
+
+		.post-ref:hover {
+			opacity: 0.72;
+		}
+	}
+</style>
