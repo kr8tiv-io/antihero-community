@@ -1,16 +1,16 @@
 ---
-title: "TODO: the live before that"
+title: "Email: The Channel Nobody Can Take"
 slug: todo-older-live-2
 summary:
-  - "TODO: the real title, date, and category."
-  - This slot is the live before the other unmarked one.
-  - The PDF file is empty until the real one is dropped in.
+  - Own the list. Own the channel. Nobody can throttle it.
+  - Build the list, write like a human, ship on a schedule.
+  - The PDF is the full walkthrough from the live.
 category: Brand
 date: 2026-09-01
 cover: /media/covers/todo-older-live-2.jpg
 pdf: /guides/todo-older-live-2.pdf
 featured: false
-draft: true
+draft: false
 ---
 
-TODO: replace the title, the date, the category, and the summary when this live has a name. The date in the frontmatter is only there so the schema has a value.
+The guide is the PDF. Cover image is in.
