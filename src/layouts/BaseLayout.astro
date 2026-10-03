@@ -6,6 +6,8 @@ import Seo from "../components/Seo.astro";
 import { normalizePath } from "../data/nav";
 import { SITE_URL } from "../data/site";
 import "../styles/global.css";
+/* Client scripts drop this file in the static build. The layout import keeps the stopped-scroll lock. */
+import "lenis/dist/lenis.css";
 import appIconSvg from "../assets/brand/antihero-app-icon.svg?url";
 import appIcon180 from "../assets/brand/antihero-app-icon_180px.png";
 import appIcon512 from "../assets/brand/antihero-app-icon_512px.png";
@@ -59,5 +61,10 @@ const rssUrl = new URL("/rss.xml", Astro.site ?? SITE_URL).href;
 		{showJoinBand && <JoinBand variant="page" />}
 		<Footer />
 		<slot name="footer" />
+		<script>
+			import { initSmoothScroll } from "../scripts/smooth-scroll";
+
+			initSmoothScroll();
+		</script>
 	</body>
 </html>
