@@ -1,0 +1,550 @@
+---
+const doors = [
+	{
+		href: "/guides",
+		title: "Guides",
+		line: "Step-by-step PDFs from every live.",
+		video: "/media/door-guides.mp4",
+		poster: "/media/door-guides-poster.jpg",
+	},
+	{
+		href: "/prompts",
+		title: "Prompts",
+		line: "Copy, paste, done.",
+		video: "/media/door-prompts.mp4",
+		poster: "/media/door-prompts-poster.jpg",
+	},
+	{
+		href: "/videos",
+		title: "Videos",
+		line: "Every live, minus the buffering.",
+		video: "/media/door-videos.mp4",
+		poster: "/media/door-videos-poster.jpg",
+	},
+	{
+		href: "/blog",
+		title: "Blog",
+		line: "Notes from the trenches.",
+		video: "/media/door-blog.mp4",
+		poster: "/media/door-blog-poster.jpg",
+	},
+];
+---
+
+<section class="doors" data-doors aria-labelledby="doors-title">
+	<div class="doors-head">
+		<h2 id="doors-title" class="doors-title label-box label-box--white">Pick a door.</h2>
+		<p class="doors-lead">Four ways in. All of them lead somewhere useful.</p>
+	</div>
+
+	<div class="doors-row">
+		{
+			doors.map((door) => (
+				<a class="door" href={door.href} data-door>
+					<div class="door-face" data-door-face>
+						<video
+							muted
+							loop
+							playsinline
+							preload="none"
+							poster={door.poster}
+							data-src={door.video}
+							tabindex="-1"
+							aria-hidden="true"
+						/>
+						<span class="door-streak" aria-hidden="true" />
+						<span class="door-shade" aria-hidden="true" />
+						<span class="door-copy">
+							<h3 class="door-title label-box">{door.title}</h3>
+							<p class="door-line">{door.line}</p>
+							<span class="door-go label">
+								Go in
+								<svg viewBox="0 0 32 16" aria-hidden="true" focusable="false">
+									<path d="M0 8h26M18 2l8 6-8 6" />
+								</svg>
+							</span>
+						</span>
+					</div>
+				</a>
+			))
+		}
+	</div>
+</section>
+
+<script>
+	import { gsap, ScrollTrigger, onReducedMotionChange, prefersReducedMotion } from "../../scripts/motion";
+
+	const root = document.querySelector<HTMLElement>("[data-doors]");
+	if (root && root.dataset.doorsReady !== "true") {
+		root.dataset.doorsReady = "true";
+
+		const doors = [...root.querySelectorAll<HTMLElement>("[data-door]")];
+		const faces = [...root.querySelectorAll<HTMLElement>("[data-door-face]")];
+		const hoverQuery = window.matchMedia(
+			"(min-width: 768px) and (hover: hover) and (pointer: fine)",
+		);
+		const playGen = new WeakMap<HTMLVideoElement, number>();
+		let ctx: gsap.Context | undefined;
+		let io: IntersectionObserver | undefined;
+		let enterTween: gsap.core.Tween | undefined;
+		const unlisten: Array<() => void> = [];
+
+		function clearMotion(): void {
+			unlisten.splice(0).forEach((stop) => stop());
+			io?.disconnect();
+			io = undefined;
+			ctx?.revert();
+			ctx = undefined;
+			enterTween = undefined;
+		}
+
+		function showPoster(video: HTMLVideoElement): void {
+			video.pause();
+			video.removeAttribute("src");
+			video.load();
+		}
+
+		/** Phones play in view. Desktop plays only while hovered or focused, and in view. */
+		function sync(door: HTMLElement, reduced: boolean): void {
+			const video = door.querySelector("video");
+			if (!video) return;
+			const generation = (playGen.get(video) ?? 0) + 1;
+			playGen.set(video, generation);
+			const inView = door.dataset.inview === "true";
+			const hot = door.matches(":hover") || door.matches(":focus-visible");
+			const shouldPlay = !reduced && inView && (hoverQuery.matches ? hot : true);
+
+			if (!shouldPlay) {
+				video.pause();
+				return;
+			}
+
+			const src = video.dataset.src;
+			if (src && video.getAttribute("src") !== src) {
+				video.src = src;
+			}
+			video.muted = true;
+			void video.play().then(
+				() => {
+					if (playGen.get(video) !== generation) video.pause();
+				},
+				() => {},
+			);
+		}
+
+		function bindTilt(door: HTMLElement, face: HTMLElement): void {
+			const rotX = gsap.quickTo(face, "rotationX", { duration: 0.6, ease: "power3.out" });
+			const rotY = gsap.quickTo(face, "rotationY", { duration: 0.6, ease: "power3.out" });
+			const lift = gsap.quickTo(face, "y", { duration: 0.45, ease: "power3.out" });
+
+			const rest = () => {
+				rotX(0);
+				rotY(0);
+				if (!door.matches(":hover") && !door.matches(":focus-visible")) lift(0);
+			};
+
+			const onMove = (event: PointerEvent) => {
+				const rect = face.getBoundingClientRect();
+				const nx = (event.clientX - rect.left) / rect.width - 0.5;
+				const ny = (event.clientY - rect.top) / rect.height - 0.5;
+				rotY(Math.max(-6, Math.min(6, nx * 12)));
+				rotX(Math.max(-6, Math.min(6, ny * -12)));
+			};
+			const onEnter = () => lift(-8);
+			const onFocus = () => lift(-8);
+
+			door.addEventListener("pointermove", onMove);
+			door.addEventListener("pointerenter", onEnter);
+			door.addEventListener("pointerleave", rest);
+			door.addEventListener("focus", onFocus);
+			door.addEventListener("blur", rest);
+			unlisten.push(() => {
+				door.removeEventListener("pointermove", onMove);
+				door.removeEventListener("pointerenter", onEnter);
+				door.removeEventListener("pointerleave", rest);
+				door.removeEventListener("focus", onFocus);
+				door.removeEventListener("blur", rest);
+				gsap.set(face, { clearProps: "transform" });
+			});
+		}
+
+		function setup(reduced: boolean): void {
+			clearMotion();
+			doors.forEach((door) => {
+				const video = door.querySelector("video");
+				if (!video) return;
+				video.pause();
+				if (reduced) showPoster(video);
+			});
+
+			if (reduced) {
+				gsap.set(doors, { clearProps: "transform,opacity" });
+				gsap.set(faces, { clearProps: "transform" });
+				return;
+			}
+
+			const rise = hoverQuery.matches ? 56 : 28;
+			ctx = gsap.context(() => {
+				gsap.set(doors, { y: rise, opacity: 0 });
+				enterTween = gsap.to(doors, {
+					y: 0,
+					opacity: 1,
+					duration: hoverQuery.matches ? 0.8 : 0.55,
+					stagger: 0.1,
+					ease: "power3.out",
+					paused: true,
+					immediateRender: false,
+				});
+				const trigger = ScrollTrigger.create({
+					trigger: root,
+					start: "top 82%",
+					onEnter: () => enterTween?.play(),
+					onEnterBack: () => enterTween?.play(),
+					onLeaveBack: () => enterTween?.reverse(),
+				});
+				if (trigger.progress > 0) enterTween?.play();
+			}, root);
+
+			if (hoverQuery.matches) {
+				doors.forEach((door, index) => {
+					const face = faces[index];
+					if (face) bindTilt(door, face);
+				});
+			}
+
+			io = new IntersectionObserver(
+				(entries) => {
+					entries.forEach((entry) => {
+						const door = entry.target as HTMLElement;
+						door.dataset.inview = entry.isIntersecting ? "true" : "false";
+						sync(door, false);
+					});
+				},
+				{ threshold: 0.6 },
+			);
+			doors.forEach((door) => {
+				io?.observe(door);
+				const onHot = () => sync(door, false);
+				const onFocus = () => {
+					enterTween?.play();
+					sync(door, false);
+				};
+				door.addEventListener("pointerenter", onHot);
+				door.addEventListener("pointerleave", onHot);
+				door.addEventListener("focus", onFocus);
+				door.addEventListener("blur", onHot);
+				unlisten.push(() => {
+					door.removeEventListener("pointerenter", onHot);
+					door.removeEventListener("pointerleave", onHot);
+					door.removeEventListener("focus", onFocus);
+					door.removeEventListener("blur", onHot);
+				});
+			});
+		}
+
+		const rebuild = () => setup(prefersReducedMotion());
+		const stopReduced = onReducedMotionChange(rebuild);
+		hoverQuery.addEventListener("change", rebuild);
+		rebuild();
+
+		window.addEventListener("pagehide", () => {
+			clearMotion();
+			stopReduced();
+			hoverQuery.removeEventListener("change", rebuild);
+		});
+	}
+</script>
+
+<style>
+	.doors {
+		position: relative;
+		background: var(--color-anti);
+		padding: var(--space-64) 0 var(--space-96);
+	}
+
+	.doors-head {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: var(--space-16);
+		padding-inline: var(--space-16);
+		margin-bottom: var(--space-24);
+	}
+
+	.doors-title {
+		width: fit-content;
+		max-width: 100%;
+		margin: 0;
+		font-size: clamp(2.75rem, 12vw, 3.5rem);
+		white-space: nowrap;
+	}
+
+	.doors-lead {
+		margin: 0 0 0 var(--space-8);
+		max-width: 22ch;
+		color: var(--color-bone);
+		font-size: clamp(1.05rem, 3.4vw, 1.2rem);
+		line-height: 1.35;
+	}
+
+	.doors-row {
+		display: flex;
+		gap: var(--space-16);
+		overflow-x: auto;
+		overscroll-behavior-x: contain;
+		scroll-snap-type: x mandatory;
+		scroll-padding-inline: var(--space-16);
+		padding: var(--space-32) var(--space-16) var(--space-32);
+		scrollbar-width: none;
+	}
+
+	.doors-row::-webkit-scrollbar {
+		display: none;
+	}
+
+	.door {
+		flex: 0 0 78%;
+		scroll-snap-align: start;
+		scroll-snap-stop: always;
+		display: block;
+		color: inherit;
+		text-decoration: none;
+		perspective: 900px;
+	}
+
+	.door:focus,
+	.door:focus-visible {
+		outline: none;
+	}
+
+	.door:focus-visible .door-face {
+		outline: 3px solid var(--color-ignition);
+		outline-offset: -6px;
+	}
+
+	.door-face {
+		position: relative;
+		width: 100%;
+		aspect-ratio: 4 / 5;
+		overflow: hidden;
+		background: var(--color-carbon);
+		transform-style: preserve-3d;
+	}
+
+	.door-face video {
+		position: absolute;
+		inset: 0;
+		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	.door-streak {
+		position: absolute;
+		z-index: 1;
+		top: -15%;
+		bottom: -15%;
+		left: 0;
+		width: 38%;
+		background: linear-gradient(
+			100deg,
+			transparent,
+			rgb(255 255 255 / 0.28),
+			transparent
+		);
+		opacity: 0;
+		pointer-events: none;
+		transform: translateX(-170%) skewX(-12deg);
+	}
+
+	.door-shade {
+		position: absolute;
+		z-index: 2;
+		inset: 0;
+		background: linear-gradient(
+			to top,
+			rgb(10 10 11 / 0.88) 0%,
+			rgb(10 10 11 / 0.28) 42%,
+			transparent 68%
+		);
+		pointer-events: none;
+	}
+
+	.door-copy {
+		position: absolute;
+		z-index: 3;
+		right: var(--space-16);
+		bottom: var(--space-16);
+		left: var(--space-16);
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: var(--space-8);
+	}
+
+	.door-title {
+		margin: 0;
+		font-size: clamp(2rem, 8vw, 2.75rem);
+	}
+
+	.door-line {
+		margin: 0;
+		max-width: none;
+		color: var(--color-bone);
+		font-family: var(--font-body);
+		font-size: clamp(0.95rem, 3.2vw, 1.05rem);
+		line-height: 1.3;
+	}
+
+	.door-go {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.45em;
+		margin-top: var(--space-4);
+		color: var(--color-hero);
+	}
+
+	.door-go svg {
+		display: block;
+		width: 28px;
+		height: 14px;
+		overflow: visible;
+		fill: none;
+		stroke: currentColor;
+		stroke-width: 1.6;
+		stroke-linecap: square;
+	}
+
+	.door:hover .door-go svg,
+	.door:focus-visible .door-go svg {
+		transform: translateX(8px);
+	}
+
+	@media (min-width: 768px) {
+		.doors {
+			padding: var(--space-96) 5vw var(--space-128);
+		}
+
+		.doors-head {
+			padding-inline: 0;
+			margin-bottom: var(--space-48);
+		}
+
+		.doors-title {
+			font-size: clamp(4.5rem, 8vw, 8rem);
+		}
+
+		.doors-lead {
+			margin-left: 12px;
+			max-width: 26ch;
+			font-size: clamp(1.2rem, 1.5vw, 1.5rem);
+		}
+
+		.doors-row {
+			display: grid;
+			grid-template-columns: repeat(12, minmax(0, 1fr));
+			grid-template-rows: auto auto;
+			gap: var(--space-24) var(--space-16);
+			overflow: visible;
+			padding: 0;
+			scroll-snap-type: none;
+		}
+
+		.door {
+			flex: none;
+			width: 100%;
+			align-self: start;
+			justify-self: stretch;
+			scroll-snap-align: none;
+		}
+
+		.door:nth-child(1) {
+			grid-column: 1 / 7;
+			grid-row: 1;
+			margin-top: 8vh;
+		}
+
+		.door:nth-child(2) {
+			grid-column: 7 / 13;
+			grid-row: 1;
+			margin-top: 0;
+		}
+
+		.door:nth-child(3) {
+			grid-column: 1 / 7;
+			grid-row: 2;
+			margin-top: 0;
+		}
+
+		.door:nth-child(4) {
+			grid-column: 8 / 13;
+			grid-row: 2;
+			margin-top: 7vh;
+		}
+
+		.door-title {
+			font-size: clamp(2.2rem, 3vw, 3.25rem);
+		}
+
+		.door-line {
+			font-size: clamp(0.95rem, 1.05vw, 1.125rem);
+			white-space: nowrap;
+		}
+	}
+
+	@media (min-width: 1100px) {
+		/* Wide screens: three doors on the skyline, blog on the next row. */
+		.door:nth-child(1) {
+			grid-column: 1 / 5;
+			margin-top: 28px;
+		}
+
+		.door:nth-child(2) {
+			grid-column: 5 / 8;
+			margin-top: 0;
+		}
+
+		.door:nth-child(3) {
+			grid-column: 8 / 12;
+			grid-row: 1;
+			margin-top: 16px;
+		}
+
+		.door:nth-child(4) {
+			grid-column: 8 / 12;
+			grid-row: 2;
+			margin-top: 32px;
+		}
+	}
+
+	@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+		.door-go svg {
+			transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+		}
+
+		.door:hover .door-streak {
+			opacity: 1;
+			transform: translateX(340%) skewX(-12deg);
+			transition:
+				transform 0.9s cubic-bezier(0.22, 1, 0.36, 1),
+				opacity 0.2s linear;
+		}
+	}
+
+	@media (min-width: 768px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+		.door-face {
+			will-change: transform;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.door-streak {
+			display: none;
+		}
+
+		.door-go svg {
+			transition: none;
+		}
+	}
+</style>
