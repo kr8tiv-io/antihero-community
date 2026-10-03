@@ -1,7 +1,11 @@
 ---
+import { Picture } from "astro:assets";
+import join from "../assets/media/join.jpg";
 import EmailForm from "../components/EmailForm.astro";
 import { facebookGroupUrl } from "../data/nav";
 import BaseLayout from "../layouts/BaseLayout.astro";
+
+const pictureWidths = [640, 1280, 1920, 2560].filter((size) => size <= join.width);
 
 const lines = [
 	{ text: "You're one click", red: false },
@@ -34,11 +38,12 @@ const rules = [
 	<div slot="main" class="join" data-join-page>
 		<section class="join-hero" aria-labelledby="join-title">
 			<div class="join-hero__media" aria-hidden="true">
-				<img
-					src="/media/join.jpg"
+				<Picture
+					src={join}
+					formats={["avif", "webp"]}
 					alt=""
-					width="1280"
-					height="720"
+					widths={pictureWidths}
+					sizes="100vw"
 					loading="eager"
 					fetchpriority="high"
 					decoding="async"
@@ -128,6 +133,7 @@ const rules = [
 		pointer-events: none;
 	}
 
+	.join-hero__media :global(picture),
 	.join-hero__media img {
 		display: block;
 		width: 100%;

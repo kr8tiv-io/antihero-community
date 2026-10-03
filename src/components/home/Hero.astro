@@ -13,12 +13,22 @@ const monoLine = "No jargon. No catch. No garbage.";
 	<div class="hero-stage" data-hero-stage>
 		<div class="hero-media">
 			<picture class="hero-still">
-				<source media="(min-width: 768px)" srcset="/media/hero-desktop-poster.jpg" />
+				<source
+					media="(min-width: 768px)"
+					srcset="/media/hero-desktop-poster.avif"
+					type="image/avif"
+				/>
+				<source
+					media="(min-width: 768px)"
+					srcset="/media/hero-desktop-poster.jpg"
+					type="image/jpeg"
+				/>
+				<source srcset="/media/hero-mobile-poster.avif" type="image/avif" />
 				<img
 					src="/media/hero-mobile-poster.jpg"
 					alt=""
-					width="720"
-					height="1280"
+					width="1080"
+					height="1920"
 					decoding="async"
 				/>
 			</picture>
@@ -27,7 +37,8 @@ const monoLine = "No jargon. No catch. No garbage.";
 				data-hero-video
 				muted
 				playsinline
-				preload="auto"
+				preload="metadata"
+				poster="/media/hero-mobile-poster.jpg"
 				disablepictureinpicture
 				aria-hidden="true"
 			></video>

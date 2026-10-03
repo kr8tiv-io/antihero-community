@@ -20,6 +20,8 @@ const lines = [
 	"Prompts tested on a live audience.",
 	"Replays of every live.",
 ];
+
+const widths = [640, 1280, 1920, 2560].filter((size) => size <= promise.width);
 ---
 
 <section class="promise" data-promise aria-labelledby="promise-title">
@@ -29,7 +31,7 @@ const lines = [
 				src={promise}
 				formats={["avif", "webp"]}
 				alt=""
-				widths={[640, 960, 1280]}
+				widths={widths}
 				sizes="100vw"
 				loading="lazy"
 				decoding="async"

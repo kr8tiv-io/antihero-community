@@ -1,17 +1,9 @@
 ---
-import { existsSync } from "node:fs";
-import { join } from "node:path";
+import { Picture } from "astro:assets";
+import about from "../assets/media/about.jpg";
 import BaseLayout from "../layouts/BaseLayout.astro";
 
-function localMedia(urlPath: string): string | null {
-	if (!urlPath.startsWith("/") || urlPath.startsWith("//")) return null;
-	const relative = decodeURIComponent(urlPath.split("?")[0]?.slice(1) ?? "");
-	if (!relative || relative.split("/").includes("..")) return null;
-	const file = join(process.cwd(), "public", ...relative.split("/").filter(Boolean));
-	return existsSync(file) ? urlPath : null;
-}
-
-const photo = localMedia("/media/about.jpg");
+const widths = [640, 1280, 1920, 2560].filter((size) => size <= about.width);
 
 const lines = [
 	{ text: "Nobody's coming", red: false },
@@ -28,23 +20,19 @@ const lines = [
 	<div slot="main" class="about">
 		<section class="about-hero" data-about-hero aria-labelledby="about-title">
 			<div class="about-hero__photo" data-about-photo>
-				{
-					photo ? (
-						<img
-							src={photo}
-							alt="A lone figure on a cliff above the clouds, with a giant red planet."
-							loading="eager"
-							fetchpriority="high"
-							decoding="async"
-						/>
-					) : (
-						<div class="about-hero__fill"></div>
-					)
-				}
+				<Picture
+					src={about}
+					formats={["avif", "webp"]}
+					alt="A lone figure on a cliff above the clouds, with a giant red planet."
+					widths={widths}
+					sizes="100vw"
+					loading="eager"
+					fetchpriority="high"
+					decoding="async"
+				/>
 			</div>
 			<div class="about-hero__mist" data-about-mist aria-hidden="true"></div>
 			<div class="about-hero__shade" aria-hidden="true"></div>
-			{!photo && <p class="caption about-hero__soon">Photo still to come.</p>}
 			<div class="about-hero__copy" data-about-copy>
 				<h1 id="about-title" class="about-hero__title label-stack">
 					{
@@ -119,27 +107,12 @@ const lines = [
 		height: 128%;
 	}
 
-	.about-hero__photo img,
-	.about-hero__fill {
+	.about-hero__photo :global(picture),
+	.about-hero__photo img {
 		display: block;
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
-	}
-
-	.about-hero__fill {
-		background:
-			linear-gradient(to top, rgb(10 10 11 / 0.35), transparent 42%),
-			var(--color-dusk);
-	}
-
-	.about-hero__soon {
-		position: absolute;
-		z-index: 2;
-		top: calc(var(--header-h) + var(--space-16));
-		left: var(--space-16);
-		margin: 0;
-		color: var(--color-bone);
 	}
 
 	.about-hero__mist {
@@ -280,10 +253,6 @@ const lines = [
 
 		.about-hero__title {
 			font-size: clamp(3.4rem, 5.2vw, 6.2rem);
-		}
-
-		.about-hero__soon {
-			left: 7vw;
 		}
 
 		.about-mission {

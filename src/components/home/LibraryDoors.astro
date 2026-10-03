@@ -4,28 +4,32 @@ const doors = [
 		href: "/guides",
 		title: "Guides",
 		line: "Step-by-step PDFs from every live.",
-		video: "/media/door-guides.mp4",
+		webm: "/media/door-guides.webm",
+		mp4: "/media/door-guides.mp4",
 		poster: "/media/door-guides-poster.jpg",
 	},
 	{
 		href: "/prompts",
 		title: "Prompts",
 		line: "Copy, paste, done.",
-		video: "/media/door-prompts.mp4",
+		webm: "/media/door-prompts.webm",
+		mp4: "/media/door-prompts.mp4",
 		poster: "/media/door-prompts-poster.jpg",
 	},
 	{
 		href: "/videos",
 		title: "Videos",
 		line: "Every live, minus the buffering.",
-		video: "/media/door-videos.mp4",
+		webm: "/media/door-videos.webm",
+		mp4: "/media/door-videos.mp4",
 		poster: "/media/door-videos-poster.jpg",
 	},
 	{
 		href: "/blog",
 		title: "Blog",
 		line: "Notes from the trenches.",
-		video: "/media/door-blog.mp4",
+		webm: "/media/door-blog.webm",
+		mp4: "/media/door-blog.mp4",
 		poster: "/media/door-blog-poster.jpg",
 	},
 ];
@@ -48,10 +52,12 @@ const doors = [
 							playsinline
 							preload="none"
 							poster={door.poster}
-							data-src={door.video}
 							tabindex="-1"
 							aria-hidden="true"
-						/>
+						>
+							<source data-src={door.webm} type="video/webm" />
+							<source data-src={door.mp4} type="video/mp4" />
+						</video>
 						<span class="door-streak" aria-hidden="true" />
 						<span class="door-shade" aria-hidden="true" />
 						<span class="door-copy">
@@ -98,13 +104,30 @@ const doors = [
 			enterTween = undefined;
 		}
 
+		function saveDataOn(): boolean {
+			const connection = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
+			return Boolean(connection?.saveData);
+		}
+
 		function showPoster(video: HTMLVideoElement): void {
 			video.pause();
+			video.querySelectorAll("source").forEach((source) => source.removeAttribute("src"));
 			video.removeAttribute("src");
 			video.load();
 		}
 
-		/** Phones play in view. Desktop plays only while hovered or focused, and in view. */
+		/** Attach WebM, then MP4, the first time this door should play. */
+		function armSources(video: HTMLVideoElement): void {
+			const sources = [...video.querySelectorAll("source")];
+			if (sources.some((source) => source.getAttribute("src"))) return;
+			sources.forEach((source) => {
+				const src = source.dataset.src;
+				if (src) source.src = src;
+			});
+			video.load();
+		}
+
+		/** Phones and save-data play once the door is in view. Desktop waits for hover too. */
 		function sync(door: HTMLElement, reduced: boolean): void {
 			const video = door.querySelector("video");
 			if (!video) return;
@@ -112,17 +135,15 @@ const doors = [
 			playGen.set(video, generation);
 			const inView = door.dataset.inview === "true";
 			const hot = door.matches(":hover") || door.matches(":focus-visible");
-			const shouldPlay = !reduced && inView && (hoverQuery.matches ? hot : true);
+			const light = !hoverQuery.matches || saveDataOn();
+			const shouldPlay = !reduced && inView && (light ? true : hot);
 
 			if (!shouldPlay) {
 				video.pause();
 				return;
 			}
 
-			const src = video.dataset.src;
-			if (src && video.getAttribute("src") !== src) {
-				video.src = src;
-			}
+			armSources(video);
 			video.muted = true;
 			void video.play().then(
 				() => {

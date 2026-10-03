@@ -9,6 +9,7 @@
     "dev": "astro dev",
     "build": "astro build",
     "preview": "astro preview",
+    "media": "node scripts/optimize-media.mjs",
     "astro": "astro"
   },
   "dependencies": {
@@ -26,6 +27,7 @@
     "esbuild": true
   },
   "devDependencies": {
+    "sharp": "^0.35.5",
     "wawoff2": "^2.0.1"
   }
 }
