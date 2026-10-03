@@ -1,0 +1,407 @@
+---
+/**
+ * Home promise. Sits after the hero. Does not touch the hero film.
+ * The photo is imported from src so Picture can emit AVIF and WebP.
+ */
+import { Picture } from "astro:assets";
+import promise from "../../assets/media/promise.jpg";
+
+const words: { text: string; rot: number; red?: boolean }[] = [
+	{ text: "No", rot: -3 },
+	{ text: "more", rot: 5 },
+	{ text: "garbage", rot: -6 },
+	{ text: "AI", rot: 4 },
+	{ text: "slop", rot: 6, red: true },
+	{ text: "websites.", rot: -4 },
+];
+
+const lines = [
+	"Guides you can actually follow.",
+	"Prompts tested on a live audience.",
+	"Replays of every live.",
+];
+---
+
+<section class="promise" data-promise aria-labelledby="promise-title">
+	<div class="promise-stage">
+		<div class="promise-photo" data-promise-photo aria-hidden="true">
+			<Picture
+				src={promise}
+				formats={["avif", "webp"]}
+				alt=""
+				widths={[640, 960, 1280]}
+				sizes="100vw"
+				loading="lazy"
+				decoding="async"
+				pictureAttributes={{ class: "promise-picture" }}
+			/>
+		</div>
+		<div class="promise-shade" aria-hidden="true"></div>
+		<div class="promise-copy">
+			<div class="promise-lead">
+				<h2 id="promise-title" class="promise-title label-stack">
+					{
+						words.map((word) => (
+							<span class="promise-word" data-promise-word data-rot={word.rot}>
+								<span class:list={["label-box", { "label-box--red": word.red }]}>{word.text}</span>
+							</span>
+						))
+					}
+				</h2>
+				<p class="promise-sub" data-promise-sub>Copy, paste, build something you're proud of.</p>
+			</div>
+			<ul class="promise-list">
+				{lines.map((line) => <li class="mono" data-promise-line>{line}</li>)}
+			</ul>
+		</div>
+	</div>
+</section>
+
+<script>
+	import { gsap, onReducedMotionChange, prefersReducedMotion } from "../../scripts/motion";
+
+	const root = document.querySelector<HTMLElement>("[data-promise]");
+	if (root && root.dataset.promiseReady !== "true") {
+		root.dataset.promiseReady = "true";
+
+		const photo = root.querySelector<HTMLElement>("[data-promise-photo]");
+		const words = [...root.querySelectorAll<HTMLElement>("[data-promise-word]")];
+		const sub = root.querySelector<HTMLElement>("[data-promise-sub]");
+		const lines = [...root.querySelectorAll<HTMLElement>("[data-promise-line]")];
+		const mobileQuery = window.matchMedia("(max-width: 767px)");
+		let ctx: gsap.Context | undefined;
+
+		const tilt = (_index: number, element: Element) => Number((element as HTMLElement).dataset.rot ?? 0);
+
+		/** Image lags the scroll by 20 percent, so it travels at 0.8x. */
+		function lag(): number {
+			return (root!.offsetHeight + window.innerHeight) * 0.1;
+		}
+
+		function setup(reduced: boolean): void {
+			ctx?.revert();
+			ctx = undefined;
+			if (!photo || !sub || words.length === 0) return;
+
+			if (reduced) {
+				root!.classList.add("is-still");
+				gsap.set([photo, sub, ...words, ...lines], { clearProps: "transform,opacity" });
+				return;
+			}
+
+			root!.classList.remove("is-still");
+			ctx = gsap.context(() => {
+				// A staggered from() only hides the first item until its slot.
+				// Set the whole group up front so every line can fall.
+				const park = (targets: HTMLElement[], y: number) => {
+					gsap.set(targets, {
+						y,
+						opacity: 0,
+						rotation: targets === words ? tilt : 0,
+					});
+				};
+
+				if (mobileQuery.matches) {
+					park(words, -60);
+					park([sub], 20);
+					park(lines, 14);
+					const drop = gsap.timeline({
+						scrollTrigger: {
+							trigger: root,
+							start: "top 78%",
+							toggleActions: "play none none reverse",
+						},
+					});
+					drop.to(words, {
+						y: 0,
+						rotation: 0,
+						opacity: 1,
+						duration: 0.48,
+						stagger: 0.12,
+						ease: "power3.out",
+						immediateRender: false,
+					});
+					drop.to(sub, { y: 0, opacity: 1, duration: 0.4, ease: "power3.out", immediateRender: false }, ">");
+					drop.to(
+						lines,
+						{
+							y: 0,
+							opacity: 1,
+							duration: 0.35,
+							stagger: 0.08,
+							ease: "power3.out",
+							immediateRender: false,
+						},
+						">-0.05",
+					);
+					return;
+				}
+
+				gsap.fromTo(
+					photo,
+					{ scale: 1.12, y: () => lag() },
+					{
+						scale: 1,
+						y: () => -lag(),
+						ease: "none",
+						scrollTrigger: {
+							trigger: root,
+							start: "top bottom",
+							end: "bottom top",
+							scrub: true,
+							invalidateOnRefresh: true,
+						},
+					},
+				);
+
+				park(words, -60);
+				park([sub], 24);
+				park(lines, 16);
+				const tl = gsap.timeline({
+					scrollTrigger: {
+						trigger: root,
+						start: "top 65%",
+						end: "center center",
+						scrub: 0.5,
+						invalidateOnRefresh: true,
+					},
+				});
+				tl.to(
+					words,
+					{
+						y: 0,
+						rotation: 0,
+						opacity: 1,
+						duration: 0.45,
+						stagger: 0.07,
+						ease: "back.out(1.4)",
+						immediateRender: false,
+					},
+					0,
+				);
+				const landed = 0.07 * (words.length - 1) + 0.45;
+				tl.to(sub, { y: 0, opacity: 1, duration: 0.35, ease: "power3.out", immediateRender: false }, landed);
+				tl.to(
+					lines,
+					{
+						y: 0,
+						opacity: 1,
+						duration: 0.3,
+						stagger: 0.07,
+						ease: "power3.out",
+						immediateRender: false,
+					},
+					landed + 0.28,
+				);
+			}, root);
+		}
+
+		const rebuild = () => setup(prefersReducedMotion());
+		const stopReduced = onReducedMotionChange(rebuild);
+		mobileQuery.addEventListener("change", rebuild);
+		rebuild();
+
+		window.addEventListener("pagehide", () => {
+			ctx?.revert();
+			stopReduced();
+			mobileQuery.removeEventListener("change", rebuild);
+		});
+	}
+</script>
+
+<style>
+	.promise {
+		position: relative;
+		background: var(--color-anti);
+	}
+
+	.promise-stage {
+		position: relative;
+		min-height: 100vh;
+		min-height: 100dvh;
+		overflow: hidden;
+	}
+
+	.promise-photo {
+		position: absolute;
+		inset: 0;
+	}
+
+	.promise-photo :global(picture),
+	.promise-photo :global(img) {
+		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		object-position: 70% 60%;
+	}
+
+	.promise-shade {
+		position: absolute;
+		inset: 0;
+		z-index: 1;
+		pointer-events: none;
+		background:
+			linear-gradient(to top, rgb(10 10 11 / 0.9) 0%, rgb(10 10 11 / 0.42) 42%, transparent 68%),
+			linear-gradient(90deg, rgb(10 10 11 / 0.5), transparent 58%);
+	}
+
+	.promise-copy {
+		position: relative;
+		z-index: 2;
+		display: flex;
+		flex-direction: column;
+		justify-content: flex-end;
+		gap: var(--space-24);
+		min-height: 100vh;
+		min-height: 100dvh;
+		padding:
+			calc(var(--header-h) + var(--space-32))
+			var(--space-16)
+			calc(var(--space-48) + env(safe-area-inset-bottom));
+	}
+
+	.promise-lead {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+	}
+
+	.promise-title {
+		margin: 0;
+		font-size: clamp(2.65rem, 13vw, 4.4rem);
+	}
+
+	.promise-word {
+		display: block;
+		width: fit-content;
+	}
+
+	.promise-title .label-box--red:hover,
+	.promise-title .label-box--red:active {
+		background: var(--color-ignition);
+	}
+
+	.promise-sub {
+		margin: var(--space-16) 0 0;
+		max-width: 22ch;
+		color: var(--color-bone);
+	}
+
+	.promise-list {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: var(--space-12);
+		width: max-content;
+		max-width: 100%;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.promise-list li {
+		max-width: none;
+		color: var(--color-hero);
+		font-size: clamp(0.85rem, 3.2vw, 1rem);
+	}
+
+	@media (min-width: 768px) {
+		.promise {
+			height: 168vh;
+		}
+
+		.promise-stage {
+			position: sticky;
+			top: 0;
+			height: 100vh;
+			height: 100dvh;
+			min-height: 0;
+		}
+
+		.promise-photo {
+			top: -42%;
+			left: -6%;
+			width: 112%;
+			height: 184%;
+		}
+
+		.promise-photo :global(img) {
+			object-position: center center;
+		}
+
+		.promise-shade {
+			background:
+				linear-gradient(to top, rgb(10 10 11 / 0.86) 0%, rgb(10 10 11 / 0.28) 40%, transparent 62%),
+				linear-gradient(to bottom, rgb(10 10 11 / 0.55), transparent 32%);
+		}
+
+		.promise-copy {
+			display: grid;
+			grid-template-columns: max-content minmax(0, 1fr);
+			grid-template-rows: auto 1fr;
+			align-items: start;
+			min-height: 100%;
+			padding: calc(var(--header-h) + 4vh) 7vw 8vh;
+		}
+
+		.promise-lead {
+			grid-column: 1;
+			grid-row: 2;
+			align-self: end;
+		}
+
+		.promise-title {
+			font-size: clamp(2.8rem, 5.6vw, 4.8rem);
+		}
+
+		.promise-sub {
+			max-width: 24ch;
+			font-size: clamp(1.15rem, 1.4vw, 1.4rem);
+		}
+
+		.promise-list {
+			grid-column: 2;
+			grid-row: 1;
+			justify-self: end;
+			align-items: flex-end;
+			text-align: right;
+		}
+
+		.promise-list li {
+			font-size: clamp(0.9rem, 1.15vw, 1.05rem);
+		}
+	}
+
+	@media (min-width: 768px) and (prefers-reduced-motion: no-preference) {
+		.promise-photo,
+		.promise-word {
+			will-change: transform;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.promise {
+			height: auto;
+		}
+
+		.promise-stage {
+			position: relative;
+			height: auto;
+			min-height: 100vh;
+			min-height: 100dvh;
+		}
+
+		.promise-photo {
+			top: 0;
+			left: 0;
+			width: 100%;
+			height: 100%;
+		}
+
+		.promise-photo,
+		.promise-word {
+			will-change: auto;
+		}
+	}
+</style>
