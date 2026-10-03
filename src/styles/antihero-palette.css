@@ -1,0 +1,17 @@
+/* AntiHero brand tokens */
+:root {
+  --ah-void: #0A0A0B;  /* Anti Black - Primary ground. Most layouts start here. */
+  --ah-carbon: #1D2124;  /* Carbon - The badge disc (from the original logo). Cards, panels. */
+  --ah-graphite: #2B3035;  /* Graphite - Raised surfaces, dividers on dark. */
+  --ah-ash: #8A9096;  /* Ash - Secondary text, hairlines, captions. */
+  --ah-bone: #ECE8E1;  /* Bone - Warm paper white for light layouts and print. */
+  --ah-white: #FFFFFF;  /* Hero White - The mark, label boxes, headlines on dark. */
+  --ah-ignition: #E0261E;  /* Ignition Red - The one accent. CTAs, the word HERO, one idea per layout. */
+  --ah-ember: #A3160F;  /* Ember - Pressed / hover state of Ignition. Never as a fill on its own. */
+  --ah-dusk: #5B4F48;  /* Dusk - Photo duotone midtone (from the original sunset channel art). */
+
+  --ah-font-display: 'Bebas Neue', 'Oswald', 'Arial Narrow', sans-serif;
+  --ah-font-body: 'Barlow', 'Helvetica Neue', Arial, sans-serif;
+  --ah-font-condensed: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+  --ah-font-mono: 'JetBrains Mono', 'SFMono-Regular', Consolas, monospace;
+}

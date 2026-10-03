@@ -1,0 +1,23 @@
+ANTIHERO PALETTE
+================
+CMYK values are straight conversions - let your printer convert from RGB with their profile.
+Pantone values are nearest-match suggestions: confirm against a physical swatch book before any print run.
+
+Anti Black    #0A0A0B   RGB 10 10 11     CMYK 9 9 0 96       PMS Black 6 C      contrast vs white 19.79:1 / vs Anti Black 1.0:1
+    Primary ground. Most layouts start here.
+Carbon        #1D2124   RGB 29 33 36     CMYK 19 8 0 86      PMS 419 C          contrast vs white 16.21:1 / vs Anti Black 1.22:1
+    The badge disc (from the original logo). Cards, panels.
+Graphite      #2B3035   RGB 43 48 53     CMYK 19 9 0 79      PMS 432 C          contrast vs white 13.32:1 / vs Anti Black 1.49:1
+    Raised surfaces, dividers on dark.
+Ash           #8A9096   RGB 138 144 150  CMYK 8 4 0 41       PMS Cool Gray 8 C  contrast vs white 3.23:1 / vs Anti Black 6.14:1
+    Secondary text, hairlines, captions.
+Bone          #ECE8E1   RGB 236 232 225  CMYK 0 2 5 7        PMS Warm Gray 1 C (tint) contrast vs white 1.22:1 / vs Anti Black 16.21:1
+    Warm paper white for light layouts and print.
+Hero White    #FFFFFF   RGB 255 255 255  CMYK 0 0 0 0        PMS -              contrast vs white 1.0:1 / vs Anti Black 19.79:1
+    The mark, label boxes, headlines on dark.
+Ignition Red  #E0261E   RGB 224 38 30    CMYK 0 83 87 12     PMS 485 C          contrast vs white 4.7:1 / vs Anti Black 4.21:1
+    The one accent. CTAs, the word HERO, one idea per layout.
+Ember         #A3160F   RGB 163 22 15    CMYK 0 87 91 36     PMS 7621 C         contrast vs white 7.84:1 / vs Anti Black 2.52:1
+    Pressed / hover state of Ignition. Never as a fill on its own.
+Dusk          #5B4F48   RGB 91 79 72     CMYK 0 13 21 64     PMS 7531 C         contrast vs white 7.9:1 / vs Anti Black 2.5:1
+    Photo duotone midtone (from the original sunset channel art).

@@ -1,0 +1,67 @@
+{
+  "color": {
+    "void": {
+      "$value": "#0A0A0B",
+      "$type": "color",
+      "$description": "Anti Black. Primary ground. Most layouts start here."
+    },
+    "carbon": {
+      "$value": "#1D2124",
+      "$type": "color",
+      "$description": "Carbon. The badge disc (from the original logo). Cards, panels."
+    },
+    "graphite": {
+      "$value": "#2B3035",
+      "$type": "color",
+      "$description": "Graphite. Raised surfaces, dividers on dark."
+    },
+    "ash": {
+      "$value": "#8A9096",
+      "$type": "color",
+      "$description": "Ash. Secondary text, hairlines, captions."
+    },
+    "bone": {
+      "$value": "#ECE8E1",
+      "$type": "color",
+      "$description": "Bone. Warm paper white for light layouts and print."
+    },
+    "white": {
+      "$value": "#FFFFFF",
+      "$type": "color",
+      "$description": "Hero White. The mark, label boxes, headlines on dark."
+    },
+    "ignition": {
+      "$value": "#E0261E",
+      "$type": "color",
+      "$description": "Ignition Red. The one accent. CTAs, the word HERO, one idea per layout."
+    },
+    "ember": {
+      "$value": "#A3160F",
+      "$type": "color",
+      "$description": "Ember. Pressed / hover state of Ignition. Never as a fill on its own."
+    },
+    "dusk": {
+      "$value": "#5B4F48",
+      "$type": "color",
+      "$description": "Dusk. Photo duotone midtone (from the original sunset channel art)."
+    }
+  },
+  "font": {
+    "display": {
+      "$value": "Bebas Neue",
+      "$type": "fontFamily"
+    },
+    "body": {
+      "$value": "Barlow",
+      "$type": "fontFamily"
+    },
+    "condensed": {
+      "$value": "Barlow Condensed",
+      "$type": "fontFamily"
+    },
+    "mono": {
+      "$value": "JetBrains Mono",
+      "$type": "fontFamily"
+    }
+  }
+}
