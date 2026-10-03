@@ -1,0 +1,232 @@
+---
+import EmailForm from "./EmailForm.astro";
+import { facebookGroupUrl } from "../data/nav";
+
+interface Props {
+  headline?: string;
+  variant?: "home" | "page";
+}
+
+const {
+  headline = "The group is where the magic happens. Also the memes.",
+  variant = "page",
+} = Astro.props;
+
+/** Newlines are explicit lines. Otherwise each sentence stacks in short label boxes. */
+function headlineLines(value: string): string[] {
+  const explicit = value
+    .split(/\n/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+  if (explicit.length > 1) return explicit;
+
+  const sentences = value
+    .split(/(?<=\.)\s+/)
+    .map((line) => line.trim())
+    .filter(Boolean);
+  const lines: string[] = [];
+  for (const sentence of sentences) {
+    const words = sentence.split(/\s+/);
+    if (words.length <= 4) {
+      lines.push(sentence);
+      continue;
+    }
+    for (let index = 0; index < words.length; index += 4) {
+      const rest = words.length - index;
+      if (rest === 5) {
+        lines.push(words.slice(index).join(" "));
+        break;
+      }
+      lines.push(words.slice(index, index + 4).join(" "));
+    }
+  }
+  return lines.length > 0 ? lines : [value];
+}
+
+const lines = headlineLines(headline);
+---
+
+<section
+  class:list={["join-band", `join-band--${variant}`]}
+  data-join-band
+  data-variant={variant}
+  aria-labelledby="join-band-title"
+>
+  <div class="join-band__grid">
+    <h2 id="join-band-title" class="join-headline label-stack">
+      {lines.map((line) => <span class="label-box label-box--white">{line}</span>)}
+    </h2>
+    <div class="join-actions">
+      <div class="join-cta">
+        <div class="join-glow" data-join-glow aria-hidden="true"></div>
+        <a
+          class="join-button label-box label-box--red"
+          href={facebookGroupUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          Join the Facebook group
+          <span class="visually-hidden"> (opens in a new tab)</span>
+        </a>
+      </div>
+      <p class="join-quiet caption">Costs nothing. No catch. Just people building stuff.</p>
+      <EmailForm id="band-email" />
+    </div>
+  </div>
+</section>
+
+<script>
+  import { gsap, isMobile, onReducedMotionChange, prefersReducedMotion } from "../scripts/motion";
+
+  function bootJoinGlow(): void {
+    document.querySelectorAll<HTMLElement>("[data-join-band]").forEach((band) => {
+      if (band.dataset.glowReady === "true") return;
+      const glow = band.querySelector<HTMLElement>("[data-join-glow]");
+      if (!glow) return;
+      band.dataset.glowReady = "true";
+
+      let tween: gsap.core.Tween | undefined;
+
+      const start = (): void => {
+        tween?.kill();
+        if (prefersReducedMotion()) {
+          gsap.set(glow, { scale: 1, opacity: 0.5 });
+          tween = undefined;
+          return;
+        }
+        const peak = isMobile() ? 1.05 : 1.12;
+        // 2s each way, yoyo, so one full breath is 4s. Phone scale stays smaller.
+        tween = gsap.fromTo(
+          glow,
+          { scale: 1, opacity: 0.35 },
+          {
+            scale: peak,
+            opacity: 0.72,
+            duration: 2,
+            ease: "sine.inOut",
+            yoyo: true,
+            repeat: -1,
+          },
+        );
+      };
+
+      start();
+      onReducedMotionChange(start);
+    });
+  }
+
+  bootJoinGlow();
+</script>
+
+<style>
+  .join-band {
+    position: relative;
+    overflow-x: clip;
+    background: var(--color-carbon);
+    padding: var(--space-64) var(--space-16) var(--space-48);
+  }
+
+  .join-band__grid {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-48);
+  }
+
+  .join-headline {
+    margin: 0;
+    font-size: clamp(2.05rem, 6.4vw, 4.75rem);
+    line-height: 0.86;
+  }
+
+  .join-headline .label-box {
+    max-width: 100%;
+  }
+
+  .join-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-16);
+    width: min(100%, 28rem);
+  }
+
+  .join-cta {
+    position: relative;
+    display: inline-block;
+    max-width: 100%;
+  }
+
+  .join-glow {
+    --glow: 14rem;
+    position: absolute;
+    z-index: 0;
+    top: 50%;
+    left: 50%;
+    width: var(--glow);
+    height: var(--glow);
+    margin-top: calc(var(--glow) / -2);
+    margin-left: calc(var(--glow) / -2);
+    background: radial-gradient(
+      circle,
+      color-mix(in srgb, var(--color-ignition) 58%, transparent) 0%,
+      transparent 68%
+    );
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  .join-button {
+    position: relative;
+    z-index: 1;
+    max-width: 11ch;
+    font-size: clamp(2rem, 7vw, 3.15rem);
+    text-decoration: none;
+  }
+
+  .join-button:focus-visible {
+    outline: 2px solid var(--color-hero);
+    outline-offset: 4px;
+  }
+
+  .join-quiet {
+    margin: 0;
+    max-width: 28ch;
+  }
+
+  .join-actions :global(.email-form) {
+    width: 100%;
+  }
+
+  @media (min-width: 1024px) {
+    .join-band--page {
+      padding: var(--space-128) 8vw var(--space-96) 14vw;
+    }
+
+    .join-band--home {
+      padding: var(--space-64) 8vw var(--space-96) 14vw;
+    }
+
+    .join-band__grid {
+      display: grid;
+      grid-template-columns: minmax(0, 2fr) minmax(16rem, 1fr);
+      align-items: end;
+      gap: var(--space-64);
+    }
+
+    .join-headline {
+      font-size: clamp(3rem, 4.2vw, 5.25rem);
+    }
+
+    .join-glow {
+      --glow: 18rem;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .join-glow {
+      opacity: 0.5;
+      transform: none;
+    }
+  }
+</style>

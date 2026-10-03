@@ -1,0 +1,183 @@
+---
+import wordmark from "../assets/brand/antihero-wordmark-white-ignition.svg?url";
+import EmailForm from "./EmailForm.astro";
+import { facebookGroupUrl, footerLinks, isCurrentPath } from "../data/nav";
+
+const path = Astro.url.pathname;
+const year = new Date().getFullYear();
+const kr8tivUrl = "https://kr8tiv.io";
+---
+
+<footer class="site-footer">
+  <div class="site-footer__main">
+    <div class="site-footer__brand">
+      <a class="site-footer__mark" href="/" aria-label="AntiHero AI, home">
+        <img src={wordmark} alt="" width="120" height="36" />
+      </a>
+      <p class="site-footer__tag">Be your own hero</p>
+    </div>
+    <div class="site-footer__side">
+      <nav aria-label="Footer">
+        <ul class="site-footer__links">
+          {
+            footerLinks.map((link) => (
+              <li>
+                <a
+                  href={link.href}
+                  aria-current={isCurrentPath(link.href, path) ? "page" : undefined}
+                >
+                  {link.label}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </nav>
+      <a class="site-footer__group" href={facebookGroupUrl} target="_blank" rel="noopener noreferrer">
+        Join the group
+        <span class="visually-hidden"> (opens in a new tab)</span>
+      </a>
+      <EmailForm id="footer-email" compact />
+    </div>
+  </div>
+  <div class="site-footer__base">
+    <a class="site-footer__kr8tiv" href={kr8tivUrl} target="_blank" rel="noopener noreferrer">
+      Too busy to build it? kr8tiv can help.
+      <span class="visually-hidden"> (opens in a new tab)</span>
+    </a>
+    <p class="site-footer__legal caption">{year} AntiHero AI</p>
+  </div>
+</footer>
+
+<style>
+  .site-footer {
+    background: var(--color-anti);
+    padding: var(--space-64) var(--space-16) calc(var(--space-32) + env(safe-area-inset-bottom));
+    border-top: 1px solid var(--color-graphite);
+  }
+
+  .site-footer__main {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-48);
+  }
+
+  .site-footer__mark {
+    display: inline-block;
+    line-height: 0;
+  }
+
+  .site-footer__mark img {
+    display: block;
+    width: auto;
+    height: 36px;
+  }
+
+  .site-footer__tag {
+    max-width: none;
+    margin: var(--space-16) 0 0;
+    color: var(--color-hero);
+    font-family: var(--font-label);
+    font-size: clamp(1.35rem, 3vw, 2rem);
+    font-weight: 700;
+    letter-spacing: 0.34em;
+    line-height: 1.15;
+    text-transform: uppercase;
+  }
+
+  .site-footer__side {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-16);
+    width: min(100%, 32rem);
+  }
+
+  .site-footer__links {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-4);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .site-footer__links a,
+  .site-footer__group {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    color: var(--color-bone);
+    font-family: var(--font-label);
+    font-size: 1.05rem;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    line-height: 1;
+    text-decoration: none;
+    text-transform: uppercase;
+  }
+
+  .site-footer__links a[aria-current="page"] {
+    color: var(--color-hero);
+  }
+
+  .site-footer__links a:hover,
+  .site-footer__group:hover {
+    color: var(--color-hero);
+  }
+
+  .site-footer__mark:focus-visible,
+  .site-footer__links a:focus-visible,
+  .site-footer__group:focus-visible,
+  .site-footer__kr8tiv:focus-visible {
+    outline: 2px solid var(--color-hero);
+    outline-offset: 3px;
+  }
+
+  .site-footer__base {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: var(--space-12) var(--space-32);
+    margin-top: var(--space-48);
+  }
+
+  .site-footer__kr8tiv {
+    color: var(--color-ash);
+    font-family: var(--font-body);
+    font-size: var(--type-caption-size);
+    line-height: var(--type-caption-leading);
+    text-decoration: underline;
+    text-decoration-color: var(--color-graphite);
+    text-underline-offset: 0.22em;
+  }
+
+  .site-footer__kr8tiv:hover {
+    color: var(--color-bone);
+  }
+
+  .site-footer__legal {
+    margin: 0;
+  }
+
+  @media (min-width: 1024px) {
+    .site-footer {
+      padding: var(--space-96) 8vw var(--space-48) 14vw;
+    }
+
+    .site-footer__main {
+      display: grid;
+      grid-template-columns: minmax(0, 1.3fr) minmax(16rem, 1fr);
+      align-items: end;
+      gap: var(--space-64);
+    }
+
+    .site-footer__tag {
+      font-size: clamp(1.7rem, 2.4vw, 2.5rem);
+      white-space: nowrap;
+    }
+  }
+</style>

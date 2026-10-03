@@ -1,6 +1,9 @@
 ---
+import Footer from "../components/Footer.astro";
 import Header from "../components/Header.astro";
+import JoinBand from "../components/JoinBand.astro";
 import Seo from "../components/Seo.astro";
+import { normalizePath } from "../data/nav";
 import "../styles/global.css";
 import appIconSvg from "../assets/brand/antihero-app-icon.svg?url";
 import appIcon180 from "../assets/brand/antihero-app-icon_180px.png";
@@ -15,6 +18,8 @@ interface Props {
 }
 
 const { title, description, image, canonical, type } = Astro.props;
+const path = normalizePath(Astro.url.pathname);
+const showJoinBand = path !== "/" && path !== "/join";
 ---
 
 <html lang="en">
@@ -38,6 +43,8 @@ const { title, description, image, canonical, type } = Astro.props;
 		<main id="content" tabindex="-1">
 			<slot name="main" />
 		</main>
+		{showJoinBand && <JoinBand variant="page" />}
+		<Footer />
 		<slot name="footer" />
 	</body>
 </html>

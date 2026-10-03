@@ -1,0 +1,183 @@
+---
+import { facebookGroupUrl } from "../data/nav";
+
+interface Props {
+  id: string;
+  compact?: boolean;
+}
+
+const { id, compact = false } = Astro.props;
+
+// Matt: paste the real bot-field name from the Mailchimp embed code.
+// It is the off-screen text input, named like b_0123abc_4567def. Replace b_TODO_TODO.
+const botFieldName = "b_TODO_TODO";
+
+const rawAction = import.meta.env.MAILCHIMP_FORM_ACTION;
+const actionText = typeof rawAction === "string" ? rawAction.trim() : "";
+let action = "";
+if (actionText) {
+  try {
+    const url = new URL(actionText);
+    if (url.protocol === "https:") action = url.href;
+  } catch {
+    action = "";
+  }
+}
+const ready = action.length > 0;
+---
+
+{
+  ready ? (
+    <form
+      class:list={["email-form", { "email-form--compact": compact }]}
+      method="post"
+      action={action}
+      target="_blank"
+    >
+      <div class="email-form__row">
+        <label class="visually-hidden" for={id}>
+          Email
+        </label>
+        <input
+          id={id}
+          type="email"
+          name="EMAIL"
+          required
+          autocomplete="email"
+          inputmode="email"
+          spellcheck="false"
+          placeholder="you@email.com"
+        />
+        <button class="email-form__submit" type="submit">
+          Send me the good stuff
+        </button>
+      </div>
+      <div class="visually-hidden" aria-hidden="true">
+        <input type="text" name={botFieldName} tabindex="-1" value="" autocomplete="off" />
+      </div>
+      <p class="email-form__note caption">
+        One email when there's something worth your time. Unsubscribe whenever.
+      </p>
+    </form>
+  ) : (
+    <div class:list={["email-form", { "email-form--compact": compact }]}>
+      <div class="email-form__row">
+        <label class="visually-hidden" for={id}>
+          Email
+        </label>
+        <input id={id} type="email" name="EMAIL" autocomplete="email" disabled value="" />
+        <button class="email-form__submit" type="button" disabled>
+          Send me the good stuff
+        </button>
+      </div>
+      <p class="email-form__note caption">
+        Email list opens soon. The group is already open.{" "}
+        <a href={facebookGroupUrl} target="_blank" rel="noopener noreferrer">
+          Join the group
+          <span class="visually-hidden"> (opens in a new tab)</span>
+        </a>
+      </p>
+    </div>
+  )
+}
+
+<style>
+  .email-form__row {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-12);
+  }
+
+  .email-form--compact .email-form__row {
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-items: stretch;
+    gap: var(--space-8);
+  }
+
+  .email-form input[type="email"] {
+    width: 100%;
+    min-width: 0;
+    min-height: 48px;
+    padding: 0 var(--space-12);
+    border: 1px solid var(--color-ash);
+    border-radius: 0;
+    background: var(--color-graphite);
+    color: var(--color-hero);
+    font-family: var(--font-body);
+    font-size: var(--type-small-size);
+    line-height: 1.2;
+  }
+
+  .email-form--compact input[type="email"] {
+    flex: 1 1 12rem;
+    width: auto;
+  }
+
+  .email-form input[type="email"]::placeholder {
+    color: var(--color-ash);
+  }
+
+  .email-form input[type="email"]:focus-visible {
+    outline: 2px solid var(--color-hero);
+    outline-offset: 3px;
+  }
+
+  .email-form input[type="email"]:disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+
+  .email-form__submit {
+    min-height: 48px;
+    padding: 0 var(--space-16);
+    border: 1px solid var(--color-hero);
+    border-radius: 0;
+    background: transparent;
+    color: var(--color-hero);
+    font-family: var(--font-label);
+    font-size: 0.95rem;
+    font-weight: 700;
+    letter-spacing: 0.14em;
+    line-height: 1;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+
+  .email-form__submit:hover:not(:disabled),
+  .email-form__submit:active:not(:disabled) {
+    background: var(--color-hero);
+    color: var(--color-anti);
+  }
+
+  .email-form__submit:focus-visible {
+    outline: 2px solid var(--color-hero);
+    outline-offset: 3px;
+  }
+
+  .email-form__submit:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .email-form__note {
+    margin: var(--space-12) 0 0;
+    max-width: 42ch;
+    text-wrap: pretty;
+  }
+
+  .email-form__note a {
+    color: var(--color-hero);
+    text-underline-offset: 0.18em;
+  }
+
+  .email-form__note a:hover {
+    color: var(--color-bone);
+  }
+
+  .email-form__note a:focus-visible {
+    outline: 2px solid var(--color-hero);
+    outline-offset: 3px;
+  }
+</style>

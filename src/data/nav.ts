@@ -21,6 +21,12 @@ export const menuLinks: NavLink[] = [
   { href: "/join", label: "Join", caption: "Join / the good part" },
 ];
 
+/** Footer only. Credits stays off the header and the full-screen menu. */
+export const footerLinks: NavLink[] = [
+  ...menuLinks,
+  { href: "/credits", label: "Credits", caption: "Credits" },
+];
+
 export function normalizePath(pathname: string): string {
   if (pathname.length > 1 && pathname.endsWith("/")) return pathname.slice(0, -1);
   return pathname || "/";
