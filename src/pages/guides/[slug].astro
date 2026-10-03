@@ -1,0 +1,732 @@
+---
+import { existsSync, statSync } from "node:fs";
+import { join } from "node:path";
+import { getCollection, getEntry, render } from "astro:content";
+import type { CollectionEntry } from "astro:content";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+/** Newest UTC date first, featured wins a same-day tie, then slug. */
+function byNewest(a: CollectionEntry<"guides">, b: CollectionEntry<"guides">): number {
+	const byDate = b.data.date.getTime() - a.data.date.getTime();
+	if (byDate !== 0) return byDate;
+	if (a.data.featured !== b.data.featured) return a.data.featured ? -1 : 1;
+	return a.data.slug.localeCompare(b.data.slug);
+}
+
+export async function getStaticPaths() {
+	const guides = await getCollection("guides", ({ data }) => data.draft === false);
+	return guides.map((guide) => ({
+		params: { slug: guide.data.slug },
+	}));
+}
+
+const slug = Astro.params.slug;
+if (typeof slug !== "string" || slug.length === 0) {
+	throw new Error("Missing guide slug.");
+}
+
+const published = await getCollection("guides", ({ data }) => data.draft === false);
+published.sort(byNewest);
+const index = published.findIndex((entry) => entry.data.slug === slug);
+const guide = published[index];
+if (!guide) {
+	throw new Error(`Guide not found: ${slug}`);
+}
+
+/** Previous is older. Next is newer. The newest page has no next. */
+const newer = index > 0 ? published[index - 1] : null;
+const older = index < published.length - 1 ? published[index + 1] : null;
+
+function publicFile(urlPath: string): string | null {
+	if (!urlPath.startsWith("/") || urlPath.startsWith("//")) return null;
+	const relative = decodeURIComponent(urlPath.split("?")[0]?.slice(1) ?? "");
+	if (!relative || relative.split("/").includes("..")) return null;
+	const file = join(process.cwd(), "public", ...relative.split("/").filter(Boolean));
+	return existsSync(file) ? file : null;
+}
+
+function localMedia(urlPath: string): string | null {
+	return publicFile(urlPath) ? urlPath : null;
+}
+
+function mediaSrc(value: string | undefined): string | null {
+	if (!value || value === "TODO") return null;
+	if (/^https?:\/\//.test(value)) return value;
+	return localMedia(value);
+}
+
+function formatBytes(bytes: number): string {
+	if (bytes < 1024) return `${bytes} B`;
+	const kb = bytes / 1024;
+	if (kb < 1024) {
+		const rounded = kb < 10 ? kb.toFixed(1) : String(Math.round(kb));
+		return `${rounded} KB`;
+	}
+	const mb = kb / 1024;
+	const rounded = mb < 10 ? mb.toFixed(1) : String(Math.round(mb));
+	return `${rounded} MB`;
+}
+
+function isoDay(date: Date): string {
+	const y = date.getUTCFullYear();
+	const m = String(date.getUTCMonth() + 1).padStart(2, "0");
+	const d = String(date.getUTCDate()).padStart(2, "0");
+	return `${y}-${m}-${d}`;
+}
+
+function titleBoxes(title: string): string[] {
+	const words = title.trim().split(/\s+/).filter(Boolean);
+	const boxes: string[] = [];
+	for (let i = 0; i < words.length; i += 2) {
+		boxes.push(words.slice(i, i + 2).join(" "));
+	}
+	return boxes.length > 0 ? boxes : [title];
+}
+
+function sourceGuideId(source: unknown): string | null {
+	if (!source) return null;
+	if (typeof source === "string") return source;
+	if (typeof source === "object" && "id" in source) {
+		const id = (source as { id: unknown }).id;
+		return typeof id === "string" ? id : null;
+	}
+	return null;
+}
+
+function replayHref(id: string, youtubeId?: string, videoUrl?: string): string {
+	if (youtubeId) return `https://www.youtube.com/watch?v=${encodeURIComponent(youtubeId)}`;
+	if (videoUrl) return videoUrl;
+	return `/videos#${encodeURIComponent(id)}`;
+}
+
+const boxes = titleBoxes(guide.data.title);
+const description = guide.data.summary.join(" ");
+const coverSrc = mediaSrc(guide.data.cover);
+const pdfFile = publicFile(guide.data.pdf);
+const pdfBytes = pdfFile ? statSync(pdfFile).size : null;
+const sizeLabel = pdfBytes === null ? null : formatBytes(pdfBytes);
+const pdfName = guide.data.pdf.split("/").pop() ?? "guide.pdf";
+
+const replay = guide.data.replay ? await getEntry(guide.data.replay) : undefined;
+const replayLink = replay
+	? {
+			href: replayHref(replay.id, replay.data.youtubeId, replay.data.videoUrl),
+			external: Boolean(replay.data.youtubeId || replay.data.videoUrl),
+			poster: mediaSrc(replay.data.poster),
+			title: replay.data.title,
+			duration: replay.data.duration ?? null,
+		}
+	: null;
+const replayName = replayLink
+	? `Watch the replay: ${replayLink.title}${replayLink.external ? " (opens in a new tab)" : ""}`
+	: "";
+
+/** Reading order. Prompts have no slug, so the hash is the entry id. No shared card yet. */
+const prompts = await getCollection("prompts");
+const related = prompts
+	.filter((prompt) => sourceGuideId(prompt.data.source) === guide.id)
+	.sort((a, b) => a.data.order - b.data.order || a.id.localeCompare(b.id))
+	.slice(0, 4);
+
+const rendered = guide.body?.trim() ? await render(guide) : null;
+const GuideBody = rendered?.Content;
+
+const jsonLd = JSON.stringify({
+	"@context": "https://schema.org",
+	"@type": "CreativeWork",
+	name: guide.data.title,
+	description,
+	datePublished: isoDay(guide.data.date),
+	author: {
+		"@type": "Organization",
+		name: "AntiHero AI",
+	},
+}).replace(/</g, "\\u003c");
+---
+
+<BaseLayout title={guide.data.title} description={description} image={guide.data.cover}>
+	<article slot="main" class="guide" data-guide-detail>
+		<div class="guide-hero">
+			<div class="guide-cover-frame" data-guide-cover-frame>
+				<div class="guide-cover-drift" data-guide-cover>
+					{
+						coverSrc ? (
+							<img
+								src={coverSrc}
+								alt=""
+								width="800"
+								height="1000"
+								loading="eager"
+								fetchpriority="high"
+								decoding="async"
+							/>
+						) : (
+							<div class="guide-plate-fill" aria-hidden="true"></div>
+						)
+					}
+				</div>
+				{
+					!coverSrc && (
+						<div class="guide-plate">
+							<span class="guide-plate__cat mono">{guide.data.category}</span>
+							<span class="guide-plate__note caption">Cover still to come.</span>
+						</div>
+					)
+				}
+			</div>
+
+			<div class="guide-copy">
+				<p class="guide-cat mono">{guide.data.category}</p>
+				<h1 class="guide-title label-stack">
+					{boxes.map((line) => <span class="label-box label-box--white">{line}</span>)}
+				</h1>
+				<ol class="guide-lines">
+					{
+						guide.data.summary.map((line, i) => (
+							<li>
+								<span class="guide-num mono">{String(i + 1).padStart(2, "0")}</span>
+								<p class="guide-line">{line}</p>
+							</li>
+						))
+					}
+				</ol>
+				<div class="guide-actions">
+					<a
+						class="guide-download label-box label-box--red"
+						href={guide.data.pdf}
+						download={pdfName}
+						aria-describedby={sizeLabel ? "guide-pdf-size" : undefined}
+					>
+						Download the PDF
+					</a>
+					{sizeLabel && (
+						<p id="guide-pdf-size" class="guide-size caption">
+							{sizeLabel}
+						</p>
+					)}
+					<a class="guide-open" href={guide.data.pdf} target="_blank" rel="noopener noreferrer">
+						Open in a new tab
+						<span class="visually-hidden"> (opens in a new tab)</span>
+					</a>
+				</div>
+			</div>
+		</div>
+
+		{
+			GuideBody && (
+				<section class="guide-body" aria-labelledby="guide-body-title">
+					<h2 id="guide-body-title">What's inside</h2>
+					<div class="guide-prose">
+						<GuideBody />
+					</div>
+				</section>
+			)
+		}
+
+		<section class="guide-replay" aria-label="Replay">
+			{
+				replayLink ? (
+					<a
+						class="guide-replay__link"
+						href={replayLink.href}
+						aria-label={replayName}
+						target={replayLink.external ? "_blank" : undefined}
+						rel={replayLink.external ? "noopener noreferrer" : undefined}
+					>
+						<div class="guide-replay__poster">
+							{replayLink.poster ? (
+								<img
+									src={replayLink.poster}
+									alt=""
+									width="1280"
+									height="720"
+									loading="lazy"
+									decoding="async"
+								/>
+							) : (
+								<div class="guide-plate guide-plate--wide">
+									<span class="guide-plate__cat mono">Live</span>
+									<span class="guide-plate__note caption">Poster still to come.</span>
+								</div>
+							)}
+						</div>
+						<div class="guide-replay__copy">
+							<p class="guide-replay__kicker mono">Replay</p>
+							<h2 class="guide-replay__title">{replayLink.title}</h2>
+							{replayLink.duration && <p class="caption mono">{replayLink.duration}</p>}
+							<p class="guide-replay__watch">Watch the replay</p>
+						</div>
+					</a>
+				) : (
+					<p class="guide-replay__soon">Replay coming soon.</p>
+				)
+			}
+		</section>
+
+		{
+			related.length > 0 && (
+				<section class="guide-prompts" aria-labelledby="guide-prompts-title">
+					<h2 id="guide-prompts-title">Prompts from this guide</h2>
+					<ol class="guide-prompt-list">
+						{related.map((prompt) => (
+							<li>
+								<a class="guide-prompt" href={`/prompts#${encodeURIComponent(prompt.id)}`}>
+									<h3>{prompt.data.title}</h3>
+									<p>{prompt.data.useItFor}</p>
+								</a>
+							</li>
+						))}
+					</ol>
+				</section>
+			)
+		}
+
+		<nav class="guide-nav" aria-label="Other guides">
+			{
+				older && (
+					<a class="guide-nav__prev" href={`/guides/${older.data.slug}`}>
+						<span class="guide-nav__kicker caption">Previous</span>
+						<span class="guide-nav__title">{older.data.title}</span>
+					</a>
+				)
+			}
+			{
+				newer && (
+					<a class="guide-nav__next" href={`/guides/${newer.data.slug}`}>
+						<span class="guide-nav__kicker caption">Next</span>
+						<span class="guide-nav__title">{newer.data.title}</span>
+					</a>
+				)
+			}
+		</nav>
+
+		<script is:inline type="application/ld+json" set:html={jsonLd} />
+	</article>
+</BaseLayout>
+
+<script>
+	import { bootGuideCover } from "../../scripts/guide-cover";
+
+	bootGuideCover();
+</script>
+
+<style>
+	.guide {
+		background: var(--color-anti);
+		color: var(--color-hero);
+		overflow-x: clip;
+	}
+
+	.guide-hero {
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: var(--space-32);
+		padding: calc(var(--header-h) + var(--space-16)) 0 var(--space-64);
+	}
+
+	.guide-cover-frame {
+		position: relative;
+		overflow: hidden;
+		aspect-ratio: 4 / 5;
+		background: var(--color-graphite);
+	}
+
+	.guide-cover-drift,
+	.guide-plate-fill {
+		width: 100%;
+		height: 100%;
+	}
+
+	.guide-plate-fill {
+		background: var(--color-graphite);
+	}
+
+	.guide-cover-drift img,
+	.guide-replay__poster img {
+		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	.guide-plate {
+		position: absolute;
+		inset: 0;
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between;
+		padding: var(--space-24);
+		pointer-events: none;
+	}
+
+	.guide-replay__poster .guide-plate {
+		position: static;
+		height: 100%;
+		pointer-events: auto;
+	}
+
+	.guide-plate__cat {
+		color: var(--color-bone);
+		font-size: 0.75rem;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+	}
+
+	.guide-plate__note {
+		align-self: flex-end;
+		max-width: 14ch;
+		margin: 0;
+		text-align: right;
+	}
+
+	.guide-copy {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: var(--space-24);
+		min-width: 0;
+		padding-inline: var(--space-16);
+	}
+
+	.guide-cat {
+		margin: 0;
+		color: var(--color-bone);
+		font-size: 0.75rem;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+	}
+
+	.guide-title {
+		margin: 0;
+		max-width: 100%;
+		font-size: clamp(2.35rem, 4.8vw, 5.4rem);
+	}
+
+	.guide-title .label-box {
+		max-width: 100%;
+	}
+
+	.guide-lines {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-16);
+		width: min(100%, 38rem);
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.guide-lines li {
+		display: grid;
+		grid-template-columns: 2.4rem minmax(0, 1fr);
+		gap: var(--space-12);
+		align-items: baseline;
+	}
+
+	.guide-num {
+		color: var(--color-ignition);
+		font-size: 0.85rem;
+	}
+
+	.guide-line {
+		margin: 0;
+		max-width: none;
+		color: var(--color-bone);
+		font-size: var(--type-body-size);
+		line-height: var(--type-body-leading);
+	}
+
+	.guide-actions {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--space-12) var(--space-16);
+		margin-top: var(--space-8);
+	}
+
+	.guide-download {
+		font-size: clamp(1.85rem, 4vw, 3.25rem);
+		text-decoration: none;
+	}
+
+	.guide-download:focus-visible,
+	.guide-open:focus-visible,
+	.guide-replay__link:focus-visible,
+	.guide-prompt:focus-visible,
+	.guide-nav a:focus-visible {
+		outline: 2px solid var(--color-hero);
+		outline-offset: 4px;
+	}
+
+	.guide-size {
+		margin: 0;
+	}
+
+	.guide-open {
+		display: inline-flex;
+		align-items: center;
+		flex-basis: 100%;
+		min-height: 44px;
+		color: var(--color-bone);
+		font-size: var(--type-body-size);
+		line-height: var(--type-body-leading);
+		text-underline-offset: 0.22em;
+	}
+
+	.guide-open:hover {
+		color: var(--color-hero);
+	}
+
+	.guide-body {
+		padding: var(--space-48) var(--space-16) var(--space-96);
+	}
+
+	.guide-body h2,
+	.guide-prompts h2 {
+		max-width: 10em;
+		margin: 0 0 var(--space-24);
+	}
+
+	.guide-prose :global(p) {
+		max-width: var(--type-body-measure);
+		margin: 0 0 var(--space-16);
+		color: var(--color-bone);
+		font-size: var(--type-body-size);
+		line-height: var(--type-body-leading);
+	}
+
+	.guide-prose :global(p:last-child) {
+		margin-bottom: 0;
+	}
+
+	.guide-prose :global(h2),
+	.guide-prose :global(h3) {
+		margin: var(--space-32) 0 var(--space-16);
+		color: var(--color-hero);
+	}
+
+	.guide-prose :global(ul),
+	.guide-prose :global(ol) {
+		max-width: var(--type-body-measure);
+		margin: 0 0 var(--space-16);
+		padding-left: 1.2em;
+		color: var(--color-bone);
+		font-size: var(--type-body-size);
+		line-height: var(--type-body-leading);
+	}
+
+	.guide-prose :global(a) {
+		color: var(--color-hero);
+	}
+
+	.guide-replay {
+		background: var(--color-carbon);
+		padding: var(--space-64) var(--space-16);
+	}
+
+	.guide-replay__soon {
+		max-width: 22ch;
+		margin: 0;
+		color: var(--color-bone);
+		font-size: var(--type-h3-size);
+		line-height: var(--type-h3-leading);
+	}
+
+	.guide-replay__link {
+		display: grid;
+		gap: var(--space-24);
+		color: inherit;
+		text-decoration: none;
+	}
+
+	.guide-replay__poster {
+		overflow: hidden;
+		aspect-ratio: 16 / 9;
+		background: var(--color-graphite);
+	}
+
+	.guide-replay__kicker {
+		margin: 0 0 var(--space-12);
+		color: var(--color-bone);
+		font-size: 0.75rem;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+	}
+
+	.guide-replay__title {
+		max-width: 12em;
+		margin: 0;
+	}
+
+	.guide-replay__watch {
+		margin: var(--space-16) 0 0;
+		color: var(--color-bone);
+		font-size: var(--type-body-size);
+		line-height: var(--type-body-leading);
+		text-decoration: underline;
+		text-underline-offset: 0.22em;
+	}
+
+	.guide-prompts {
+		padding: var(--space-96) var(--space-16) var(--space-64);
+	}
+
+	.guide-prompt-list {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-12);
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.guide-prompt {
+		display: block;
+		max-width: 40rem;
+		padding: var(--space-16);
+		background: var(--color-carbon);
+		color: inherit;
+		text-decoration: none;
+	}
+
+	.guide-prompt h3 {
+		max-width: 28ch;
+		margin: 0 0 var(--space-8);
+		font-family: var(--font-label);
+		font-size: clamp(1.25rem, 2vw, 1.65rem);
+		font-weight: 600;
+		line-height: 1.15;
+		letter-spacing: 0.01em;
+		text-transform: none;
+	}
+
+	.guide-prompt p {
+		max-width: 46ch;
+		margin: 0;
+		color: var(--color-bone);
+		font-size: var(--type-small-size);
+		line-height: var(--type-small-leading);
+	}
+
+	.guide-nav {
+		display: grid;
+		gap: var(--space-32);
+		padding: var(--space-48) var(--space-16) var(--space-96);
+		border-top: 1px solid var(--color-graphite);
+	}
+
+	.guide-nav a {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-8);
+		min-height: 44px;
+		color: inherit;
+		text-decoration: none;
+	}
+
+	.guide-nav__kicker {
+		margin: 0;
+	}
+
+	.guide-nav__title {
+		max-width: 14ch;
+		font-family: var(--font-display);
+		font-size: clamp(2rem, 4vw, 3.5rem);
+		line-height: 0.9;
+		text-transform: uppercase;
+		text-wrap: balance;
+	}
+
+	@media (min-width: 768px) {
+		.guide-prompt-list li:nth-child(2) .guide-prompt {
+			margin-left: 7vw;
+		}
+
+		.guide-prompt-list li:nth-child(3) .guide-prompt {
+			margin-left: 2vw;
+		}
+
+		.guide-prompt-list li:nth-child(4) .guide-prompt {
+			margin-left: 12vw;
+		}
+
+		.guide-nav {
+			grid-template-columns: 1fr 1fr;
+			align-items: end;
+			padding-inline: var(--space-32);
+		}
+
+		.guide-nav__next {
+			justify-self: end;
+			text-align: right;
+			align-items: flex-end;
+		}
+	}
+
+	@media (min-width: 900px) {
+		.guide-hero {
+			grid-template-columns: minmax(0, 1.05fr) minmax(0, 0.95fr);
+			align-items: end;
+			gap: var(--space-48);
+			min-height: calc(100svh - var(--header-h));
+			padding: calc(var(--header-h) + var(--space-24)) var(--space-48) var(--space-96) 0;
+		}
+
+		.guide-cover-frame {
+			height: min(86vh, 920px);
+			aspect-ratio: auto;
+		}
+
+		.guide-copy {
+			padding-inline: 0;
+			padding-bottom: var(--space-8);
+		}
+
+		.guide-body {
+			padding: var(--space-96) 10vw var(--space-128) 42vw;
+		}
+
+		.guide-replay {
+			padding: var(--space-96) var(--space-48);
+		}
+
+		.guide-replay__link {
+			grid-template-columns: minmax(0, 0.85fr) minmax(0, 1.15fr);
+			align-items: end;
+			gap: var(--space-64);
+		}
+
+		.guide-replay__copy {
+			order: 1;
+			padding-bottom: var(--space-16);
+		}
+
+		.guide-replay__poster {
+			order: 2;
+		}
+
+		.guide-prompts {
+			padding-inline: var(--space-48);
+		}
+	}
+
+	@media (hover: hover) and (pointer: fine) {
+		.guide-prompt {
+			transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
+		}
+
+		.guide-prompt:hover {
+			transform: translateX(8px);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.guide-prompt {
+			transition: none;
+		}
+
+		.guide-prompt:hover {
+			transform: none;
+		}
+	}
+</style>
