@@ -1,0 +1,312 @@
+---
+/**
+ * Home hero. Protected once approved: leave this file, hero-scrub.ts,
+ * and the hero videos alone unless a task names them.
+ */
+import wordmark from "../../assets/brand/antihero-wordmark-white.svg?url";
+import { facebookGroupUrl } from "../../data/nav";
+
+const monoLine = "No jargon. No catch. No garbage.";
+---
+
+<section class="hero" data-hero aria-labelledby="hero-title">
+	<div class="hero-stage" data-hero-stage>
+		<div class="hero-media">
+			<picture class="hero-still">
+				<source media="(min-width: 768px)" srcset="/media/hero-desktop-poster.jpg" />
+				<img
+					src="/media/hero-mobile-poster.jpg"
+					alt=""
+					width="720"
+					height="1280"
+					decoding="async"
+				/>
+			</picture>
+			<video
+				class="hero-video"
+				data-hero-video
+				muted
+				playsinline
+				preload="auto"
+				disablepictureinpicture
+				aria-hidden="true"
+			></video>
+			<canvas class="hero-canvas" data-hero-canvas aria-hidden="true"></canvas>
+		</div>
+		<div class="hero-vignette" aria-hidden="true"></div>
+		<div class="hero-wordmark" data-hero-wordmark aria-hidden="true">
+			<img src={wordmark} alt="" width="1456" height="436" />
+		</div>
+		<div class="hero-copy" data-hero-copy>
+			<h1 id="hero-title" class="hero-title label-stack">
+				<span class="label-box label-box--white">Be your own</span>
+				<span class="label-box label-box--red">hero.</span>
+			</h1>
+			<p class="hero-sub">AI for people with real jobs. No jargon, no catch.</p>
+			<a
+				class="hero-join label-box label-box--red"
+				data-hero-join
+				href={facebookGroupUrl}
+				target="_blank"
+				rel="noopener noreferrer"
+			>
+				Join the group
+				<span class="visually-hidden"> (opens in a new tab)</span>
+			</a>
+		</div>
+		<p class="hero-mono mono" data-hero-mono>
+			<span class="visually-hidden">{monoLine}</span>
+			<span data-hero-mono-visual data-line={monoLine} aria-hidden="true"></span>
+		</p>
+		<div class="hero-scroll" data-hero-scroll aria-hidden="true">
+			<span class="label">Scroll</span>
+			<span class="hero-scroll-line"></span>
+		</div>
+	</div>
+</section>
+
+<script>
+	import { initHero } from "../../scripts/hero-scrub";
+
+	const root = document.querySelector<HTMLElement>("[data-hero]");
+	if (root) initHero(root);
+</script>
+
+<style>
+	.hero {
+		height: 260vh;
+		background: var(--color-anti);
+	}
+
+	.hero-stage {
+		position: sticky;
+		top: 0;
+		height: 100vh;
+		height: 100dvh;
+		overflow: hidden;
+	}
+
+	.hero-media,
+	.hero-still,
+	.hero-still img,
+	.hero-video,
+	.hero-canvas {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+	}
+
+	.hero-still img,
+	.hero-video {
+		object-fit: cover;
+	}
+
+	.hero-video,
+	.hero-canvas {
+		opacity: 0;
+	}
+
+	.hero.is-video .hero-video,
+	.hero.is-frames .hero-canvas {
+		opacity: 1;
+	}
+
+	.hero.is-frames .hero-video {
+		opacity: 0;
+	}
+
+	.hero-vignette {
+		position: absolute;
+		inset: 0;
+		z-index: 1;
+		pointer-events: none;
+		background:
+			linear-gradient(to top, rgb(10 10 11 / 0.78), transparent 46%),
+			radial-gradient(ellipse at center, transparent 42%, rgb(10 10 11 / 0.62) 100%);
+	}
+
+	.hero-wordmark {
+		position: absolute;
+		z-index: 1;
+		top: 16vh;
+		left: -6vw;
+		width: min(138vw, 44rem);
+		pointer-events: none;
+		will-change: transform;
+	}
+
+	.hero-wordmark img {
+		display: block;
+		width: 100%;
+		height: auto;
+	}
+
+	.hero-copy {
+		position: absolute;
+		z-index: 2;
+		left: var(--space-16);
+		right: 4.5rem;
+		bottom: calc(var(--space-48) + env(safe-area-inset-bottom));
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+	}
+
+	.hero-title {
+		margin: 0;
+		font-size: clamp(2.7rem, 11vw, 4.4rem);
+	}
+
+	.hero-title .label-box--red:hover,
+	.hero-title .label-box--red:active {
+		background: var(--color-ignition);
+	}
+
+	.hero-sub {
+		margin: var(--space-16) 0 0;
+		max-width: 22ch;
+		color: var(--color-bone);
+	}
+
+	.hero-join {
+		margin-top: var(--space-24);
+		font-size: clamp(1.7rem, 6vw, 2.4rem);
+		line-height: 0.9;
+		text-decoration: none;
+	}
+
+	.hero-join:focus-visible {
+		outline: 2px solid var(--color-hero);
+		outline-offset: 4px;
+	}
+
+	.hero-mono {
+		position: absolute;
+		z-index: 2;
+		left: var(--space-16);
+		right: var(--space-16);
+		bottom: calc(var(--space-80, 5rem) + env(safe-area-inset-bottom));
+		margin: 0;
+		max-width: none;
+		color: var(--color-hero);
+		font-size: clamp(0.8rem, 2.8vw, 1rem);
+	}
+
+	.hero-scroll {
+		position: absolute;
+		z-index: 2;
+		right: var(--space-16);
+		bottom: calc(var(--space-32) + env(safe-area-inset-bottom));
+		display: flex;
+		flex-direction: column;
+		align-items: flex-end;
+		gap: var(--space-8);
+	}
+
+	.hero-scroll-line {
+		width: 1px;
+		height: 3.25rem;
+		background: var(--color-hero);
+		transform-origin: top center;
+	}
+
+	.hero--still {
+		height: auto;
+	}
+
+	.hero--still .hero-stage {
+		position: relative;
+	}
+
+	.hero--still .hero-video,
+	.hero--still .hero-canvas,
+	.hero--still .hero-scroll,
+	.hero--still .hero-mono {
+		display: none;
+	}
+
+	.hero--still .hero-wordmark {
+		will-change: auto;
+	}
+
+	@media (min-width: 768px) {
+		.hero {
+			height: 400vh;
+		}
+
+		.hero-wordmark {
+			top: 12vh;
+			left: -2vw;
+			width: min(78vw, 68rem);
+		}
+
+		.hero-copy {
+			left: 7vw;
+			right: auto;
+			bottom: 10vh;
+			width: min(40rem, 52vw);
+		}
+
+		.hero-title {
+			font-size: clamp(4.5rem, 7vw, 8.5rem);
+		}
+
+		.hero-sub {
+			max-width: 28ch;
+			font-size: clamp(1.15rem, 1.4vw, 1.4rem);
+		}
+
+		.hero-join {
+			font-size: clamp(2.2rem, 3vw, 3rem);
+		}
+
+		.hero-mono {
+			left: 7vw;
+			right: auto;
+			bottom: 14vh;
+			font-size: clamp(1rem, 1.4vw, 1.25rem);
+		}
+
+		.hero-scroll-line {
+			height: 4.75rem;
+		}
+	}
+
+	@media (prefers-reduced-motion: no-preference) {
+		.hero-scroll-line {
+			animation: hero-line 1.6s ease-in-out infinite alternate;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.hero {
+			height: auto;
+		}
+
+		.hero-stage {
+			position: relative;
+		}
+
+		.hero-video,
+		.hero-canvas,
+		.hero-scroll,
+		.hero-mono {
+			display: none;
+		}
+
+		.hero-wordmark {
+			will-change: auto;
+		}
+	}
+
+	@keyframes hero-line {
+		from {
+			transform: scaleY(0.2);
+		}
+
+		to {
+			transform: scaleY(1);
+		}
+	}
+</style>

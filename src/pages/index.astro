@@ -1,38 +1,11 @@
 ---
+import Hero from "../components/home/Hero.astro";
 import BaseLayout from "../layouts/BaseLayout.astro";
 ---
 
 <BaseLayout
 	title="AntiHero AI"
-	description="Temporary type check for the AntiHero AI base layout."
+	description="AI for people with real jobs. No jargon, no catch."
 >
-	<section slot="main" class="specimen">
-		<p class="label">Type check</p>
-		<h1 class="type-display label-stack">
-			<span class="label-box label-box--white">Be</span>
-			<span class="label-box label-box--white">your own</span>
-			<span class="label-box label-box--white">hero.</span>
-		</h1>
-		<p>This sentence is Barlow, on Anti Black, so the base layout can be checked.</p>
-	</section>
+	<Hero slot="main" />
 </BaseLayout>
-
-<style>
-	.specimen {
-		padding: var(--space-64) var(--space-16) var(--space-96);
-	}
-
-	.specimen .label {
-		margin-bottom: var(--space-24);
-	}
-
-	.specimen p:last-child {
-		margin-top: var(--space-32);
-	}
-
-	@media (min-width: 768px) {
-		.specimen {
-			padding: var(--space-128) var(--space-48) var(--space-192) var(--space-96);
-		}
-	}
-</style>
