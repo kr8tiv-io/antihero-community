@@ -1,12 +1,345 @@
 ---
+import { existsSync } from "node:fs";
+import { join } from "node:path";
 import BaseLayout from "../layouts/BaseLayout.astro";
+
+function localMedia(urlPath: string): string | null {
+	if (!urlPath.startsWith("/") || urlPath.startsWith("//")) return null;
+	const relative = decodeURIComponent(urlPath.split("?")[0]?.slice(1) ?? "");
+	if (!relative || relative.split("/").includes("..")) return null;
+	const file = join(process.cwd(), "public", ...relative.split("/").filter(Boolean));
+	return existsSync(file) ? urlPath : null;
+}
+
+const photo = localMedia("/media/about.jpg");
+
+const lines = [
+	{ text: "Nobody's coming", red: false },
+	{ text: "to save you.", red: false },
+	{ text: "Good news,", red: false },
+	{ text: "you don't need them.", red: true },
+];
 ---
 
 <BaseLayout
 	title="About"
 	description="Nobody's coming to save you. Good news, you don't need them."
 >
-	<article slot="main" class="page-intro">
-		<h1>Nobody's coming to save you. Good news, you don't need them.</h1>
-	</article>
+	<div slot="main" class="about">
+		<section class="about-hero" data-about-hero aria-labelledby="about-title">
+			<div class="about-hero__photo" data-about-photo>
+				{
+					photo ? (
+						<img
+							src={photo}
+							alt="A lone figure on a cliff above the clouds, with a giant red planet."
+							loading="eager"
+							fetchpriority="high"
+							decoding="async"
+						/>
+					) : (
+						<div class="about-hero__fill"></div>
+					)
+				}
+			</div>
+			<div class="about-hero__mist" data-about-mist aria-hidden="true"></div>
+			<div class="about-hero__shade" aria-hidden="true"></div>
+			{!photo && <p class="caption about-hero__soon">Photo still to come.</p>}
+			<div class="about-hero__copy" data-about-copy>
+				<h1 id="about-title" class="about-hero__title label-stack">
+					{
+						lines.map((line) => (
+							<span class:list={["label-box", line.red ? "label-box--red" : "label-box--white"]}>
+								{line.text}
+							</span>
+						))
+					}
+				</h1>
+			</div>
+		</section>
+
+		<section class="about-mission" aria-label="What this is">
+			<article class="about-block about-block--jobs">
+				<h2>AI for people with real jobs.</h2>
+				<p>Most AI content is made by people who sell AI content.</p>
+				<p>This is for plumbers, bakers, and anyone with a business to run.</p>
+			</article>
+
+			<article class="about-block about-block--receipts">
+				<h2>We show the receipts.</h2>
+				<p>Every guide comes from a real live build, mistakes included.</p>
+			</article>
+
+			<article class="about-block about-block--catch">
+				<h2>No catch.</h2>
+				<p>The group costs nothing and sells nothing.</p>
+				<p>If that ever changes, you'll hear it from Matt first.</p>
+			</article>
+
+			<p class="caption about-review">TODO: Matt reviews this copy.</p>
+		</section>
+
+		<section class="about-founder" aria-label="A note from Matt">
+			<div class="about-portrait">
+				<p class="caption">Portrait still to come.</p>
+			</div>
+			<div class="about-note">
+				<p>TODO: Matt writes this note. A few plain sentences, first person.</p>
+				<p class="about-sign">Matt</p>
+			</div>
+		</section>
+	</div>
 </BaseLayout>
+
+<script>
+	import { bootAboutParallax } from "../scripts/about-parallax";
+
+	bootAboutParallax();
+</script>
+
+<style>
+	.about-hero {
+		position: relative;
+		height: 100dvh;
+		overflow: hidden;
+		background: var(--color-anti);
+	}
+
+	.about-hero__photo,
+	.about-hero__mist,
+	.about-hero__shade {
+		position: absolute;
+		pointer-events: none;
+	}
+
+	.about-hero__photo {
+		top: -14%;
+		left: -4%;
+		width: 108%;
+		height: 128%;
+	}
+
+	.about-hero__photo img,
+	.about-hero__fill {
+		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	.about-hero__fill {
+		background:
+			linear-gradient(to top, rgb(10 10 11 / 0.35), transparent 42%),
+			var(--color-dusk);
+	}
+
+	.about-hero__soon {
+		position: absolute;
+		z-index: 2;
+		top: calc(var(--header-h) + var(--space-16));
+		left: var(--space-16);
+		margin: 0;
+		color: var(--color-bone);
+	}
+
+	.about-hero__mist {
+		top: -22%;
+		left: -10%;
+		z-index: 1;
+		width: 120%;
+		height: 144%;
+		background:
+			radial-gradient(ellipse 58% 26% at 18% 74%, rgb(236 232 225 / 0.18), transparent 70%),
+			radial-gradient(ellipse 42% 20% at 82% 46%, rgb(236 232 225 / 0.12), transparent 68%),
+			radial-gradient(ellipse 74% 28% at 48% 92%, rgb(236 232 225 / 0.22), transparent 72%);
+	}
+
+	.about-hero__shade {
+		z-index: 1;
+		inset: 0;
+		background: linear-gradient(to top, rgb(10 10 11 / 0.55) 0%, transparent 46%);
+	}
+
+	.about-hero__copy {
+		position: absolute;
+		z-index: 2;
+		right: 0;
+		bottom: 0;
+		left: 0;
+		padding: 0 var(--space-16) var(--space-32);
+	}
+
+	.about-hero__title {
+		margin: 0;
+		max-width: 12em;
+		font-size: clamp(2.05rem, 9vw, 3.5rem);
+	}
+
+	.about-hero__title .label-box {
+		max-width: 100%;
+	}
+
+	.about-hero__title .label-box--red:hover,
+	.about-hero__title .label-box--red:active {
+		background: var(--color-ignition);
+	}
+
+	.about-mission {
+		padding: var(--space-96) var(--space-16) var(--space-64);
+	}
+
+	.about-block {
+		max-width: 40rem;
+	}
+
+	.about-block + .about-block {
+		margin-top: var(--space-96);
+	}
+
+	.about-block h2 {
+		margin: 0 0 var(--space-16);
+	}
+
+	.about-block p {
+		max-width: 34ch;
+		margin: 0;
+		color: var(--color-bone);
+	}
+
+	.about-block p + p {
+		margin-top: var(--space-12);
+	}
+
+	.about-block--jobs h2 {
+		max-width: 9ch;
+		font-size: clamp(2.6rem, 10vw, 4.6rem);
+	}
+
+	.about-block--receipts {
+		margin-left: 14%;
+	}
+
+	.about-block--receipts h2 {
+		max-width: 8ch;
+	}
+
+	.about-block--catch {
+		margin-top: var(--space-128);
+	}
+
+	.about-block--catch h2 {
+		max-width: none;
+		font-size: clamp(4.2rem, 18vw, 7.5rem);
+		line-height: 0.84;
+	}
+
+	.about-review {
+		margin: var(--space-64) 0 0;
+	}
+
+	.about-founder {
+		display: grid;
+		gap: var(--space-32);
+		padding: var(--space-96) var(--space-16) var(--space-128);
+	}
+
+	.about-portrait {
+		display: flex;
+		align-items: flex-end;
+		aspect-ratio: 3 / 4;
+		max-width: 16rem;
+		padding: var(--space-16);
+		background: var(--color-graphite);
+	}
+
+	.about-portrait p {
+		margin: 0;
+	}
+
+	.about-note p {
+		max-width: 34ch;
+		margin: 0;
+		color: var(--color-bone);
+	}
+
+	.about-note .about-sign {
+		max-width: none;
+		margin-top: var(--space-32);
+		font-family: var(--font-display);
+		font-size: clamp(3.5rem, 14vw, 6rem);
+		line-height: 0.86;
+		letter-spacing: -0.01em;
+		text-transform: uppercase;
+		color: var(--color-hero);
+	}
+
+	@media (min-width: 768px) {
+		.about-hero__copy {
+			padding: 0 0 var(--space-64) 7vw;
+		}
+
+		.about-hero__title {
+			font-size: clamp(3.4rem, 5.2vw, 6.2rem);
+		}
+
+		.about-hero__soon {
+			left: 7vw;
+		}
+
+		.about-mission {
+			padding: var(--space-192) 8vw var(--space-96) 7vw;
+		}
+
+		.about-block--jobs h2 {
+			font-size: clamp(3.4rem, 5vw, 5.4rem);
+		}
+
+		.about-block--receipts {
+			max-width: 32rem;
+			margin-top: var(--space-192);
+			margin-left: 46%;
+		}
+
+		.about-block--catch {
+			margin-top: var(--space-192);
+			margin-left: 6%;
+		}
+
+		.about-block--catch h2 {
+			font-size: clamp(6rem, 12vw, 10rem);
+		}
+
+		.about-review {
+			margin-top: var(--space-96);
+			margin-left: 6%;
+		}
+
+		.about-founder {
+			grid-template-columns: minmax(12rem, 0.34fr) minmax(0, 0.5fr);
+			align-items: end;
+			padding: var(--space-192) 18vw var(--space-192) 7vw;
+		}
+
+		.about-portrait {
+			max-width: none;
+		}
+
+		.about-note {
+			margin-bottom: var(--space-48);
+		}
+	}
+
+	@media (min-width: 768px) and (prefers-reduced-motion: no-preference) {
+		.about-hero.is-live .about-hero__photo,
+		.about-hero.is-live .about-hero__mist,
+		.about-hero.is-live .about-hero__copy {
+			will-change: transform;
+		}
+	}
+
+	@media (max-width: 767px) and (prefers-reduced-motion: no-preference) {
+		.about-hero.is-live .about-hero__photo {
+			will-change: transform;
+		}
+	}
+</style>
