@@ -1,0 +1,718 @@
+---
+import { existsSync } from "node:fs";
+import { join } from "node:path";
+import { getCollection, getEntry } from "astro:content";
+
+/**
+ * Newest guide: published only, latest frontmatter date (UTC), featured
+ * wins a same-day tie, then slug. Prompts have order and no date, so the
+ * highest order is newest, then id. Take two.
+ */
+const published = await getCollection("guides", ({ data }) => data.draft === false);
+published.sort((a, b) => {
+	const byDate = b.data.date.getTime() - a.data.date.getTime();
+	if (byDate !== 0) return byDate;
+	if (a.data.featured !== b.data.featured) return a.data.featured ? -1 : 1;
+	return a.data.slug.localeCompare(b.data.slug);
+});
+
+const guide = published[0];
+
+function localMedia(urlPath: string): string | null {
+	if (!urlPath.startsWith("/") || urlPath.startsWith("//")) return null;
+	const relative = decodeURIComponent(urlPath.split("?")[0]?.slice(1) ?? "");
+	if (!relative || relative.split("/").includes("..")) return null;
+	const file = join(process.cwd(), "public", ...relative.split("/").filter(Boolean));
+	return existsSync(file) ? urlPath : null;
+}
+
+function mediaSrc(value: string | undefined): string | null {
+	if (!value) return null;
+	if (/^https?:\/\//.test(value)) return value;
+	return localMedia(value);
+}
+
+function dropDate(date: Date): { iso: string; label: string } {
+	const y = date.getUTCFullYear();
+	const m = String(date.getUTCMonth() + 1).padStart(2, "0");
+	const d = String(date.getUTCDate()).padStart(2, "0");
+	return { iso: `${y}-${m}-${d}`, label: `${y}.${m}.${d}` };
+}
+
+const prompts = await getCollection("prompts");
+const alsoNew = [...prompts]
+	.sort((a, b) => {
+		const byOrder = b.data.order - a.data.order;
+		if (byOrder !== 0) return byOrder;
+		return a.id.localeCompare(b.id);
+	})
+	.slice(0, 2);
+
+const replay = guide?.data.replay ? await getEntry(guide.data.replay) : undefined;
+const coverSrc = guide ? mediaSrc(guide.data.cover) : null;
+const posterSrc =
+	replay && replay.data.placeholder === false ? mediaSrc(replay.data.poster) : null;
+
+function replayHref(id: string, youtubeId?: string, videoUrl?: string): string {
+	if (youtubeId) return `https://www.youtube.com/watch?v=${encodeURIComponent(youtubeId)}`;
+	if (videoUrl) return videoUrl;
+	return `/videos#${encodeURIComponent(id)}`;
+}
+
+const player =
+	replay && posterSrc
+		? {
+				href: replayHref(replay.id, replay.data.youtubeId, replay.data.videoUrl),
+				external: Boolean(replay.data.youtubeId || replay.data.videoUrl),
+				poster: posterSrc,
+				title: replay.data.title,
+			}
+		: null;
+
+const date = guide ? dropDate(guide.data.date) : null;
+---
+
+{
+	guide && date && (
+		<section class="drop" data-drop aria-labelledby="drop-title">
+			<header class="drop-head">
+				<h2 id="drop-title" class="drop-title">
+					Fresh out of the live.
+				</h2>
+				<time class="drop-date mono" datetime={date.iso} data-drop-in>
+					{date.label}
+				</time>
+			</header>
+
+			<div class="drop-split">
+				<article class="drop-guide">
+					<a class="drop-cover" href={`/guides/${guide.data.slug}`} aria-label={guide.data.title}>
+						<span class="drop-cover-frame">
+							<span class="drop-cover-media" data-drop-media>
+								<span class="drop-cover-zoom">
+									{coverSrc ? (
+										<img src={coverSrc} alt="" loading="lazy" decoding="async" />
+									) : (
+										<span class="drop-cover-plate">
+											<span class="drop-cover-cat">{guide.data.category}</span>
+											<span class="drop-cover-note">Cover still to come.</span>
+										</span>
+									)}
+								</span>
+							</span>
+						</span>
+					</a>
+
+					<div class="drop-meta">
+						<h3 class="drop-guide-title label-box label-box--white" data-drop-in>
+							{guide.data.title}
+						</h3>
+
+						<div class="drop-summary">
+							{guide.data.summary.map((line) => (
+								<p data-drop-in>{line}</p>
+							))}
+						</div>
+
+						<div class="drop-actions" data-drop-in>
+							<a class="drop-read label" href={`/guides/${guide.data.slug}`}>
+								Read the guide
+							</a>
+							<a class="drop-pdf label" href={guide.data.pdf} download>
+								Download the PDF
+								<svg viewBox="0 0 32 16" aria-hidden="true" focusable="false">
+									<path d="M0 8h26M18 2l8 6-8 6" />
+								</svg>
+							</a>
+						</div>
+					</div>
+				</article>
+
+				<aside class="drop-replay" data-drop-in>
+					{player ? (
+						<a
+							class="drop-play"
+							href={player.href}
+							aria-label={`Play ${player.title}`}
+							target={player.external ? "_blank" : undefined}
+							rel={player.external ? "noopener noreferrer" : undefined}
+						>
+							<span class="drop-play-frame">
+								<img src={player.poster} alt="" loading="lazy" decoding="async" />
+							</span>
+							<span class="drop-play-label label">
+								Play
+								<svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+									<path d="M4 2.5v11L13.5 8 4 2.5z" />
+								</svg>
+							</span>
+						</a>
+					) : (
+						<div class="drop-wait">
+							{replay && <p class="drop-wait-title label-box">{replay.data.title}</p>}
+							<p class="drop-soon">Replay coming soon. The guide's already here.</p>
+						</div>
+					)}
+				</aside>
+			</div>
+
+			{alsoNew.length > 0 && (
+				<div class="drop-also" data-drop-in>
+					<p class="drop-also-label caption">Also new:</p>
+					<ul class="drop-also-list">
+						{alsoNew.map((prompt) => (
+							<li>
+								<a href={`/prompts#${encodeURIComponent(prompt.id)}`}>{prompt.data.title}</a>
+							</li>
+						))}
+					</ul>
+				</div>
+			)}
+		</section>
+	)
+}
+
+<script>
+	import { gsap, ScrollTrigger, onReducedMotionChange, prefersReducedMotion } from "../../scripts/motion";
+
+	const root = document.querySelector<HTMLElement>("[data-drop]");
+	if (root && root.dataset.dropReady !== "true") {
+		root.dataset.dropReady = "true";
+
+		const media = root.querySelector<HTMLElement>("[data-drop-media]");
+		const bits = [...root.querySelectorAll<HTMLElement>("[data-drop-in]")];
+		const phoneQuery = window.matchMedia("(max-width: 767px)");
+		let ctx: gsap.Context | undefined;
+		let tween: gsap.core.Timeline | undefined;
+		const unlisten: Array<() => void> = [];
+
+		function clearMotion(): void {
+			unlisten.splice(0).forEach((stop) => stop());
+			ctx?.revert();
+			ctx = undefined;
+			tween = undefined;
+		}
+
+		function setup(reduced: boolean): void {
+			clearMotion();
+
+			const nodes = [media, ...bits].filter((node): node is HTMLElement => Boolean(node));
+			if (reduced) {
+				gsap.set(nodes, { clearProps: "transform,opacity" });
+				return;
+			}
+
+			const phone = phoneQuery.matches;
+			ctx = gsap.context(() => {
+				if (media && !phone) {
+					gsap.set(media, { scale: 1.06, transformOrigin: "50% 42%" });
+				} else if (media) {
+					gsap.set(media, { opacity: 0 });
+				}
+				gsap.set(bits, { y: phone ? 12 : 24, opacity: 0 });
+
+				tween = gsap.timeline({ paused: true });
+				if (media && !phone) {
+					tween.to(media, { scale: 1, duration: 1.05, ease: "power3.out" }, 0);
+				} else if (media) {
+					tween.to(media, { opacity: 1, duration: 0.5, ease: "power3.out" }, 0);
+				}
+				tween.to(
+					bits,
+					{
+						y: 0,
+						opacity: 1,
+						duration: phone ? 0.5 : 0.8,
+						stagger: 0.1,
+						ease: "power3.out",
+						immediateRender: false,
+					},
+					0.05,
+				);
+
+				const trigger = ScrollTrigger.create({
+					trigger: root,
+					start: "top 82%",
+					onEnter: () => tween?.play(),
+					onEnterBack: () => tween?.play(),
+					onLeaveBack: () => tween?.reverse(),
+				});
+				if (trigger.progress > 0) tween.play();
+			}, root);
+
+			const onFocus = () => tween?.play();
+			root.addEventListener("focusin", onFocus);
+			unlisten.push(() => root.removeEventListener("focusin", onFocus));
+		}
+
+		const rebuild = () => setup(prefersReducedMotion());
+		const stopReduced = onReducedMotionChange(rebuild);
+		phoneQuery.addEventListener("change", rebuild);
+		rebuild();
+
+		window.addEventListener("pagehide", () => {
+			clearMotion();
+			stopReduced();
+			phoneQuery.removeEventListener("change", rebuild);
+		});
+	}
+</script>
+
+<style>
+	/* Latest drop. One red: the date. */
+	.drop {
+		background: var(--color-anti);
+		padding: var(--space-64) var(--space-16) var(--space-96);
+		overflow-x: clip;
+	}
+
+	.drop-head {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: var(--space-16);
+		margin-bottom: var(--space-32);
+	}
+
+	.drop-title {
+		margin: 0;
+		max-width: 9em;
+		font-size: clamp(2.75rem, 12vw, 4rem);
+		line-height: 0.84;
+		letter-spacing: -0.01em;
+	}
+
+	.drop-date {
+		display: inline-block;
+		align-self: flex-end;
+		margin-left: 0;
+		padding: 0.4em 0.55em 0.32em;
+		background: var(--color-ignition);
+		color: var(--color-hero);
+		font-size: 0.72rem;
+		font-weight: 700;
+		letter-spacing: 0.12em;
+		line-height: 1;
+	}
+
+	.drop-split {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-48);
+	}
+
+	.drop-cover {
+		display: block;
+		color: inherit;
+		text-decoration: none;
+	}
+
+	.drop-cover-frame {
+		display: block;
+		overflow: hidden;
+		background: var(--color-carbon);
+		aspect-ratio: 4 / 5;
+	}
+
+	.drop-cover-media,
+	.drop-cover-zoom,
+	.drop-cover-plate {
+		display: block;
+		width: 100%;
+		height: 100%;
+	}
+
+	.drop-cover-zoom img {
+		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	.drop-cover-plate {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		justify-content: flex-start;
+		padding: var(--space-24);
+		background: var(--color-carbon);
+	}
+
+	.drop-cover-plate::before {
+		content: "";
+		position: absolute;
+		inset: 0 auto 0 0;
+		width: 12px;
+		background: var(--color-dusk);
+	}
+
+	.drop-cover-cat,
+	.drop-cover-note {
+		position: relative;
+	}
+
+	.drop-cover-cat {
+		max-width: 8ch;
+		color: var(--color-bone);
+		font-family: var(--font-display);
+		font-size: clamp(4.5rem, 18vw, 7rem);
+		font-weight: 400;
+		line-height: 0.78;
+		letter-spacing: -0.02em;
+		text-transform: uppercase;
+	}
+
+	.drop-cover-note {
+		align-self: flex-end;
+		max-width: 14ch;
+		margin-top: var(--space-16);
+		color: var(--color-ash);
+		font-family: var(--font-mono);
+		font-size: 0.72rem;
+		letter-spacing: 0.12em;
+		line-height: 1.35;
+		text-align: right;
+		text-transform: uppercase;
+	}
+
+	.drop-guide-title {
+		position: relative;
+		z-index: 1;
+		max-width: min(16ch, calc(100% - var(--space-16)));
+		margin: -0.42em 0 0 var(--space-12);
+		font-size: clamp(2.15rem, 8vw, 3rem);
+	}
+
+	.drop-summary {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-8);
+		margin-top: var(--space-24);
+	}
+
+	.drop-summary p {
+		margin: 0;
+		max-width: none;
+		color: var(--color-bone);
+		font-size: clamp(1.02rem, 3.2vw, 1.15rem);
+		line-height: 1.35;
+	}
+
+	.drop-summary p:nth-child(2) {
+		margin-left: var(--space-12);
+	}
+
+	.drop-summary p:nth-child(3) {
+		margin-left: var(--space-24);
+	}
+
+	.drop-actions {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--space-16) var(--space-24);
+		margin-top: var(--space-32);
+	}
+
+	.drop-read,
+	.drop-pdf {
+		text-decoration: none;
+	}
+
+	.drop-read {
+		display: inline-block;
+		padding: 0.72em 0.85em 0.58em;
+		background: var(--color-hero);
+		color: var(--color-anti);
+	}
+
+	.drop-pdf {
+		display: inline-flex;
+		align-items: center;
+		gap: 0.5em;
+		color: var(--color-hero);
+	}
+
+	.drop-pdf svg,
+	.drop-play-label svg {
+		display: block;
+		overflow: visible;
+		fill: none;
+		stroke: currentColor;
+		stroke-width: 1.6;
+		stroke-linecap: square;
+		stroke-linejoin: miter;
+	}
+
+	.drop-pdf svg {
+		width: 28px;
+		height: 14px;
+	}
+
+	.drop-play-label svg {
+		width: 12px;
+		height: 12px;
+	}
+
+	.drop-wait {
+		display: flex;
+		flex-direction: column;
+		justify-content: flex-start;
+		gap: var(--space-32);
+		padding: var(--space-24) var(--space-16);
+		background: var(--color-carbon);
+	}
+
+	.drop-wait-title {
+		max-width: 12ch;
+		margin: 0;
+		font-size: clamp(1.7rem, 6vw, 2.15rem);
+	}
+
+	.drop-soon {
+		max-width: 22ch;
+		margin: 0;
+		color: var(--color-ash);
+		font-size: clamp(1rem, 2.8vw, 1.125rem);
+		line-height: 1.4;
+	}
+
+	.drop-play {
+		position: relative;
+		display: block;
+		color: inherit;
+		text-decoration: none;
+	}
+
+	.drop-play-frame {
+		display: block;
+		overflow: hidden;
+		aspect-ratio: 4 / 5;
+		background: var(--color-carbon);
+	}
+
+	.drop-play-frame img {
+		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	.drop-play-label {
+		position: absolute;
+		left: var(--space-16);
+		bottom: var(--space-16);
+		display: inline-flex;
+		align-items: center;
+		gap: 0.45em;
+		padding: 0.45em 0.6em 0.35em;
+		background: var(--color-hero);
+		color: var(--color-anti);
+	}
+
+	.drop-also {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: var(--space-12);
+		margin-top: var(--space-48);
+		padding-top: var(--space-24);
+		border-top: 1px solid color-mix(in srgb, var(--color-ash) 40%, transparent);
+	}
+
+	.drop-also-label {
+		margin: 0;
+	}
+
+	.drop-also-list {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-8);
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.drop-also-list a {
+		color: var(--color-bone);
+		font-size: clamp(1rem, 2.6vw, 1.125rem);
+		line-height: 1.35;
+		text-decoration: none;
+	}
+
+	.drop a:focus-visible {
+		outline: 2px solid var(--color-hero);
+		outline-offset: 3px;
+	}
+
+	@media (min-width: 768px) {
+		.drop {
+			padding: var(--space-96) 5vw var(--space-128);
+		}
+
+		.drop-head {
+			flex-direction: row;
+			align-items: flex-end;
+			justify-content: space-between;
+			gap: var(--space-24);
+			margin-bottom: var(--space-48);
+		}
+
+		.drop-title {
+			max-width: 11em;
+			font-size: clamp(3.5rem, 5.8vw, 6.25rem);
+		}
+
+		.drop-date {
+			align-self: auto;
+			margin: 0 0 0.35em;
+			font-size: 0.8rem;
+		}
+
+		.drop-cover-note {
+			position: absolute;
+			top: var(--space-24);
+			right: var(--space-24);
+			margin-top: 0;
+		}
+
+		.drop-split {
+			display: grid;
+			grid-template-columns: repeat(12, minmax(0, 1fr));
+			column-gap: var(--space-16);
+			row-gap: 0;
+		}
+
+		.drop-guide {
+			display: contents;
+		}
+
+		.drop-cover {
+			grid-column: 1 / 8;
+			grid-row: 1;
+		}
+
+		.drop-meta {
+			grid-column: 1 / 8;
+			grid-row: 2;
+		}
+
+		.drop-replay {
+			grid-column: 9 / 13;
+			grid-row: 1;
+			align-self: end;
+			margin-bottom: var(--space-48);
+		}
+
+		.drop-cover-frame {
+			aspect-ratio: 5 / 4;
+		}
+
+		.drop-cover-cat {
+			max-width: 7ch;
+			font-size: clamp(4.5rem, 7vw, 8.5rem);
+		}
+
+		.drop-guide-title {
+			max-width: 14ch;
+			margin-left: var(--space-24);
+			font-size: clamp(2.6rem, 3.4vw, 4.25rem);
+		}
+
+		.drop-summary {
+			margin-top: var(--space-32);
+			gap: var(--space-12);
+		}
+
+		.drop-summary p {
+			font-size: clamp(1.1rem, 1.25vw, 1.3rem);
+		}
+
+		.drop-summary p:nth-child(2) {
+			margin-left: var(--space-32);
+		}
+
+		.drop-summary p:nth-child(3) {
+			margin-left: var(--space-64);
+		}
+
+		.drop-wait {
+			padding: var(--space-32) var(--space-24);
+		}
+
+		.drop-wait-title {
+			font-size: clamp(1.8rem, 2vw, 2.4rem);
+		}
+
+		.drop-also {
+			flex-direction: row;
+			align-items: baseline;
+			gap: var(--space-32);
+			margin-top: var(--space-64);
+		}
+
+		.drop-also-list {
+			flex-direction: row;
+			flex-wrap: wrap;
+			gap: var(--space-12) var(--space-32);
+		}
+	}
+
+	@media (min-width: 1100px) {
+		.drop-split {
+			column-gap: var(--space-24);
+		}
+	}
+
+	@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+		.drop-cover-zoom,
+		.drop-play-frame img,
+		.drop-pdf svg,
+		.drop-play-label svg,
+		.drop-also-list a {
+			transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+		}
+
+		.drop-read {
+			transition: background-color 0.3s linear;
+		}
+
+		.drop-cover:hover .drop-cover-zoom,
+		.drop-cover:focus-visible .drop-cover-zoom,
+		.drop-play:hover .drop-play-frame img,
+		.drop-play:focus-visible .drop-play-frame img {
+			transform: scale(1.04);
+		}
+
+		.drop-read:hover,
+		.drop-read:focus-visible {
+			background: var(--color-bone);
+		}
+
+		.drop-pdf:hover svg,
+		.drop-pdf:focus-visible svg,
+		.drop-play:hover .drop-play-label svg,
+		.drop-play:focus-visible .drop-play-label svg,
+		.drop-also-list a:hover,
+		.drop-also-list a:focus-visible {
+			transform: translateX(6px);
+		}
+	}
+
+	@media (min-width: 768px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
+		.drop-cover-zoom {
+			will-change: transform;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.drop-cover-zoom,
+		.drop-play-frame img,
+		.drop-pdf svg,
+		.drop-play-label svg,
+		.drop-also-list a,
+		.drop-read {
+			transition: none;
+		}
+	}
+</style>
