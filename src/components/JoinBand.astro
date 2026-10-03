@@ -44,6 +44,9 @@ function headlineLines(value: string): string[] {
 }
 
 const lines = headlineLines(headline);
+
+/** TODO: Matt confirms each line is true before launch. */
+const homeFacts = ["Weekly lives.", "Every guide stays up.", "Matt answers the comments."] as const;
 ---
 
 <section
@@ -52,9 +55,38 @@ const lines = headlineLines(headline);
   data-variant={variant}
   aria-labelledby="join-band-title"
 >
+  {
+    variant === "home" && (
+      <>
+        <div class="join-media" aria-hidden="true">
+          <img
+            src="/media/join.jpg"
+            alt=""
+            width="1280"
+            height="720"
+            loading="lazy"
+            decoding="async"
+          />
+        </div>
+        <div class="join-shade" aria-hidden="true"></div>
+      </>
+    )
+  }
   <div class="join-band__grid">
     <h2 id="join-band-title" class="join-headline label-stack">
-      {lines.map((line) => <span class="label-box label-box--white">{line}</span>)}
+      {
+        lines.map((line) => (
+          <span
+            class:list={[
+              "label-box",
+              "label-box--white",
+              { "join-headline__memes": variant === "home" && line === "Also the memes." },
+            ]}
+          >
+            {line}
+          </span>
+        ))
+      }
     </h2>
     <div class="join-actions">
       <div class="join-cta">
@@ -73,6 +105,15 @@ const lines = headlineLines(headline);
       <EmailForm id="band-email" />
     </div>
   </div>
+  {
+    variant === "home" && (
+      <ul class="join-facts">
+        {homeFacts.map((fact) => (
+          <li>{fact}</li>
+        ))}
+      </ul>
+    )
+  }
 </section>
 
 <script>
@@ -220,6 +261,144 @@ const lines = headlineLines(headline);
 
     .join-glow {
       --glow: 18rem;
+    }
+  }
+
+  .join-band--home {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    min-height: 100svh;
+    padding: var(--space-24) var(--space-16) var(--space-32);
+    background: var(--color-anti);
+  }
+
+  .join-media,
+  .join-shade {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: min(32vh, 220px);
+    pointer-events: none;
+  }
+
+  .join-media {
+    z-index: 0;
+    overflow: hidden;
+  }
+
+  .join-media img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center 42%;
+  }
+
+  .join-shade {
+    z-index: 1;
+    background: rgba(10, 10, 11, 0.82);
+  }
+
+  /* Ellipse, not a circle, so the pulse fades before the line under the button. */
+  .join-band--home .join-glow {
+    width: 16rem;
+    height: 8rem;
+    margin-top: -4rem;
+    margin-left: -8rem;
+    background: radial-gradient(
+      ellipse at center,
+      color-mix(in srgb, var(--color-ignition) 55%, transparent) 0%,
+      transparent 62%
+    );
+  }
+
+  .join-band--home .join-band__grid,
+  .join-facts {
+    position: relative;
+    z-index: 2;
+  }
+
+  .join-band--home .join-headline__memes {
+    font-size: 0.72em;
+  }
+
+  .join-facts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-8) var(--space-16);
+    margin: var(--space-24) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .join-facts li {
+    color: var(--color-bone);
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    letter-spacing: 0.03em;
+    line-height: 1.35;
+  }
+
+  @media (max-width: 1023px) {
+    .join-band--home .join-cta {
+      order: 3;
+    }
+
+    .join-band--home .join-quiet {
+      order: 1;
+    }
+
+    .join-band--home .email-form,
+    .join-band--home .join-actions :global(.email-form) {
+      order: 2;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .join-band--home {
+      min-height: 90vh;
+      padding: var(--space-96) 8vw var(--space-48) 12vw;
+    }
+
+    .join-media,
+    .join-shade {
+      inset: 0;
+      width: auto;
+      height: auto;
+    }
+
+    .join-shade {
+      background: linear-gradient(
+        180deg,
+        rgba(10, 10, 11, 0.42) 0%,
+        rgba(10, 10, 11, 0.7) 20%,
+        rgba(10, 10, 11, 0.94) 38%,
+        rgba(10, 10, 11, 1) 50%,
+        rgba(10, 10, 11, 1) 100%
+      );
+    }
+
+    .join-band--home .join-glow {
+      width: 28rem;
+      height: 13rem;
+      margin-top: -6.5rem;
+      margin-left: -14rem;
+    }
+
+    .join-band--home .join-headline {
+      font-size: clamp(3.4rem, 5.4vw, 6.75rem);
+    }
+
+    .join-band--home .join-headline__memes {
+      font-size: 0.56em;
+    }
+
+    .join-facts {
+      flex-wrap: nowrap;
+      gap: var(--space-32);
+      margin-top: var(--space-32);
     }
   }
 
