@@ -1,9 +1,400 @@
 ---
+import EmailForm from "../components/EmailForm.astro";
+import { facebookGroupUrl } from "../data/nav";
 import BaseLayout from "../layouts/BaseLayout.astro";
+
+const lines = [
+	{ text: "You're one click", red: false },
+	{ text: "from being", red: false },
+	{ text: "dangerous.", red: true },
+];
+
+const gets = [
+	"A weekly live where we build something real.",
+	"Every guide and prompt from every live.",
+	"People at every level who answer questions.",
+	"Zero sales pitches. Ask before you advertise.",
+];
+
+const rules = [
+	"Good vibes only.",
+	"Everyone's at a different level.",
+	"Ask before you advertise.",
+	"Politics stay outside.",
+	"Help where you can.",
+	"Keep it real.",
+];
 ---
 
-<BaseLayout title="Join" description="You're one click from being dangerous.">
-	<article slot="main" class="page-intro">
-		<h1>You're one click from being dangerous.</h1>
-	</article>
+<BaseLayout
+	title="Join"
+	description="You're one click from being dangerous."
+	image="/media/join.jpg"
+>
+	<div slot="main" class="join" data-join-page>
+		<section class="join-hero" aria-labelledby="join-title">
+			<div class="join-hero__media" aria-hidden="true">
+				<img
+					src="/media/join.jpg"
+					alt=""
+					width="1280"
+					height="720"
+					loading="eager"
+					fetchpriority="high"
+					decoding="async"
+				/>
+			</div>
+			<div class="join-hero__veil" aria-hidden="true"></div>
+
+			<div class="join-hero__copy">
+				<h1 id="join-title" class="join-hero__title label-stack">
+					{
+						lines.map((line) => (
+							<span class:list={["label-box", line.red ? "label-box--red" : "label-box--white"]}>
+								{line.text}
+							</span>
+						))
+					}
+				</h1>
+
+				<div class="join-cta">
+					<div class="join-glow" data-join-glow aria-hidden="true"></div>
+					<a
+						class="join-go label-box label-box--red"
+						href={facebookGroupUrl}
+						target="_blank"
+						rel="noopener noreferrer"
+					>
+						Join the Facebook group
+						<span class="visually-hidden"> (opens in a new tab)</span>
+					</a>
+				</div>
+
+				<div class="join-mail">
+					<EmailForm id="join-email" />
+				</div>
+			</div>
+		</section>
+
+		<section class="join-get" aria-labelledby="join-get-title">
+			<h2 id="join-get-title" class="label">What you get</h2>
+			<ol class="join-list">
+				{
+					gets.map((line, index) => (
+						<li>
+							<span class="join-num mono">{String(index + 1).padStart(2, "0")}</span>
+							<p>{line}</p>
+						</li>
+					))
+				}
+			</ol>
+			<p class="caption join-review">TODO: Matt confirms each line.</p>
+		</section>
+
+		<section class="join-cost" aria-labelledby="join-cost-title">
+			<h2 id="join-cost-title" class="label">What it costs</h2>
+			<p class="join-cost__box label-box label-box--white">Nothing. No catch. Just show up and build.</p>
+		</section>
+
+		<section class="join-rules" aria-labelledby="join-rules-title">
+			<h2 id="join-rules-title" class="label">The rules</h2>
+			<ul>
+				{rules.map((rule) => <li>{rule}</li>)}
+			</ul>
+		</section>
+	</div>
 </BaseLayout>
+
+<script>
+	import { bootJoinGlow } from "../scripts/join-glow";
+
+	bootJoinGlow();
+</script>
+
+<style>
+	.join-hero {
+		position: relative;
+		display: flex;
+		align-items: flex-start;
+		min-height: 100dvh;
+		overflow: hidden;
+		background: var(--color-anti);
+	}
+
+	.join-hero__media,
+	.join-hero__veil {
+		position: absolute;
+		inset: 0;
+		pointer-events: none;
+	}
+
+	.join-hero__media img {
+		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		object-position: center 42%;
+	}
+
+	.join-hero__veil {
+		background: rgb(10 10 11 / 0.86);
+	}
+
+	.join-hero__copy {
+		position: relative;
+		z-index: 1;
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: var(--space-24);
+		width: 100%;
+		padding:
+			calc(var(--header-h) + var(--space-24))
+			var(--space-16)
+			var(--space-64);
+	}
+
+	.join-hero__title {
+		margin: 0;
+		max-width: 11em;
+		font-size: clamp(2.15rem, 9.2vw, 3.4rem);
+	}
+
+	.join-hero__title .label-box {
+		max-width: 100%;
+	}
+
+	.join-hero__title .label-box--red:hover,
+	.join-hero__title .label-box--red:active {
+		background: var(--color-ignition);
+	}
+
+	.join-cta {
+		position: relative;
+		display: inline-block;
+		max-width: 100%;
+		margin-top: var(--space-8);
+	}
+
+	.join-glow {
+		position: absolute;
+		z-index: 0;
+		top: 50%;
+		left: 42%;
+		width: 14rem;
+		height: 7rem;
+		margin-top: -3.5rem;
+		margin-left: -7rem;
+		background: radial-gradient(ellipse at center, rgb(224 38 30 / 0.55) 0%, transparent 68%);
+		opacity: 0.35;
+		pointer-events: none;
+	}
+
+	.join-go {
+		position: relative;
+		z-index: 1;
+		max-width: 8.6em;
+		font-size: clamp(2.35rem, 11vw, 3.6rem);
+		line-height: 0.86;
+		text-decoration: none;
+	}
+
+	.join-go:focus-visible {
+		outline: 2px solid var(--color-hero);
+		outline-offset: 4px;
+	}
+
+	.join-mail {
+		width: min(100%, 26rem);
+	}
+
+	.join-mail :global(.email-form) {
+		width: 100%;
+	}
+
+	.join-get,
+	.join-cost,
+	.join-rules {
+		padding-inline: var(--space-16);
+	}
+
+	.join-get {
+		padding-top: var(--space-96);
+		padding-bottom: var(--space-48);
+	}
+
+	.join-get h2,
+	.join-cost h2,
+	.join-rules h2 {
+		margin: 0 0 var(--space-24);
+		color: var(--color-bone);
+	}
+
+	.join-list {
+		max-width: 40rem;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.join-list li {
+		display: grid;
+		grid-template-columns: 3.4rem minmax(0, 1fr);
+		gap: var(--space-12);
+		align-items: baseline;
+		padding: var(--space-24) 0;
+		border-top: 1px solid var(--color-graphite);
+	}
+
+	.join-list li:last-child {
+		border-bottom: 1px solid var(--color-graphite);
+	}
+
+	.join-num {
+		color: var(--color-ignition);
+		font-size: clamp(2rem, 8vw, 3.25rem);
+		line-height: 0.85;
+	}
+
+	.join-list p {
+		max-width: 28ch;
+		margin: 0;
+		color: var(--color-bone);
+	}
+
+	.join-review {
+		margin: var(--space-32) 0 0;
+	}
+
+	.join-cost {
+		padding-top: var(--space-96);
+		padding-bottom: var(--space-48);
+	}
+
+	.join-cost__box {
+		max-width: 9ch;
+		margin: 0;
+		font-size: clamp(3.2rem, 14vw, 6.5rem);
+		line-height: 0.86;
+	}
+
+	.join-rules {
+		padding-top: var(--space-96);
+		padding-bottom: var(--space-128);
+	}
+
+	.join-rules ul {
+		max-width: 22rem;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.join-rules li {
+		margin: 0 0 var(--space-16);
+		color: var(--color-bone);
+		font-size: var(--type-body-size);
+		line-height: var(--type-body-leading);
+	}
+
+	@media (min-width: 768px) {
+		.join-hero__veil {
+			background:
+				linear-gradient(90deg, rgb(10 10 11 / 0.92) 0%, rgb(10 10 11 / 0.78) 48%, rgb(10 10 11 / 0.9) 100%);
+		}
+
+		.join-hero__copy {
+			display: grid;
+			grid-template-columns: minmax(0, 1.15fr) minmax(16rem, 0.7fr);
+			column-gap: var(--space-64);
+			row-gap: var(--space-32);
+			align-items: end;
+			padding:
+				calc(var(--header-h) + var(--space-64))
+				8vw
+				var(--space-96)
+				7vw;
+		}
+
+		.join-hero__title {
+			grid-column: 1;
+			grid-row: 1;
+			font-size: clamp(3.6rem, 5.6vw, 6.4rem);
+		}
+
+		.join-cta {
+			grid-column: 1;
+			grid-row: 2;
+			margin-top: var(--space-16);
+		}
+
+		.join-glow {
+			width: 22rem;
+			height: 10rem;
+			margin-top: -5rem;
+			margin-left: -11rem;
+		}
+
+		.join-go {
+			font-size: clamp(3rem, 4.2vw, 4.6rem);
+		}
+
+		.join-mail {
+			grid-column: 2;
+			grid-row: 2;
+			justify-self: start;
+			margin-bottom: var(--space-12);
+		}
+
+		.join-get,
+		.join-cost,
+		.join-rules {
+			padding-inline: 7vw;
+		}
+
+		.join-get {
+			padding-top: var(--space-128);
+		}
+
+		.join-list li {
+			grid-template-columns: 6.5rem minmax(0, 1fr);
+			gap: var(--space-24);
+			padding-block: var(--space-32);
+		}
+
+		.join-num {
+			font-size: clamp(3rem, 5vw, 4.75rem);
+		}
+
+		.join-cost {
+			padding-top: var(--space-192);
+			padding-left: 38vw;
+		}
+
+		.join-cost__box {
+			font-size: clamp(4.5rem, 7vw, 7.5rem);
+		}
+
+		.join-rules {
+			max-width: 36rem;
+			padding-top: var(--space-192);
+			padding-bottom: var(--space-192);
+		}
+
+		.join-rules li {
+			font-size: clamp(1.25rem, 1.6vw, 1.7rem);
+		}
+	}
+
+	@media (prefers-reduced-motion: no-preference) {
+		.join.is-live .join-glow {
+			will-change: transform, opacity;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.join-glow {
+			transform: none;
+		}
+	}
+</style>
