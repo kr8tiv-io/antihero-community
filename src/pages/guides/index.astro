@@ -2,6 +2,7 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { getCollection } from "astro:content";
+import FilterShelf from "../../components/FilterShelf.astro";
 import GuideCard from "../../components/GuideCard.astro";
 import { facebookGroupUrl } from "../../data/nav";
 import BaseLayout from "../../layouts/BaseLayout.astro";
@@ -14,14 +15,6 @@ guides.sort((a, b) => {
 	if (a.data.featured !== b.data.featured) return a.data.featured ? -1 : 1;
 	return a.data.slug.localeCompare(b.data.slug);
 });
-
-const filters = [
-	{ id: "all", label: "All" },
-	{ id: "brand", label: "Brand" },
-	{ id: "websites", label: "Websites" },
-	{ id: "video", label: "Video" },
-	{ id: "prompts", label: "Prompts" },
-] as const;
 
 const lines = ["The guides.", "Read them,", "steal them,", "use them."];
 
@@ -50,27 +43,13 @@ function guideDate(date: Date): { iso: string; label: string } {
 			<p class="guides-intro">Every guide from every live, in one place. No email wall.</p>
 		</header>
 
-		<div
-			class="guide-shelf"
-			data-guide-shelf
-			role="toolbar"
-			aria-label="Filter guides by category"
-			aria-controls="guide-grid"
+		<FilterShelf
+			label="Filter guides by category"
+			controls="guide-grid"
+			shelfSelector="[data-guides] [data-filter-shelf]"
+			cardSelector="[data-guides] [data-guide-card]"
+			emptySelector="[data-guides] [data-guide-empty]"
 		>
-			{
-				filters.map((filter) => (
-					<button
-						type="button"
-						class="label-box"
-						data-filter={filter.id}
-						aria-pressed={filter.id === "all" ? "true" : "false"}
-					>
-						{filter.label}
-					</button>
-				))
-			}
-		</div>
-
 		<div class="guide-grid" id="guide-grid" data-guide-grid>
 			{
 				guides.map((guide, index) => {
@@ -101,33 +80,7 @@ function guideDate(date: Date): { iso: string; label: string } {
 			</p>
 		</div>
 		<p class="visually-hidden" data-guide-status aria-live="polite"></p>
-
-		<script is:inline>
-			(function () {
-				var raw = (new URLSearchParams(location.search).get("c") || "all").toLowerCase();
-				var buttons = document.querySelectorAll("[data-guide-shelf] [data-filter]");
-				var known = { all: true };
-				for (var i = 0; i < buttons.length; i++) known[buttons[i].getAttribute("data-filter")] = true;
-				var filter = known[raw] ? raw : "all";
-				var cards = document.querySelectorAll("[data-guide-card]");
-				var spot = 0;
-				var shown = 0;
-				for (var c = 0; c < cards.length; c++) {
-					var card = cards[c];
-					var match = filter === "all" || card.getAttribute("data-category") === filter;
-					card.classList.toggle("is-gone", !match);
-					if (!match) continue;
-					card.setAttribute("data-spot", String(spot % 4));
-					spot += 1;
-					shown += 1;
-				}
-				var empty = document.querySelector("[data-guide-empty]");
-				if (empty) empty.hidden = shown > 0;
-				for (var b = 0; b < buttons.length; b++) {
-					buttons[b].setAttribute("aria-pressed", buttons[b].getAttribute("data-filter") === filter ? "true" : "false");
-				}
-			})();
-		</script>
+		</FilterShelf>
 	</div>
 </BaseLayout>
 
@@ -158,58 +111,6 @@ function guideDate(date: Date): { iso: string; label: string } {
 		margin: 0;
 		max-width: 28ch;
 		color: var(--color-bone);
-	}
-
-	.guide-shelf {
-		position: sticky;
-		top: var(--header-h);
-		z-index: 30;
-		display: flex;
-		flex-wrap: nowrap;
-		gap: var(--space-8);
-		align-items: center;
-		padding: var(--space-12) var(--space-16);
-		overflow-x: auto;
-		overscroll-behavior-x: contain;
-		background: var(--color-anti);
-		border-bottom: 1px solid var(--color-graphite);
-		scrollbar-width: none;
-	}
-
-	.guide-shelf::-webkit-scrollbar {
-		display: none;
-	}
-
-	.guide-shelf button {
-		appearance: none;
-		flex: none;
-		min-height: 48px;
-		padding: 0.18em 0.42em 0.08em;
-		border: 0;
-		font-size: clamp(1.35rem, 2vw, 1.85rem);
-		white-space: nowrap;
-		cursor: pointer;
-	}
-
-	.guide-shelf button[aria-pressed="false"] {
-		background: var(--color-hero);
-		color: var(--color-anti);
-	}
-
-	.guide-shelf button[aria-pressed="true"] {
-		background: var(--color-ignition);
-		color: var(--color-hero);
-	}
-
-	.guide-shelf button[aria-pressed="true"]:hover,
-	.guide-shelf button[aria-pressed="true"]:active {
-		background: var(--color-ember);
-		color: var(--color-hero);
-	}
-
-	.guide-shelf button:focus-visible {
-		outline: 2px solid var(--color-hero);
-		outline-offset: 3px;
 	}
 
 	.guide-grid {
@@ -276,12 +177,6 @@ function guideDate(date: Date): { iso: string; label: string } {
 			justify-self: end;
 		}
 
-		.guide-shelf {
-			gap: var(--space-12);
-			padding-right: 8vw;
-			padding-left: 12vw;
-		}
-
 		.guide-grid {
 			padding: var(--space-64) 8vw var(--space-128) 12vw;
 		}
@@ -291,9 +186,4 @@ function guideDate(date: Date): { iso: string; label: string } {
 		}
 	}
 
-	@media (hover: hover) and (pointer: fine) {
-		.guide-shelf button[aria-pressed="false"]:hover {
-			transform: translateY(-2px);
-		}
-	}
 </style>

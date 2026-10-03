@@ -1,0 +1,296 @@
+---
+interface Props {
+	id: string;
+	title: string;
+	useItFor: string;
+	category: string;
+	body: string;
+	sourceHref: string | null;
+	sourceTitle: string | null;
+	spot: number;
+}
+
+const { id, title, useItFor, category, body, sourceHref, sourceTitle, spot } = Astro.props;
+const bodyId = `${id}-text`;
+const liveId = `${id}-live`;
+
+function escapeHtml(value: string): string {
+	return value.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+/** Outermost [placeholders] on one line, including a nested pair. */
+function highlightBrackets(raw: string): string {
+	let html = "";
+	let i = 0;
+	while (i < raw.length) {
+		if (raw[i] !== "[") {
+			html += escapeHtml(raw[i] ?? "");
+			i += 1;
+			continue;
+		}
+		let depth = 0;
+		let closed = -1;
+		for (let j = i; j < raw.length; j += 1) {
+			const char = raw[j];
+			if (char === "\n") break;
+			if (char === "[") depth += 1;
+			else if (char === "]") {
+				depth -= 1;
+				if (depth === 0) {
+					closed = j;
+					break;
+				}
+			}
+		}
+		if (closed === -1) {
+			html += escapeHtml(raw[i] ?? "");
+			i += 1;
+			continue;
+		}
+		html += `<span class="prompt-bracket">${escapeHtml(raw.slice(i, closed + 1))}</span>`;
+		i = closed + 1;
+	}
+	return html;
+}
+---
+
+<article
+	class="prompt-card"
+	id={id}
+	tabindex="-1"
+	data-prompt-card
+	data-category={category.toLowerCase()}
+	data-spot={spot % 4}
+>
+	<header class="prompt-card__head">
+		<p class="prompt-card__cat mono">{category}</p>
+		<h2 class="prompt-card__title">{title}</h2>
+		<p class="prompt-card__use">
+			<span>Use it for</span>
+			{useItFor}
+		</p>
+	</header>
+
+	<div class="prompt-panel">
+		<pre id={bodyId} class="prompt-body mono is-clamped" data-prompt-body set:html={highlightBrackets(body)} />
+	</div>
+
+	<div class="prompt-tools">
+		<button type="button" class="prompt-copy" data-copy aria-label="Copy">
+			<span data-copy-label aria-hidden="true">Copy</span>
+		</button>
+		<button
+			type="button"
+			class="prompt-more"
+			data-prompt-toggle
+			aria-expanded="false"
+			aria-controls={bodyId}
+		>
+			Show the whole thing
+		</button>
+		<p id={liveId} class="visually-hidden" data-copy-live aria-live="polite"></p>
+	</div>
+
+	{
+		sourceHref && sourceTitle && (
+			<p class="prompt-source">
+				<a href={sourceHref}>From the {sourceTitle} guide</a>
+			</p>
+		)
+	}
+</article>
+
+<style>
+	.prompt-card {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: var(--space-16);
+		min-width: 0;
+		scroll-margin-top: calc(var(--header-h) + 5.5rem);
+	}
+
+	.prompt-card.is-gone {
+		display: none;
+		pointer-events: none;
+	}
+
+	.prompt-card:target {
+		outline: 1px solid var(--color-ash);
+		outline-offset: var(--space-12);
+	}
+
+	.prompt-card:focus {
+		outline: none;
+	}
+
+	.prompt-card__head {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: var(--space-8);
+	}
+
+	.prompt-card__cat {
+		margin: 0;
+		color: var(--color-ash);
+		font-size: 0.75rem;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+	}
+
+	.prompt-card__title {
+		max-width: 14ch;
+		margin: 0;
+		font-size: clamp(2.4rem, 4vw, 4.25rem);
+		line-height: 0.88;
+	}
+
+	.prompt-card__use {
+		max-width: 36ch;
+		margin: 0;
+		color: var(--color-bone);
+	}
+
+	.prompt-card__use span {
+		display: block;
+		margin-bottom: var(--space-4);
+		color: var(--color-hero);
+		font-weight: 600;
+	}
+
+	.prompt-panel {
+		width: 100%;
+		padding: var(--space-16);
+		background: var(--color-carbon);
+	}
+
+	.prompt-body {
+		max-width: none;
+		margin: 0;
+		color: var(--color-bone);
+		font-size: var(--type-mono-size);
+		line-height: var(--type-mono-leading);
+		white-space: pre-wrap;
+		overflow-wrap: anywhere;
+	}
+
+	.prompt-body.is-clamped {
+		display: -webkit-box;
+		overflow: hidden;
+		-webkit-box-orient: vertical;
+		-webkit-line-clamp: 8;
+	}
+
+	.prompt-body :global(.prompt-bracket) {
+		color: var(--color-hero);
+		background: var(--color-ignition);
+		padding: 0 0.12em;
+	}
+
+	.prompt-tools {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--space-12) var(--space-16);
+	}
+
+	.prompt-copy,
+	.prompt-more {
+		appearance: none;
+		min-height: 44px;
+		border: 0;
+		background: transparent;
+		cursor: pointer;
+	}
+
+	.prompt-copy {
+		padding: 0.35em 0.7em 0.28em;
+		background: var(--color-graphite);
+		color: var(--color-hero);
+		font-family: var(--font-label);
+		font-size: 0.95rem;
+		font-weight: 700;
+		letter-spacing: 0.14em;
+		line-height: 1;
+		text-transform: uppercase;
+	}
+
+	.prompt-copy.is-stolen {
+		background: var(--color-ignition);
+		color: var(--color-hero);
+		letter-spacing: 0.02em;
+		text-transform: none;
+		animation: prompt-copy-bump 0.36s cubic-bezier(0.22, 1, 0.36, 1);
+	}
+
+	.prompt-copy.is-failed {
+		max-width: 22rem;
+		padding-inline: 0;
+		background: transparent;
+		color: var(--color-bone);
+		font-family: var(--font-body);
+		font-size: var(--type-small-size);
+		font-weight: 400;
+		letter-spacing: 0;
+		line-height: var(--type-small-leading);
+		text-align: left;
+		text-transform: none;
+	}
+
+	.prompt-more {
+		padding: 0.2em 0;
+		color: var(--color-hero);
+		font-family: var(--font-label);
+		font-size: 0.95rem;
+		font-weight: 700;
+		letter-spacing: 0.12em;
+		line-height: 1;
+		text-transform: uppercase;
+		text-decoration: underline;
+		text-underline-offset: 0.22em;
+	}
+
+	.prompt-copy:focus-visible,
+	.prompt-more:focus-visible,
+	.prompt-source a:focus-visible {
+		outline: 2px solid var(--color-hero);
+		outline-offset: 3px;
+	}
+
+	.prompt-source {
+		max-width: none;
+		margin: 0;
+	}
+
+	.prompt-source a {
+		color: var(--color-bone);
+		font-size: var(--type-small-size);
+		line-height: var(--type-small-leading);
+		text-underline-offset: 0.2em;
+	}
+
+	.prompt-source a:hover {
+		color: var(--color-hero);
+	}
+
+	@keyframes prompt-copy-bump {
+		0% {
+			transform: scale(1);
+		}
+
+		45% {
+			transform: scale(1.08);
+		}
+
+		100% {
+			transform: scale(1);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.prompt-copy.is-stolen {
+			animation: none;
+		}
+	}
+</style>

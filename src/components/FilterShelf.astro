@@ -1,0 +1,135 @@
+---
+interface Props {
+	label: string;
+	controls: string;
+	cardSelector: string;
+	emptySelector: string;
+	shelfSelector: string;
+}
+
+const { label, controls, cardSelector, emptySelector, shelfSelector } = Astro.props;
+
+const filters = [
+	{ id: "all", label: "All" },
+	{ id: "brand", label: "Brand" },
+	{ id: "websites", label: "Websites" },
+	{ id: "video", label: "Video" },
+	{ id: "prompts", label: "Prompts" },
+] as const;
+---
+
+<div
+	class="filter-shelf"
+	data-filter-shelf
+	role="toolbar"
+	aria-label={label}
+	aria-controls={controls}
+>
+	{
+		filters.map((filter) => (
+			<button
+				type="button"
+				class="label-box"
+				data-filter={filter.id}
+				aria-pressed={filter.id === "all" ? "true" : "false"}
+			>
+				{filter.label}
+			</button>
+		))
+	}
+</div>
+<slot />
+<script is:inline define:vars={{ cardSelector, emptySelector, shelfSelector }}>
+	(function () {
+		var raw = (new URLSearchParams(location.search).get("c") || "all").toLowerCase();
+		var buttons = document.querySelectorAll(shelfSelector + " [data-filter]");
+		var known = { all: true };
+		for (var i = 0; i < buttons.length; i++) known[buttons[i].getAttribute("data-filter")] = true;
+		var filter = known[raw] ? raw : "all";
+		var cards = document.querySelectorAll(cardSelector);
+		var spot = 0;
+		var shown = 0;
+		for (var c = 0; c < cards.length; c++) {
+			var card = cards[c];
+			var match = filter === "all" || card.getAttribute("data-category") === filter;
+			card.classList.toggle("is-gone", !match);
+			if (!match) continue;
+			card.setAttribute("data-spot", String(spot % 4));
+			spot += 1;
+			shown += 1;
+		}
+		var empty = document.querySelector(emptySelector);
+		if (empty) empty.hidden = shown > 0;
+		for (var b = 0; b < buttons.length; b++) {
+			buttons[b].setAttribute("aria-pressed", buttons[b].getAttribute("data-filter") === filter ? "true" : "false");
+		}
+	})();
+</script>
+
+<style>
+	.filter-shelf {
+		position: sticky;
+		top: var(--header-h);
+		z-index: 30;
+		display: flex;
+		flex-wrap: nowrap;
+		gap: var(--space-8);
+		align-items: center;
+		padding: var(--space-12) var(--space-16);
+		overflow-x: auto;
+		overscroll-behavior-x: contain;
+		background: var(--color-anti);
+		border-bottom: 1px solid var(--color-graphite);
+		scrollbar-width: none;
+	}
+
+	.filter-shelf::-webkit-scrollbar {
+		display: none;
+	}
+
+	.filter-shelf button {
+		appearance: none;
+		flex: none;
+		min-height: 48px;
+		padding: 0.18em 0.42em 0.08em;
+		border: 0;
+		font-size: clamp(1.35rem, 2vw, 1.85rem);
+		white-space: nowrap;
+		cursor: pointer;
+	}
+
+	.filter-shelf button[aria-pressed="false"] {
+		background: var(--color-hero);
+		color: var(--color-anti);
+	}
+
+	.filter-shelf button[aria-pressed="true"] {
+		background: var(--color-ignition);
+		color: var(--color-hero);
+	}
+
+	.filter-shelf button[aria-pressed="true"]:hover,
+	.filter-shelf button[aria-pressed="true"]:active {
+		background: var(--color-ember);
+		color: var(--color-hero);
+	}
+
+	.filter-shelf button:focus-visible {
+		outline: 2px solid var(--color-hero);
+		outline-offset: 3px;
+	}
+
+	@media (min-width: 1024px) {
+		.filter-shelf {
+			gap: var(--space-12);
+			padding-right: 8vw;
+			padding-left: 12vw;
+		}
+	}
+
+	@media (hover: hover) and (pointer: fine) {
+		.filter-shelf button[aria-pressed="false"]:hover {
+			transform: translateY(-2px);
+		}
+	}
+</style>
