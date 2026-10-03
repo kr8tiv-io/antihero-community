@@ -1,3 +1,318 @@
-@import "tailwindcss";
+@import "tailwindcss" source(none);
+
+/* Scan site source only. The brand kit is not a page, and its files must not pull in extra utilities. */
+@source "../components";
+@source "../layouts";
+@source "../pages";
+@source "../scripts";
+
+@theme {
+  /* Drop the default palette so indigo, gray-50, and the rest cannot be used. */
+  --color-*: initial;
+  --font-*: initial;
+
+  --color-transparent: transparent;
+  --color-current: currentcolor;
+  --color-inherit: inherit;
+
+  --color-anti: #0a0a0b;
+  --color-carbon: #1d2124;
+  --color-graphite: #2b3035;
+  --color-ash: #8a9096;
+  --color-bone: #ece8e1;
+  --color-hero: #ffffff;
+  --color-ignition: #e0261e;
+  --color-ember: #a3160f;
+  --color-dusk: #5b4f48;
+
+  /* sans is Barlow so Tailwind preflight matches the body face. */
+  --font-sans: "Barlow", "Helvetica Neue", Arial, sans-serif;
+  --font-body: "Barlow", "Helvetica Neue", Arial, sans-serif;
+  --font-display: "Bebas Neue", "Arial Narrow", sans-serif;
+  --font-label: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, Consolas, monospace;
+}
 
 /* Brand color variables, copied for reference, live in ./antihero-palette.css. */
+
+@font-face {
+  font-family: "Bebas Neue";
+  src: url("/fonts/BebasNeue-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Barlow";
+  src: url("/fonts/Barlow-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Barlow";
+  src: url("/fonts/Barlow-Italic.woff2") format("woff2");
+  font-weight: 400;
+  font-style: italic;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Barlow";
+  src: url("/fonts/Barlow-Medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Barlow";
+  src: url("/fonts/Barlow-SemiBold.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Barlow";
+  src: url("/fonts/Barlow-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Barlow Condensed";
+  src: url("/fonts/BarlowCondensed-SemiBold.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "Barlow Condensed";
+  src: url("/fonts/BarlowCondensed-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("/fonts/JetBrainsMono-Regular.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: "JetBrains Mono";
+  src: url("/fonts/JetBrainsMono-Bold.woff2") format("woff2");
+  font-weight: 700;
+  font-style: normal;
+  font-display: swap;
+}
+
+@layer base {
+  :root {
+    /* Always available, including colors no utility has used yet. */
+    --color-anti: #0a0a0b;
+    --color-carbon: #1d2124;
+    --color-graphite: #2b3035;
+    --color-ash: #8a9096;
+    --color-bone: #ece8e1;
+    --color-hero: #ffffff;
+    --color-ignition: #e0261e;
+    --color-ember: #a3160f;
+    --color-dusk: #5b4f48;
+
+    /* Display is the poster size. h1 sits under it, then h2, then h3. */
+    --type-display-size: clamp(3.5rem, 12vw + 1rem, 11rem);
+    --type-display-leading: 0.86;
+    --type-display-tracking: -0.01em;
+
+    --type-h1-size: clamp(2.75rem, 7vw + 0.5rem, 6.5rem);
+    --type-h1-leading: 0.88;
+    --type-h1-tracking: -0.01em;
+
+    --type-h2-size: clamp(2rem, 4.2vw + 0.5rem, 4rem);
+    --type-h2-leading: 0.9;
+    --type-h2-tracking: 0em;
+
+    --type-h3-size: clamp(1.5rem, 2vw + 1rem, 2.5rem);
+    --type-h3-leading: 0.95;
+    --type-h3-tracking: 0.01em;
+
+    --type-body-size: clamp(1.0625rem, 0.2vw + 1rem, 1.1875rem);
+    --type-body-leading: 1.55;
+    --type-body-measure: 68ch;
+
+    --type-small-size: clamp(0.875rem, 0.15vw + 0.8rem, 0.9375rem);
+    --type-small-leading: 1.45;
+
+    --type-label-size: 0.75rem;
+    --type-label-leading: 1;
+    --type-label-tracking: 0.18em;
+
+    --type-caption-size: 0.8125rem;
+    --type-caption-leading: 1.4;
+    --type-caption-tracking: 0.02em;
+
+    --type-mono-size: 0.85rem;
+    --type-mono-leading: 1.45;
+
+    --space-4: 4px;
+    --space-8: 8px;
+    --space-12: 12px;
+    --space-16: 16px;
+    --space-24: 24px;
+    --space-32: 32px;
+    --space-48: 48px;
+    --space-64: 64px;
+    --space-96: 96px;
+    --space-128: 128px;
+    --space-192: 192px;
+  }
+
+  html {
+    background: var(--color-anti);
+    color-scheme: dark;
+  }
+
+  body {
+    min-height: 100dvh;
+    background: var(--color-anti);
+    color: var(--color-hero);
+    font-family: var(--font-body);
+    font-size: var(--type-body-size);
+    font-weight: 400;
+    line-height: var(--type-body-leading);
+  }
+
+  h1,
+  h2,
+  h3,
+  .type-display {
+    font-family: var(--font-display);
+    font-weight: 400;
+    text-transform: uppercase;
+    color: var(--color-hero);
+  }
+
+  h1 {
+    font-size: var(--type-h1-size);
+    line-height: var(--type-h1-leading);
+    letter-spacing: var(--type-h1-tracking);
+  }
+
+  h2 {
+    font-size: var(--type-h2-size);
+    line-height: var(--type-h2-leading);
+    letter-spacing: var(--type-h2-tracking);
+  }
+
+  h3 {
+    font-size: var(--type-h3-size);
+    line-height: var(--type-h3-leading);
+    letter-spacing: var(--type-h3-tracking);
+  }
+
+  .type-display {
+    font-size: var(--type-display-size);
+    line-height: var(--type-display-leading);
+    letter-spacing: var(--type-display-tracking);
+  }
+
+  p {
+    max-width: var(--type-body-measure);
+  }
+
+  small {
+    font-family: var(--font-body);
+    font-size: var(--type-small-size);
+    line-height: var(--type-small-leading);
+  }
+
+  .label {
+    font-family: var(--font-label);
+    font-size: var(--type-label-size);
+    font-weight: 700;
+    line-height: var(--type-label-leading);
+    letter-spacing: var(--type-label-tracking);
+    text-transform: uppercase;
+  }
+
+  .caption {
+    font-family: var(--font-body);
+    font-size: var(--type-caption-size);
+    line-height: var(--type-caption-leading);
+    letter-spacing: var(--type-caption-tracking);
+    color: var(--color-ash);
+  }
+
+  code,
+  kbd,
+  pre,
+  .mono {
+    font-family: var(--font-mono);
+    font-size: var(--type-mono-size);
+    line-height: var(--type-mono-leading);
+  }
+}
+
+@layer components {
+  .label-box {
+    display: inline-block;
+    padding: 0.12em 0.2em 0.02em;
+    background: var(--color-anti);
+    color: var(--color-hero);
+    font-family: var(--font-display);
+    font-weight: 400;
+    line-height: 0.86;
+    letter-spacing: -0.01em;
+    text-transform: uppercase;
+  }
+
+  .label-box--red {
+    background: var(--color-ignition);
+    color: var(--color-hero);
+  }
+
+  .label-box--red:hover,
+  .label-box--red:active {
+    background: var(--color-ember);
+    color: var(--color-hero);
+  }
+
+  .label-box--white {
+    background: var(--color-hero);
+    color: var(--color-anti);
+  }
+
+  .label-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-8);
+  }
+
+  .skip-link {
+    position: fixed;
+    z-index: 50;
+    top: var(--space-16);
+    left: var(--space-16);
+    transform: translateY(calc(-100% - var(--space-48)));
+  }
+
+  .skip-link:focus {
+    transform: translateY(0);
+    outline: 2px solid var(--color-hero);
+    outline-offset: 3px;
+  }
+
+  #content:focus {
+    outline: none;
+  }
+}
