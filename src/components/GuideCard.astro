@@ -1,0 +1,169 @@
+---
+interface Props {
+	href: string;
+	title: string;
+	category: string;
+	summary: string;
+	dateIso: string;
+	dateLabel: string;
+	cover: string | null;
+	spot: number;
+}
+
+const { href, title, category, summary, dateIso, dateLabel, cover, spot } = Astro.props;
+const categoryId = category.toLowerCase();
+---
+
+<article
+	class="guide-card"
+	data-guide-card
+	data-category={categoryId}
+	data-spot={spot % 4}
+>
+	<a class="guide-card__link" href={href}>
+		<div class="guide-card__cover">
+			<div class="guide-card__zoom">
+				{
+					cover ? (
+						<img src={cover} alt="" width="800" height="1000" loading="lazy" decoding="async" />
+					) : (
+						<div class="guide-card__plate">
+							<span class="guide-card__plate-cat mono">{category}</span>
+							<span class="guide-card__plate-note caption">Cover still to come.</span>
+						</div>
+					)
+				}
+			</div>
+		</div>
+		<p class="guide-card__meta">
+			<span class="guide-card__cat mono">{category}</span>
+			<time class="mono caption" datetime={dateIso}>
+				{dateLabel}
+			</time>
+		</p>
+		<h2 class="guide-card__title">{title}</h2>
+		<p class="guide-card__summary">{summary}</p>
+	</a>
+</article>
+
+<style>
+	.guide-card.is-gone {
+		display: none;
+		pointer-events: none;
+	}
+
+	.guide-card__link {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-16);
+		color: inherit;
+		text-decoration: none;
+	}
+
+	.guide-card__link:focus-visible {
+		outline: 2px solid var(--color-hero);
+		outline-offset: 4px;
+	}
+
+	.guide-card__cover {
+		aspect-ratio: 4 / 5;
+		overflow: hidden;
+		background: var(--color-graphite);
+	}
+
+	.guide-card__zoom {
+		height: 100%;
+		transform: scale(1);
+		transition: transform 0.6s cubic-bezier(0.45, 0, 0.2, 1);
+	}
+
+	.guide-card__zoom img {
+		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	.guide-card__plate {
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between;
+		height: 100%;
+		padding: var(--space-16);
+		background: var(--color-graphite);
+	}
+
+	.guide-card__plate-cat {
+		color: var(--color-bone);
+		font-size: 0.75rem;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+	}
+
+	.guide-card__plate-note {
+		align-self: flex-end;
+		max-width: 16ch;
+		margin: 0;
+		text-align: right;
+	}
+
+	.guide-card__meta {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: var(--space-16);
+		max-width: none;
+		margin: 0;
+	}
+
+	.guide-card__cat {
+		color: var(--color-bone);
+		font-size: 0.75rem;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+	}
+
+	.guide-card__title {
+		max-width: 14ch;
+		margin: 0;
+		font-size: clamp(2.4rem, 4vw, 4.25rem);
+		line-height: 0.88;
+	}
+
+	.guide-card__summary {
+		margin: 0;
+		color: var(--color-bone);
+	}
+
+	@media (min-width: 768px) {
+		.guide-card[data-spot="0"] {
+			grid-column: 1 / span 6;
+		}
+
+		.guide-card[data-spot="1"] {
+			grid-column: 8 / span 5;
+			margin-top: clamp(4rem, 16vh, 11rem);
+		}
+
+		.guide-card[data-spot="2"] {
+			grid-column: 2 / span 5;
+		}
+
+		.guide-card[data-spot="3"] {
+			grid-column: 7 / span 5;
+			margin-top: clamp(2rem, 8vh, 6rem);
+		}
+	}
+
+	@media (hover: hover) and (pointer: fine) {
+		.guide-card__link:hover .guide-card__zoom {
+			transform: scale(1.04);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.guide-card__zoom {
+			transition: none;
+		}
+	}
+</style>

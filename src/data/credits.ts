@@ -48,7 +48,7 @@ export const credits: Credit[] = [
     license: "GreenSock Standard no-charge license",
     link: "https://gsap.com",
     licenseLink: "https://gsap.com/standard-license",
-    usedFor: "Motion, including ScrollTrigger",
+    usedFor: "Motion, including ScrollTrigger and Flip",
     category: "Code and libraries",
   },
   {
