@@ -1,0 +1,273 @@
+---
+interface Props {
+	id: string;
+	title: string;
+	dateIso: string;
+	dateLabel: string;
+	duration: string | null;
+	poster: string | null;
+	preview: string | null;
+	guideHref: string | null;
+	guideTitle: string | null;
+	/** Placeholder cards link out. The others open the page modal. */
+	mode: "placeholder" | "youtube" | "file";
+	youtubeId: string | null;
+	videoUrl: string | null;
+	lead: boolean;
+	groupUrl: string;
+}
+
+const {
+	id,
+	title,
+	dateIso,
+	dateLabel,
+	duration,
+	poster,
+	preview,
+	guideHref,
+	guideTitle,
+	mode,
+	youtubeId,
+	videoUrl,
+	lead,
+	groupUrl,
+} = Astro.props;
+
+const soon = mode === "placeholder";
+---
+
+<article
+	class:list={["video-card", lead && "video-card--lead"]}
+	id={id}
+	data-video-card
+	data-lead={lead ? "true" : "false"}
+>
+	<div class="video-card__frame">
+		{
+			soon ? (
+				<a
+					class="video-hit"
+					href={groupUrl}
+					target="_blank"
+					rel="noopener noreferrer"
+				>
+					<span
+						class="video-card__media"
+						data-video-media
+						data-preview={preview ?? undefined}
+					>
+						<span class="video-card__zoom">
+							{
+								poster ? (
+									<img src={poster} alt="" width="1280" height="720" loading="lazy" decoding="async" />
+								) : (
+									<span class="video-card__plate" />
+								)
+							}
+						</span>
+					</span>
+					<span class="label-box label-box--red video-card__play">Replay coming soon</span>
+					<span class="visually-hidden">{title}. Opens in a new tab.</span>
+				</a>
+			) : (
+				<button
+					type="button"
+					class="video-hit"
+					data-video-open
+					data-video-title={title}
+					data-youtube-id={mode === "youtube" ? youtubeId : undefined}
+					data-video-url={mode === "file" ? videoUrl : undefined}
+					data-video-poster={poster ?? undefined}
+				>
+					<span
+						class="video-card__media"
+						data-video-media
+						data-preview={preview ?? undefined}
+					>
+						<span class="video-card__zoom">
+							{poster ? (
+								<img src={poster} alt="" width="1280" height="720" loading="lazy" decoding="async" />
+							) : (
+								<span class="video-card__plate">
+									<span class="video-card__plate-note">Poster still to come.</span>
+								</span>
+							)}
+						</span>
+					</span>
+					<span class="label-box label-box--red video-card__play">Play</span>
+					<span class="visually-hidden">Play {title}</span>
+				</button>
+			)
+		}
+	</div>
+
+	<div class="video-card__body">
+		<h2>{title}</h2>
+		<p class="video-card__meta mono">
+			<time datetime={dateIso}>{dateLabel}</time>
+			{duration && <span>{duration}</span>}
+		</p>
+		{
+			guideHref && guideTitle && (
+				<a class="video-card__guide label" href={guideHref}>
+					Guide: {guideTitle}
+				</a>
+			)
+		}
+	</div>
+</article>
+
+<style>
+	.video-card {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: var(--space-16);
+		min-width: 0;
+		scroll-margin-top: calc(var(--header-h) + var(--space-24));
+	}
+
+	.video-card__frame {
+		width: 100%;
+	}
+
+	.video-hit {
+		position: relative;
+		display: block;
+		width: 100%;
+		padding: 0;
+		border: 0;
+		background: transparent;
+		color: inherit;
+		text-align: left;
+		text-decoration: none;
+		cursor: pointer;
+	}
+
+	.video-hit:focus-visible {
+		outline: 2px solid var(--color-hero);
+		outline-offset: 4px;
+	}
+
+	.video-card__media {
+		position: relative;
+		display: block;
+		aspect-ratio: 16 / 9;
+		overflow: hidden;
+		background: var(--color-carbon);
+	}
+
+	.video-card__zoom {
+		display: block;
+		height: 100%;
+		transform: scale(1);
+	}
+
+	.video-card__zoom img {
+		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+
+	.video-card__plate {
+		display: flex;
+		align-items: flex-end;
+		height: 100%;
+		padding: var(--space-16);
+		background: var(--color-carbon);
+	}
+
+	.video-card__plate-note {
+		font-family: var(--font-label);
+		font-size: var(--type-label-size);
+		font-weight: 700;
+		letter-spacing: var(--type-label-tracking);
+		text-transform: uppercase;
+		color: var(--color-hero);
+	}
+
+	.video-card__media :global(.video-preview) {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		opacity: 0;
+		pointer-events: none;
+		transition: opacity 0.45s linear;
+	}
+
+	.video-card__media.is-playing :global(.video-preview) {
+		opacity: 1;
+	}
+
+	.video-card__play {
+		position: absolute;
+		left: var(--space-16);
+		bottom: var(--space-16);
+	}
+
+	.video-card__body {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: var(--space-8);
+		max-width: 22ch;
+	}
+
+	.video-card h2 {
+		margin: 0;
+		max-width: 14ch;
+		font-size: clamp(1.7rem, 2vw, 2.35rem);
+		line-height: 0.9;
+	}
+
+	.video-card--lead h2 {
+		font-size: clamp(2.6rem, 4.5vw, 4.75rem);
+		line-height: 0.86;
+		max-width: 11ch;
+	}
+
+	.video-card__meta {
+		display: flex;
+		gap: var(--space-16);
+		margin: 0;
+		color: var(--color-bone);
+	}
+
+	.video-card__guide {
+		color: var(--color-hero);
+		text-decoration: none;
+		text-underline-offset: 0.22em;
+	}
+
+	.video-card__guide:hover {
+		text-decoration: underline;
+	}
+
+	.video-card__guide:focus-visible {
+		outline: 2px solid var(--color-hero);
+		outline-offset: 3px;
+	}
+
+	@media (hover: hover) and (pointer: fine) {
+		.video-card__zoom {
+			transition: transform 0.6s cubic-bezier(0.45, 0, 0.2, 1);
+		}
+
+		.video-hit:hover .video-card__zoom,
+		.video-hit:focus-visible .video-card__zoom {
+			transform: scale(1.035);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.video-card__zoom,
+		.video-card__media :global(.video-preview) {
+			transition: none;
+			transform: none;
+		}
+	}
+</style>

@@ -1,0 +1,255 @@
+---
+import { existsSync } from "node:fs";
+import { join } from "node:path";
+import { getCollection } from "astro:content";
+import VideoCard from "../../components/VideoCard.astro";
+import { facebookGroupUrl } from "../../data/nav";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+const videos = await getCollection("videos");
+videos.sort((a, b) => b.data.date.getTime() - a.data.date.getTime() || a.id.localeCompare(b.id));
+
+const guides = await getCollection("guides");
+const guideById = new Map(guides.map((guide) => [guide.id, guide]));
+
+function localMedia(urlPath: string): string | null {
+	if (!urlPath.startsWith("/") || urlPath.startsWith("//")) return null;
+	const relative = decodeURIComponent(urlPath.split("?")[0]?.slice(1) ?? "");
+	if (!relative || relative.split("/").includes("..")) return null;
+	const file = join(process.cwd(), "public", ...relative.split("/").filter(Boolean));
+	return existsSync(file) ? urlPath : null;
+}
+
+function mediaSrc(value: string | undefined): string | null {
+	if (!value) return null;
+	if (/^https?:\/\//.test(value)) return value;
+	return localMedia(value);
+}
+
+function stamp(date: Date): { iso: string; label: string } {
+	const y = date.getUTCFullYear();
+	const m = String(date.getUTCMonth() + 1).padStart(2, "0");
+	const d = String(date.getUTCDate()).padStart(2, "0");
+	return { iso: `${y}-${m}-${d}`, label: `${y}.${m}.${d}` };
+}
+
+function guideLink(source: { id: string } | undefined): { href: string; title: string } | null {
+	if (!source) return null;
+	const guide = guideById.get(source.id);
+	if (!guide || guide.data.draft) return null;
+	return { href: `/guides/${guide.data.slug}`, title: guide.data.title };
+}
+
+const YOUTUBE_ID = /^[A-Za-z0-9_-]{6,20}$/;
+
+const cards = videos.map((video, index) => {
+	const guide = guideLink(video.data.guide);
+	const poster = mediaSrc(video.data.poster);
+	const preview = mediaSrc(video.data.preview);
+	const youtubeId =
+		video.data.youtubeId && YOUTUBE_ID.test(video.data.youtubeId) ? video.data.youtubeId : null;
+	const fileUrl = mediaSrc(video.data.videoUrl);
+	let mode: "placeholder" | "youtube" | "file" = "placeholder";
+	if (!video.data.placeholder && youtubeId) mode = "youtube";
+	else if (!video.data.placeholder && fileUrl) mode = "file";
+	const date = stamp(video.data.date);
+	return {
+		id: video.id,
+		title: video.data.title,
+		dateIso: date.iso,
+		dateLabel: date.label,
+		duration: video.data.duration ?? null,
+		poster,
+		preview,
+		guideHref: guide?.href ?? null,
+		guideTitle: guide?.title ?? null,
+		mode,
+		youtubeId: mode === "youtube" ? youtubeId : null,
+		videoUrl: mode === "file" ? fileUrl : null,
+		lead: index === 0,
+	};
+});
+---
+
+<BaseLayout
+	title="Videos"
+	description="Every live, minus the buffering. Replays of every live. Watch the parts you need, skip the part where I fight the screen share."
+>
+	<div slot="main" class="videos" data-videos>
+		<header class="videos-hero">
+			<h1>Every live, minus the buffering.</h1>
+			<p>Replays of every live. Watch the parts you need, skip the part where I fight the screen share.</p>
+		</header>
+
+		<div class="video-grid">
+			{
+				cards.map((card) => (
+					<VideoCard
+						id={card.id}
+						title={card.title}
+						dateIso={card.dateIso}
+						dateLabel={card.dateLabel}
+						duration={card.duration}
+						poster={card.poster}
+						preview={card.preview}
+						guideHref={card.guideHref}
+						guideTitle={card.guideTitle}
+						mode={card.mode}
+						youtubeId={card.youtubeId}
+						videoUrl={card.videoUrl}
+						lead={card.lead}
+						groupUrl={facebookGroupUrl}
+					/>
+				))
+			}
+		</div>
+
+		<dialog class="video-modal" data-video-modal aria-labelledby="video-modal-title">
+			<div class="video-modal__panel">
+				<div class="video-modal__bar">
+					<p id="video-modal-title" class="video-modal__title" data-video-title></p>
+					<button type="button" class="label-box" data-video-close>Close</button>
+				</div>
+				<div class="video-modal__stage" data-video-stage></div>
+			</div>
+		</dialog>
+	</div>
+</BaseLayout>
+
+<script>
+	import { bootVideoCards } from "../../scripts/video-cards";
+
+	bootVideoCards();
+</script>
+
+<style>
+	.videos-hero {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: var(--space-24);
+		padding: calc(var(--header-h) + var(--space-32)) var(--space-16) var(--space-48);
+	}
+
+	.videos-hero h1 {
+		max-width: 9ch;
+		margin: 0;
+	}
+
+	.videos-hero p {
+		max-width: 28ch;
+		margin: 0;
+		color: var(--color-bone);
+	}
+
+	.video-grid {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-64);
+		padding: 0 var(--space-16) var(--space-96);
+	}
+
+	.video-modal {
+		width: 100%;
+		max-width: none;
+		height: 100%;
+		max-height: none;
+		margin: 0;
+		padding: var(--space-16);
+		border: 0;
+		background: transparent;
+	}
+
+	.video-modal::backdrop {
+		background: rgb(10 10 11 / 0.88);
+	}
+
+	.video-modal__panel {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-16);
+		width: min(64rem, 100%);
+		margin-top: calc(var(--header-h) + var(--space-16));
+		margin-left: 0;
+	}
+
+	.video-modal__bar {
+		display: flex;
+		align-items: flex-end;
+		justify-content: space-between;
+		gap: var(--space-16);
+	}
+
+	.video-modal__title {
+		margin: 0;
+		max-width: 18ch;
+		font-family: var(--font-display);
+		font-size: clamp(1.6rem, 3vw, 2.4rem);
+		line-height: 0.9;
+		text-transform: uppercase;
+		color: var(--color-hero);
+	}
+
+	.video-modal__stage {
+		aspect-ratio: 16 / 9;
+		background: var(--color-carbon);
+	}
+
+	.video-modal__stage :global(iframe),
+	.video-modal__stage :global(video) {
+		display: block;
+		width: 100%;
+		height: 100%;
+		border: 0;
+		background: var(--color-anti);
+	}
+
+	.video-modal [data-video-close]:focus-visible {
+		outline: 2px solid var(--color-hero);
+		outline-offset: 3px;
+	}
+
+	@media (min-width: 900px) {
+		.videos-hero {
+			display: grid;
+			grid-template-columns: minmax(0, 1.15fr) minmax(14rem, 0.45fr);
+			column-gap: var(--space-48);
+			align-items: end;
+			padding: calc(var(--header-h) + var(--space-64)) 8vw var(--space-64) 12vw;
+		}
+
+		.videos-hero p {
+			justify-self: end;
+			margin-bottom: var(--space-16);
+		}
+
+		.video-grid {
+			display: grid;
+			grid-template-columns: minmax(0, 1.45fr) minmax(16rem, 0.7fr);
+			column-gap: var(--space-64);
+			row-gap: var(--space-48);
+			align-items: start;
+			padding: 0 8vw var(--space-128) 12vw;
+		}
+
+		.video-grid :global(.video-card--lead) {
+			grid-column: 1;
+			grid-row: 1 / span 4;
+		}
+
+		.video-grid :global(.video-card:not(.video-card--lead)) {
+			grid-column: 2;
+		}
+
+		.video-grid :global(.video-card:not(.video-card--lead):nth-child(2)) {
+			margin-top: clamp(5rem, 18vh, 11rem);
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.video-modal,
+		.video-modal::backdrop {
+			transition: none;
+		}
+	}
+</style>
