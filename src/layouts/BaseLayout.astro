@@ -1,4 +1,5 @@
 ---
+import Header from "../components/Header.astro";
 import Seo from "../components/Seo.astro";
 import "../styles/global.css";
 import appIconSvg from "../assets/brand/antihero-app-icon.svg?url";
@@ -32,6 +33,7 @@ const { title, description, image, canonical, type } = Astro.props;
 	</head>
 	<body class="bg-anti font-body text-hero">
 		<a class="skip-link label-box label-box--red" href="#content">Skip to content</a>
+		<Header />
 		<slot name="header" />
 		<main id="content" tabindex="-1">
 			<slot name="main" />

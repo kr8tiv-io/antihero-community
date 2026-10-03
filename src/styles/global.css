@@ -163,6 +163,8 @@
     --type-mono-size: 0.85rem;
     --type-mono-leading: 1.45;
 
+    --header-h: 56px;
+
     --space-4: 4px;
     --space-8: 8px;
     --space-12: 12px;
@@ -298,12 +300,21 @@
     gap: var(--space-8);
   }
 
+  .page-intro {
+    padding: calc(var(--header-h) + var(--space-48)) var(--space-16) var(--space-96);
+  }
+
+  .page-intro h1 {
+    max-width: min(11ch, 100%);
+    text-wrap: balance;
+  }
+
   .skip-link {
     position: fixed;
     z-index: 50;
-    top: var(--space-16);
+    top: calc(var(--header-h) + var(--space-8));
     left: var(--space-16);
-    transform: translateY(calc(-100% - var(--space-48)));
+    transform: translateY(calc(-100% - var(--header-h) - var(--space-48)));
   }
 
   .skip-link:focus {
@@ -314,5 +325,11 @@
 
   #content:focus {
     outline: none;
+  }
+
+  @media (min-width: 768px) {
+    .page-intro {
+      padding: calc(var(--header-h) + var(--space-96)) 8vw var(--space-192) 14vw;
+    }
   }
 }

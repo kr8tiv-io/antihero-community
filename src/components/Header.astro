@@ -1,0 +1,256 @@
+---
+import wordmark from "../assets/brand/antihero-wordmark-white-ignition.svg?url";
+import { desktopLinks, facebookGroupUrl, isCurrentPath } from "../data/nav";
+import MenuOverlay from "./MenuOverlay.astro";
+
+const path = Astro.url.pathname;
+---
+
+<header class="site-header" data-header>
+	<div class="site-header__scrim" data-header-scrim aria-hidden="true"></div>
+	<div class="site-header__inner">
+		<a class="wordmark" href="/" aria-label="AntiHero AI, home">
+			<img src={wordmark} alt="" width="94" height="28" />
+		</a>
+		<div class="site-header__end">
+			<nav class="desk-nav" aria-label="Primary">
+				{
+					desktopLinks.map((link) => (
+						<a
+							class="desk-nav__link"
+							href={link.href}
+							aria-current={isCurrentPath(link.href, path) ? "page" : undefined}
+						>
+							{link.label}
+						</a>
+					))
+				}
+				<a
+					class="desk-nav__join label-box label-box--red"
+					href={facebookGroupUrl}
+					target="_blank"
+					rel="noopener noreferrer"
+					aria-label="Join the group (opens in a new tab)"
+				>
+					Join the group
+				</a>
+			</nav>
+			<button
+				class="menu-btn"
+				type="button"
+				data-menu-button
+				aria-expanded="false"
+				aria-controls="site-menu"
+			>
+				<span class="menu-btn__label" data-menu-label>Menu</span>
+				<span class="menu-icon" aria-hidden="true">
+					<span class="menu-icon__line"></span>
+					<span class="menu-icon__line menu-icon__line--short"></span>
+				</span>
+			</button>
+		</div>
+	</div>
+</header>
+<MenuOverlay />
+
+<script>
+	import "../scripts/nav";
+</script>
+
+<style>
+	.site-header {
+		position: fixed;
+		z-index: 40;
+		top: 0;
+		right: 0;
+		left: 0;
+		height: var(--header-h);
+		color: var(--color-hero);
+		isolation: isolate;
+	}
+
+	.site-header__scrim {
+		position: absolute;
+		z-index: -1;
+		inset: 0;
+		background: var(--color-carbon);
+		opacity: 0;
+		pointer-events: none;
+	}
+
+	.site-header.is-scrolled .site-header__scrim {
+		backdrop-filter: blur(16px);
+	}
+
+	.site-header__inner,
+	.site-header__end {
+		display: flex;
+		align-items: center;
+	}
+
+	.site-header__inner {
+		height: 100%;
+		justify-content: space-between;
+		gap: var(--space-16);
+		padding: 0 max(var(--space-16), env(safe-area-inset-right)) 0
+			max(var(--space-16), env(safe-area-inset-left));
+	}
+
+	.site-header__end {
+		min-width: 0;
+		gap: var(--space-16);
+	}
+
+	.wordmark {
+		display: block;
+		flex: none;
+		line-height: 0;
+	}
+
+	.wordmark img {
+		display: block;
+		width: auto;
+		height: 28px;
+	}
+
+	.wordmark:focus-visible,
+	.desk-nav__link:focus-visible,
+	.desk-nav__join:focus-visible,
+	.menu-btn:focus-visible {
+		outline: 2px solid var(--color-hero);
+		outline-offset: 3px;
+	}
+
+	.desk-nav {
+		display: none;
+		align-items: center;
+		gap: var(--space-16);
+	}
+
+	.desk-nav__link {
+		position: relative;
+		padding: var(--space-8) 0;
+		color: var(--color-hero);
+		font-family: var(--font-label);
+		font-size: 0.8125rem;
+		font-weight: 700;
+		letter-spacing: 0.14em;
+		line-height: 1;
+		text-decoration: none;
+		text-transform: uppercase;
+	}
+
+	.desk-nav__link::after {
+		content: "";
+		position: absolute;
+		right: 0;
+		bottom: 2px;
+		left: 0;
+		height: 1px;
+		background: var(--color-ignition);
+		transform: scaleX(0);
+		transform-origin: left center;
+	}
+
+	.desk-nav__link[aria-current="page"]::after {
+		transform: scaleX(1);
+	}
+
+	.desk-nav__link:hover {
+		color: var(--color-bone);
+	}
+
+	.desk-nav__link[aria-current="page"]:hover {
+		color: var(--color-hero);
+	}
+
+	.desk-nav__join {
+		font-size: 1.2rem;
+		line-height: 0.86;
+		text-decoration: none;
+	}
+
+	.menu-btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: flex-end;
+		gap: var(--space-12);
+		min-width: 48px;
+		min-height: 48px;
+		padding: 0 var(--space-4);
+		color: var(--color-hero);
+		font-family: var(--font-label);
+		font-size: 0.8125rem;
+		font-weight: 700;
+		letter-spacing: 0.16em;
+		line-height: 1;
+		text-transform: uppercase;
+		background: transparent;
+		cursor: pointer;
+	}
+
+	.menu-icon {
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		gap: 6px;
+		width: 22px;
+		height: 16px;
+	}
+
+	.menu-icon__line {
+		display: block;
+		width: 100%;
+		height: 1px;
+		background: currentColor;
+		transform: translateY(0) rotate(0deg);
+		transform-origin: center;
+	}
+
+	.menu-icon__line--short {
+		transform: translateY(0) rotate(0deg) scaleX(0.62);
+		transform-origin: right center;
+	}
+
+	.menu-btn.is-open .menu-icon__line {
+		transform: translateY(3.5px) rotate(40deg);
+	}
+
+	.menu-btn.is-open .menu-icon__line--short {
+		transform: translateY(-3.5px) rotate(-40deg) scaleX(1);
+		transform-origin: center;
+	}
+
+	@media (prefers-reduced-motion: no-preference) {
+		.desk-nav__link::after,
+		.menu-icon__line {
+			transition: transform 0.35s;
+		}
+	}
+
+	@media (min-width: 1024px) {
+		.site-header__inner {
+			padding-right: var(--space-32);
+			padding-left: var(--space-32);
+		}
+
+		.desk-nav {
+			display: flex;
+		}
+
+		.menu-btn {
+			display: none;
+		}
+	}
+
+	@media (min-width: 1280px) {
+		.desk-nav {
+			gap: var(--space-32);
+		}
+	}
+
+	:global(html.menu-open),
+	:global(html.menu-open body) {
+		overflow: hidden;
+	}
+</style>
