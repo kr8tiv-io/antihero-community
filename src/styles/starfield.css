@@ -1,0 +1,39 @@
+/*
+ * Starfield ground. The canvas sits under the page. Plates keep their
+ * own backgrounds. Open sections let the field show between and around them.
+ * Hero.astro and JoinBand.astro are not edited. Their plates stay solid.
+ */
+
+html.ah-stars body {
+	background-color: transparent;
+}
+
+html.ah-stars .doors,
+html.ah-stars .drop,
+html.ah-stars .about-mission,
+html.ah-stars .about-founder,
+html.ah-stars .join-get,
+html.ah-stars .join-cost,
+html.ah-stars .join-rules {
+	background-color: transparent;
+}
+
+.ah-starfield {
+	position: fixed;
+	z-index: -1;
+	inset: 0;
+	width: 100%;
+	height: 100%;
+	pointer-events: none;
+	opacity: 0;
+}
+
+html:active-view-transition .ah-starfield {
+	opacity: 0 !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.ah-starfield {
+		display: none;
+	}
+}

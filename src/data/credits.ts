@@ -66,8 +66,17 @@ export const credits: Credit[] = [
     license: "MIT",
     link: "https://threejs.org",
     licenseLink: "https://github.com/mrdoob/three.js/blob/dev/LICENSE",
-    usedFor: "3D, only where a task asks for it",
+    usedFor: "The starfield on the home, about, and join pages",
+    files: ["src/three/starfield.ts"],
     category: "Code and libraries",
+  },
+  {
+    name: "igloo.inc",
+    author: "Igloo Inc, built by Abeto with Bureaux",
+    license: "Inspiration only. No code, models, or shaders copied.",
+    link: "https://www.igloo.inc",
+    usedFor: "The idea of moving through one space. The starfield shader is original.",
+    category: "Techniques and inspiration",
   },
   {
     name: "@astrojs/sitemap",

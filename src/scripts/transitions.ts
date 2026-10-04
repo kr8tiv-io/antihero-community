@@ -8,6 +8,7 @@ import { bootDoors } from "./home-doors";
 import { bootDrop } from "./home-drop";
 import { bootPromise } from "./home-promise";
 import { bootCursor, releaseCursorMotion } from "./cursor";
+import { bootStarfield, releaseStarfield } from "./starfield";
 import { bootJoinGlow } from "./join-glow";
 import { gsap, isMobile, onReducedMotionChange, prefersReducedMotion, ScrollTrigger } from "./motion";
 import { bootPromptsPage, releasePromptCards } from "./prompt-cards";
@@ -69,6 +70,7 @@ function armCapture(): void {
 	const native = document.startViewTransition?.bind(document);
 	if (!native) return;
 	document.startViewTransition = (callback) => {
+		releaseStarfield();
 		if (!prefersReducedMotion()) {
 			const band = document.querySelector<HTMLElement>("[data-route-band]");
 			if (band) band.style.transform = CAPTURE_ON_EDGE;
@@ -95,6 +97,7 @@ function onSwap(event: Event): void {
 	const swap = event as SwapEvent;
 	finish = swap.viewTransition?.finished ?? null;
 	syncCurrent(swap.to?.pathname ?? window.location.pathname);
+	releaseStarfield();
 	releaseCursorMotion();
 	closeMenu();
 	closeDialogs();
@@ -120,6 +123,7 @@ function onPage(): void {
 	initSmoothScroll();
 	bootReveals();
 	bootCursor();
+	bootStarfield();
 	bootPromise();
 	bootDoors();
 	bootDrop();
