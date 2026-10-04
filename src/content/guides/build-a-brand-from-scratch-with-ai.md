@@ -8,6 +8,7 @@ summary:
 category: Brand
 date: 2026-10-01
 cover: /media/covers/build-a-brand-from-scratch-with-ai.jpg
+loop: /media/loops/guide-build-a-brand-from-scratch-with-ai
 pdf: /guides/build-a-brand-from-scratch-with-ai.pdf
 replay: build-a-brand-from-scratch-live
 featured: false

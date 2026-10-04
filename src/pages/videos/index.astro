@@ -45,8 +45,10 @@ const YOUTUBE_ID = /^[A-Za-z0-9_-]{6,20}$/;
 
 const cards = videos.map((video, index) => {
 	const guide = guideLink(video.data.guide);
-	const poster = mediaSrc(video.data.poster);
-	const preview = mediaSrc(video.data.preview);
+	const loopStem = video.data.loop;
+	const loop =
+		loopStem && localMedia(`${loopStem}.mp4`) && localMedia(`${loopStem}-poster.jpg`) ? loopStem : null;
+	const poster = mediaSrc(video.data.poster) ?? (loop ? `${loop}-poster.jpg` : null);
 	const youtubeId =
 		video.data.youtubeId && YOUTUBE_ID.test(video.data.youtubeId) ? video.data.youtubeId : null;
 	const fileUrl = mediaSrc(video.data.videoUrl);
@@ -61,7 +63,7 @@ const cards = videos.map((video, index) => {
 		dateLabel: date.label,
 		duration: video.data.duration ?? null,
 		poster,
-		preview,
+		loop,
 		guideHref: guide?.href ?? null,
 		guideTitle: guide?.title ?? null,
 		mode,
@@ -97,7 +99,7 @@ const cards = videos.map((video, index) => {
 						dateLabel={card.dateLabel}
 						duration={card.duration}
 						poster={card.poster}
-						preview={card.preview}
+						loop={card.loop}
 						guideHref={card.guideHref}
 						guideTitle={card.guideTitle}
 						mode={card.mode}

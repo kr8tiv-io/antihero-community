@@ -8,6 +8,7 @@ summary:
 category: Brand
 date: 2026-09-01
 cover: /media/covers/todo-older-live-2.jpg
+loop: /media/loops/guide-email-the-channel-nobody-can-take
 pdf: /guides/todo-older-live-2.pdf
 featured: false
 draft: false

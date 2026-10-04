@@ -8,6 +8,7 @@ summary:
 category: Websites
 date: 2026-09-08
 cover: /media/covers/todo-older-live-1.jpg
+loop: /media/loops/guide-antihero-website-masterclass
 pdf: /guides/todo-older-live-1.pdf
 featured: false
 draft: false

@@ -73,12 +73,8 @@ const SCRUBS = [
 	},
 ];
 
-const LOOPS = ["door-guides", "door-prompts", "door-videos", "door-blog"].map((name) => ({
-	file: `${name}.mp4`,
-	width: 1080,
-	height: 1350,
-	seeds: [path.join(PUBLIC_MEDIA, `${name}.mp4`)],
-}));
+const LOOP_CAP = Math.round(1.5 * 1024 * 1024);
+const HOVER_LIST = path.join(ROOT, "src", "data", "hover-media.json");
 
 function ffmpegEscape(filePath) {
 	return filePath.replace(/\\/g, "/").replace(/:/g, "\\:").replace(/'/g, "\\'");
@@ -109,6 +105,15 @@ async function exists(file) {
 	try {
 		await stat(file);
 		return true;
+	} catch {
+		return false;
+	}
+}
+
+async function keptFile(file, minBytes) {
+	try {
+		const info = await stat(file);
+		return info.isFile() && info.size >= minBytes;
 	} catch {
 		return false;
 	}
@@ -202,6 +207,15 @@ async function writeOgDerivatives(jpg, width, kind) {
 }
 
 async function writeStill(job) {
+	const publicCopies = job.copies.filter((copy) => copy.split(path.sep).includes("public"));
+	const guards = publicCopies.length > 0 ? publicCopies : job.copies;
+	const kept =
+		guards.length > 0 &&
+		(await Promise.all(guards.map((copy) => keptFile(copy, 80 * 1024)))).every(Boolean);
+	if (kept) {
+		console.log(`skip still ${job.file}: existing file stays`);
+		return { width: job.width, placeholder: false };
+	}
 	const source = await resolveSource(job);
 	if (!source.placeholder && source.file) {
 		const bytes = await readFile(source.file);
@@ -251,19 +265,21 @@ async function underCap(source, format, quality, cap, step, floor) {
 }
 
 async function posterFrom(video, stem, kind, extras = {}) {
+	const dir = extras.dir ?? PUBLIC_MEDIA;
+	await mkdir(dir, { recursive: true });
 	const cap = extras.cap ?? Number.POSITIVE_INFINITY;
-	const jpg = path.join(PUBLIC_MEDIA, `${stem}-poster.jpg`);
-	const avif = path.join(PUBLIC_MEDIA, `${stem}-poster.avif`);
-	const grabbed = path.join(PUBLIC_MEDIA, `.grab-${stem}.png`);
+	const jpg = path.join(dir, `${stem}-poster.jpg`);
+	const avif = path.join(dir, `${stem}-poster.avif`);
+	const grabbed = path.join(dir, `.grab-${stem}.png`);
 	await ffmpeg(["-i", video, "-frames:v", "1", grabbed]);
-	const jpeg = await underCap(grabbed, "jpeg", 82, cap, 6, 46);
+	const jpeg = await underCap(grabbed, "jpeg", extras.jpeg ?? 82, cap, 6, extras.jpegFloor ?? 46);
 	const avifImage = await underCap(grabbed, "avif", 50, cap, 5, 30);
 	await writeFile(jpg, jpeg.buffer);
 	await writeFile(avif, avifImage.buffer);
 	await mark(jpg, kind);
 	await mark(avif, kind);
 	if (extras.webp) {
-		const webp = path.join(PUBLIC_MEDIA, `${stem}-poster.webp`);
+		const webp = path.join(dir, `${stem}-poster.webp`);
 		const webpImage = await underCap(grabbed, "webp", 72, cap, 6, 40);
 		await writeFile(webp, webpImage.buffer);
 		await mark(webp, kind);
@@ -389,66 +405,143 @@ async function exportFrames(video, folder, kind) {
 	await mark(manifestPath, kind);
 }
 
-async function encodeLoop(job) {
-	const source = await resolveSource(job);
-	const stem = job.file.replace(/\.mp4$/, "");
-	const mp4 = path.join(PUBLIC_MEDIA, job.file);
-	const webm = path.join(PUBLIC_MEDIA, `${stem}.webm`);
-	let input = source.file;
-	let kind = "source";
-	let still = false;
-	let size = { width: job.width, height: job.height };
-	if (source.placeholder) {
-		input = path.join(ORIGINALS, `.plate-${job.file}.png`);
-		await plate(job.width, job.height, job.file, input);
-		kind = "placeholder";
-		still = true;
-	} else {
-		const probe = await ffprobe(input, "stream=width,height");
-		const width = Number(probe[0]);
-		const height = Number(probe[1]);
-		if (width > 0 && height > 0) size = fit(width, height, job.width, job.height);
+function hoverSource(name) {
+	const file = `${name}.mp4`;
+	return name.startsWith("door-")
+		? path.join(ORIGINALS, file)
+		: path.join(ORIGINALS, "loops", file);
+}
+
+function hoverOutDir(name) {
+	return name.startsWith("door-") ? PUBLIC_MEDIA : path.join(PUBLIC_MEDIA, "loops");
+}
+
+async function loopCut(input) {
+	const stamp = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
+	const first = path.join(PUBLIC_MEDIA, `.loop-a-${stamp}.png`);
+	const last = path.join(PUBLIC_MEDIA, `.loop-b-${stamp}.png`);
+	try {
+		await ffmpeg(["-i", input, "-frames:v", "1", "-update", "1", first]);
+		await ffmpeg(["-sseof", "-0.25", "-i", input, "-frames:v", "1", "-update", "1", last]);
+		const a = await sharp(first).resize(64, 64, { fit: "fill" }).removeAlpha().raw().toBuffer();
+		const b = await sharp(last).resize(64, 64, { fit: "fill" }).removeAlpha().raw().toBuffer();
+		const length = Math.min(a.length, b.length);
+		let sum = 0;
+		for (let i = 0; i < length; i += 1) sum += Math.abs(a[i] - b[i]);
+		return length === 0 ? 0 : sum / length;
+	} catch (error) {
+		console.log(`${path.basename(input)} loop check failed, encoding straight`);
+		console.log(error instanceof Error ? error.message.split("\n")[0] : error);
+		return 0;
+	} finally {
+		await rm(first, { force: true });
+		await rm(last, { force: true });
 	}
-	const lead = still
-		? ["-loop", "1", "-framerate", "24", "-t", "6", "-i", input]
-		: ["-i", input];
-	const scale = `scale=${size.width}:${size.height}:flags=lanczos,fps=24`;
-	await ffmpeg([
-		...lead,
-		"-an",
-		"-vf",
-		scale,
-		"-c:v",
-		"libx264",
-		"-crf",
-		"24",
-		"-preset",
-		"slow",
-		"-pix_fmt",
-		"yuv420p",
-		"-movflags",
-		"+faststart",
-		mp4,
-	]);
-	await ffmpeg([
-		...lead,
-		"-an",
-		"-vf",
-		scale,
-		"-c:v",
-		"libsvtav1",
-		"-crf",
-		"34",
-		"-preset",
-		"6",
-		"-pix_fmt",
-		"yuv420p",
-		webm,
-	]);
-	await mark(mp4, kind);
-	await mark(webm, kind);
-	await posterFrom(mp4, stem, kind);
-	if (source.placeholder) await rm(input, { force: true });
+}
+
+function hoverFilter(size, seconds, crossfade) {
+	const scale = `fps=24,scale=${size.width}:${size.height}:flags=lanczos,format=yuv420p`;
+	if (!crossfade) return scale;
+	const end = seconds.toFixed(3);
+	const cut = (seconds - 0.5).toFixed(3);
+	return [
+		`[0:v]trim=0:${end},setpts=PTS-STARTPTS,${scale},split=3[base][ha][ta]`,
+		"[ha]trim=0:0.5,setpts=PTS-STARTPTS[head]",
+		`[ta]trim=${cut}:${end},setpts=PTS-STARTPTS[tail]`,
+		`[base]trim=0:${cut},setpts=PTS-STARTPTS[body]`,
+		"[tail][head]xfade=transition=fade:duration=0.5:offset=0[xf]",
+		"[body][xf]concat=n=2:v=1:a=0[out]",
+	].join(";");
+}
+
+async function encodePass(input, out, seconds, filter, crossfade, codecArgs) {
+	const args = ["-i", input];
+	if (crossfade) args.push("-filter_complex", filter, "-map", "[out]");
+	else args.push("-t", seconds.toFixed(3), "-vf", filter);
+	args.push("-an", ...codecArgs, out);
+	await ffmpeg(args);
+}
+
+async function encodeUnder(input, out, seconds, filter, crossfade, startCrf, codec) {
+	let crf = startCrf;
+	let size = 0;
+	for (;;) {
+		const codecArgs =
+			codec === "mp4"
+				? [
+						"-c:v",
+						"libx264",
+						"-crf",
+						String(crf),
+						"-preset",
+						"slow",
+						"-pix_fmt",
+						"yuv420p",
+						"-movflags",
+						"+faststart",
+					]
+				: ["-c:v", "libsvtav1", "-crf", String(crf), "-preset", "6", "-pix_fmt", "yuv420p"];
+		await encodePass(input, out, seconds, filter, crossfade, codecArgs);
+		size = (await stat(out)).size;
+		console.log(`${path.basename(out)} crf ${crf} ${size}`);
+		if (size <= LOOP_CAP || crf >= 50) break;
+		crf += 2;
+	}
+	if (size > LOOP_CAP) console.log(`${path.basename(out)} still over ${LOOP_CAP} at crf ${crf}`);
+	return { crf, size };
+}
+
+async function encodeHover(entry) {
+	const name = entry.name;
+	const input = hoverSource(name);
+	if (!(await exists(input))) {
+		console.log(`// TODO(media): ${name}.mp4 missing, see media-plan-30.md`);
+		return;
+	}
+	const portrait = entry.aspect !== "16:9";
+	const { stdout } = await run(
+		"ffprobe",
+		[
+			"-v",
+			"error",
+			"-select_streams",
+			"v:0",
+			"-show_entries",
+			"stream=width,height",
+			"-of",
+			"csv=p=0:s=x",
+			input,
+		],
+		{ windowsHide: true },
+	);
+	const [widthText, heightText] = stdout.trim().split("x");
+	const width = Number(widthText);
+	const height = Number(heightText);
+	const size = fit(width, height, portrait ? 864 : 1280, portrait ? 1080 : 720);
+	const [durationText] = await ffprobe(input, "format=duration");
+	const duration = Number(durationText);
+	const seconds = Math.min(Number.isFinite(duration) ? duration : 6, 6);
+	const diff = seconds >= 1 ? await loopCut(input) : 0;
+	const crossfade = seconds >= 1 && diff > 18;
+	console.log(
+		`${name} ${size.width}x${size.height} ${seconds.toFixed(3)}s cut ${diff.toFixed(1)} ${crossfade ? "crossfade" : "straight"}`,
+	);
+	const filter = hoverFilter(size, seconds, crossfade);
+	const outDir = hoverOutDir(name);
+	await mkdir(outDir, { recursive: true });
+	const mp4 = path.join(outDir, `${name}.mp4`);
+	const webm = path.join(outDir, `${name}.webm`);
+	await encodeUnder(input, mp4, seconds, filter, crossfade, 26, "mp4");
+	await encodeUnder(input, webm, seconds, filter, crossfade, 34, "webm");
+	await mark(mp4, "source");
+	await mark(webm, "source");
+	await posterFrom(mp4, name, "source", {
+		dir: outDir,
+		jpeg: 80,
+		jpegFloor: 30,
+		webp: true,
+		cap: 150 * 1024,
+	});
 }
 
 async function writeGitignore() {
@@ -501,8 +594,16 @@ async function main() {
 	await mkdir(PUBLIC_MEDIA, { recursive: true });
 	await mkdir(ASSET_MEDIA, { recursive: true });
 	for (const job of STILLS) await writeStill(job);
-	for (const job of SCRUBS) await encodeScrub(job);
-	for (const job of LOOPS) await encodeLoop(job);
+	for (const job of SCRUBS) {
+		const out = path.join(PUBLIC_MEDIA, job.file);
+		if (await keptFile(out, 200 * 1024)) {
+			console.log(`skip scrub ${job.file}: existing film stays`);
+			continue;
+		}
+		await encodeScrub(job);
+	}
+	const hoverList = JSON.parse(await readFile(HOVER_LIST, "utf8"));
+	for (const entry of hoverList) await encodeHover(entry);
 	await writeGitignore();
 	console.log(table());
 	console.log(`\nPrompts live in docs/MEDIA.md. ${TAIL} Videos also use: ${MOVE}`);

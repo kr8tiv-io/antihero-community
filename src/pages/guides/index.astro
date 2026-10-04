@@ -60,6 +60,11 @@ function guideDate(date: Date): { iso: string; label: string } {
 			{
 				guides.map((guide, index) => {
 					const date = guideDate(guide.data.date);
+					const loopStem = guide.data.loop;
+					const loop =
+						loopStem && localMedia(`${loopStem}.mp4`) && localMedia(`${loopStem}-poster.jpg`)
+							? loopStem
+							: null;
 					return (
 						<GuideCard
 							href={`/guides/${guide.data.slug}`}
@@ -69,6 +74,7 @@ function guideDate(date: Date): { iso: string; label: string } {
 							dateIso={date.iso}
 							dateLabel={date.label}
 							cover={localMedia(guide.data.cover)}
+							loop={loop}
 							spot={index}
 							priority={index === 0}
 						/>

@@ -1,4 +1,5 @@
 ---
+import HoverVideo from "./HoverVideo.astro";
 import Raster from "./Raster.astro";
 import RevealHeading from "./RevealHeading.astro";
 
@@ -9,7 +10,8 @@ interface Props {
 	dateLabel: string;
 	duration: string | null;
 	poster: string | null;
-	preview: string | null;
+	/** Stem such as /media/loops/video-websites-on-autopilot-live. */
+	loop?: string | null;
 	guideHref: string | null;
 	guideTitle: string | null;
 	/** Placeholder cards link out. The others open the page modal. */
@@ -27,7 +29,7 @@ const {
 	dateLabel,
 	duration,
 	poster,
-	preview,
+	loop = null,
 	guideHref,
 	guideTitle,
 	mode,
@@ -44,6 +46,7 @@ const soon = mode === "placeholder";
 	class:list={["video-card", lead && "video-card--lead"]}
 	id={id}
 	data-video-card
+	data-hover-card
 	data-lead={lead ? "true" : "false"}
 >
 	<div class="video-card__frame">
@@ -56,14 +59,17 @@ const soon = mode === "placeholder";
 					rel="noopener noreferrer"
 					data-cursor="Play"
 				>
-					<span
-						class="video-card__media"
-						data-video-media
-						data-preview={preview ?? undefined}
-					>
+					<span class="video-card__media" data-video-media>
 						<span class="video-card__zoom">
 							{
-								poster ? (
+								loop ? (
+									<HoverVideo
+										stem={loop}
+										poster={poster ?? `${loop}-poster.jpg`}
+										aspect="16:9"
+										class="video-card__film"
+									/>
+								) : poster ? (
 									<Raster
 										src={poster}
 										alt={`Still from ${title}.`}
@@ -98,27 +104,32 @@ const soon = mode === "placeholder";
 					data-video-url={mode === "file" ? videoUrl : undefined}
 					data-video-poster={poster ?? undefined}
 				>
-					<span
-						class="video-card__media"
-						data-video-media
-						data-preview={preview ?? undefined}
-					>
+					<span class="video-card__media" data-video-media>
 						<span class="video-card__zoom">
-							{poster ? (
-								<Raster
-									src={poster}
-									alt={`Still from ${title}.`}
-									sizes="(min-width: 1024px) 48vw, 92vw"
-									widths={[480, 800, 1280]}
-									fallbackWidth={1280}
-									fallbackHeight={720}
-									reveal
-								/>
-							) : (
-								<span class="video-card__plate">
-									<span class="video-card__plate-note">Poster still to come.</span>
-								</span>
-							)}
+							{
+								loop ? (
+									<HoverVideo
+										stem={loop}
+										poster={poster ?? `${loop}-poster.jpg`}
+										aspect="16:9"
+										class="video-card__film"
+									/>
+								) : poster ? (
+									<Raster
+										src={poster}
+										alt={`Still from ${title}.`}
+										sizes="(min-width: 1024px) 48vw, 92vw"
+										widths={[480, 800, 1280]}
+										fallbackWidth={1280}
+										fallbackHeight={720}
+										reveal
+									/>
+								) : (
+									<span class="video-card__plate">
+										<span class="video-card__plate-note">Poster still to come.</span>
+									</span>
+								)
+							}
 						</span>
 					</span>
 					<span class="label-box label-box--red video-card__play">
@@ -195,6 +206,11 @@ const soon = mode === "placeholder";
 		transform: scale(1);
 	}
 
+	.video-card__zoom :global(.video-card__film) {
+		height: 100%;
+		aspect-ratio: auto;
+	}
+
 	.video-card__zoom :global(picture),
 	.video-card__zoom :global(img) {
 		display: block;
@@ -218,21 +234,6 @@ const soon = mode === "placeholder";
 		letter-spacing: var(--type-label-tracking);
 		text-transform: uppercase;
 		color: var(--color-hero);
-	}
-
-	.video-card__media :global(.video-preview) {
-		position: absolute;
-		inset: 0;
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
-		opacity: 0;
-		pointer-events: none;
-		transition: opacity 0.45s linear;
-	}
-
-	.video-card__media.is-playing :global(.video-preview) {
-		opacity: 1;
 	}
 
 	.video-card__play {
@@ -299,8 +300,7 @@ const soon = mode === "placeholder";
 	}
 
 	@media (prefers-reduced-motion: reduce) {
-		.video-card__zoom,
-		.video-card__media :global(.video-preview) {
+		.video-card__zoom {
 			transition: none;
 			transform: none;
 		}

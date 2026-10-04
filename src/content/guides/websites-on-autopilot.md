@@ -8,6 +8,7 @@ summary:
 category: Websites
 date: 2026-10-02
 cover: /media/covers/websites-on-autopilot.jpg
+loop: /media/loops/guide-websites-on-autopilot
 pdf: /guides/website-on-autopilot.pdf
 replay: websites-on-autopilot-live
 featured: true

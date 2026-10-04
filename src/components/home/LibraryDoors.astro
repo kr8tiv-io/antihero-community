@@ -1,37 +1,33 @@
 ---
-import Raster from "../Raster.astro";
+import HoverVideo from "../HoverVideo.astro";
 
 const doors = [
 	{
 		href: "/guides",
 		title: "Guides",
 		line: "Step-by-step PDFs from every live.",
-		webm: "/media/door-guides.webm",
-		mp4: "/media/door-guides.mp4",
+		stem: "/media/door-guides",
 		poster: "/media/door-guides-poster.jpg",
 	},
 	{
 		href: "/prompts",
 		title: "Prompts",
 		line: "Copy, paste, done.",
-		webm: "/media/door-prompts.webm",
-		mp4: "/media/door-prompts.mp4",
+		stem: "/media/door-prompts",
 		poster: "/media/door-prompts-poster.jpg",
 	},
 	{
 		href: "/videos",
 		title: "Videos",
 		line: "Every live, minus the buffering.",
-		webm: "/media/door-videos.webm",
-		mp4: "/media/door-videos.mp4",
+		stem: "/media/door-videos",
 		poster: "/media/door-videos-poster.jpg",
 	},
 	{
 		href: "/blog",
 		title: "Blog",
 		line: "Notes from the trenches.",
-		webm: "/media/door-blog.webm",
-		mp4: "/media/door-blog.mp4",
+		stem: "/media/door-blog",
 		poster: "/media/door-blog-poster.jpg",
 	},
 ];
@@ -46,30 +42,21 @@ const doors = [
 	<div class="doors-row">
 		{
 			doors.map((door) => (
-				<a class="door" href={door.href} data-door data-label={door.title} data-cursor="Go in">
+				<a
+					class="door"
+					href={door.href}
+					data-door
+					data-hover-card
+					data-label={door.title}
+					data-cursor="Go in"
+				>
 					<div class="door-face" data-door-face>
-						<Raster
-							src={door.poster}
-							alt={`Still from the ${door.title} door.`}
-							sizes="(min-width: 1024px) 22vw, (min-width: 768px) 45vw, 78vw"
-							widths={[480, 720, 1080]}
-							fallbackWidth={1080}
-							fallbackHeight={1350}
-							class="door-still"
+						<HoverVideo
+							stem={door.stem}
+							poster={door.poster}
+							aspect="4:5"
+							class="door-film"
 						/>
-						<video
-							muted
-							loop
-							playsinline
-							preload="none"
-							width="1080"
-							height="1350"
-							tabindex="-1"
-							aria-hidden="true"
-						>
-							<source data-src={door.webm} type="video/webm" />
-							<source data-src={door.mp4} type="video/mp4" />
-						</video>
 						<span class="door-streak" aria-hidden="true" />
 						<span class="door-shade" aria-hidden="true" />
 						<span class="door-copy">
@@ -166,22 +153,13 @@ const doors = [
 		transform-style: preserve-3d;
 	}
 
-	.door-face :global(picture.door-still),
-	.door-face video {
+	.door-face :global(.door-film) {
 		position: absolute;
 		inset: 0;
-		display: block;
+		z-index: 0;
 		width: 100%;
 		height: 100%;
-	}
-
-	.door-face video {
-		object-fit: cover;
-		opacity: 0;
-	}
-
-	.door-face video.is-playing {
-		opacity: 1;
+		aspect-ratio: auto;
 	}
 
 	.door-streak {

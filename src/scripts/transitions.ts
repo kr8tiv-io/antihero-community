@@ -13,6 +13,7 @@ import { bootStarfield, releaseStarfield } from "./starfield";
 let releaseShelf: (() => void) | null = null;
 let releasePrompts: (() => void) | null = null;
 let releaseVideos: (() => void) | null = null;
+let releaseHover: (() => void) | null = null;
 
 /**
  * One listener set for the life of the tab.
@@ -108,6 +109,8 @@ function onSwap(event: Event): void {
 	releaseShelf?.();
 	releasePrompts?.();
 	releaseVideos?.();
+	releaseHover?.();
+	releaseHover = null;
 	releaseReveals();
 	gsap.killTweensOf("[data-join-glow]");
 	document.querySelectorAll("video").forEach((video) => {
@@ -149,6 +152,14 @@ function bootRoute(): Promise<void> {
 	}
 	if (document.querySelector("[data-doors]")) {
 		jobs.push(import("./home-doors").then((mod) => mod.bootDoors()));
+	}
+	if (document.querySelector("[data-hover-video]")) {
+		jobs.push(
+			import("./hover-video").then((mod) => {
+				releaseHover = mod.releaseHoverVideos;
+				mod.bootHoverVideos();
+			}),
+		);
 	}
 	if (document.querySelector("[data-drop]")) {
 		jobs.push(import("./home-drop").then((mod) => mod.bootDrop()));

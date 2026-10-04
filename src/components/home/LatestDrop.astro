@@ -1,4 +1,5 @@
 ---
+import HoverVideo from "../HoverVideo.astro";
 import Raster from "../Raster.astro";
 import { existsSync } from "node:fs";
 import { join } from "node:path";
@@ -51,6 +52,14 @@ const alsoNew = [...prompts]
 
 const replay = guide?.data.replay ? await getEntry(guide.data.replay) : undefined;
 const coverSrc = guide ? mediaSrc(guide.data.cover) : null;
+
+function readyLoop(stem: string | undefined): string | null {
+	if (!stem || !localMedia(`${stem}.mp4`) || !localMedia(`${stem}-poster.jpg`)) return null;
+	return stem;
+}
+
+const coverLoop = readyLoop(guide?.data.loop);
+const replayLoop = readyLoop(replay?.data.loop);
 const posterSrc =
 	replay && replay.data.placeholder === false ? mediaSrc(replay.data.poster) : null;
 
@@ -87,11 +96,23 @@ const date = guide ? dropDate(guide.data.date) : null;
 
 			<div class="drop-split">
 				<article class="drop-guide">
-					<a class="drop-cover" href={`/guides/${guide.data.slug}`} aria-label={guide.data.title}>
+					<a
+						class="drop-cover"
+						href={`/guides/${guide.data.slug}`}
+						data-hover-card
+						aria-label={guide.data.title}
+					>
 						<span class="drop-cover-frame">
 							<span class="drop-cover-media" data-drop-media>
 								<span class="drop-cover-zoom">
-									{coverSrc ? (
+									{coverLoop ? (
+										<HoverVideo
+											stem={coverLoop}
+											poster={`${coverLoop}-poster.jpg`}
+											aspect="4:5"
+											class="drop-film"
+										/>
+									) : coverSrc ? (
 										<Raster
 											src={coverSrc}
 											alt={`Cover of ${guide.data.title}.`}
@@ -135,7 +156,24 @@ const date = guide ? dropDate(guide.data.date) : null;
 				</article>
 
 				<aside class="drop-replay" data-drop-in>
-					{player ? (
+					{replay && replayLoop ? (
+						<a
+							class="drop-play"
+							href={`/videos#${encodeURIComponent(replay.id)}`}
+							data-hover-card
+							aria-label={`${replay.data.title}. Replay coming soon.`}
+						>
+							<span class="drop-play-frame">
+								<HoverVideo
+									stem={replayLoop}
+									poster={`${replayLoop}-poster.jpg`}
+									aspect="16:9"
+									class="drop-film"
+								/>
+							</span>
+							<span class="drop-soon">Replay coming soon. The guide's already here.</span>
+						</a>
+					) : player ? (
 						<a
 							class="drop-play"
 							href={player.href}
@@ -253,6 +291,13 @@ const date = guide ? dropDate(guide.data.date) : null;
 		display: block;
 		width: 100%;
 		height: 100%;
+	}
+
+	.drop-cover-zoom :global(.drop-film),
+	.drop-play-frame :global(.drop-film) {
+		width: 100%;
+		height: 100%;
+		aspect-ratio: auto;
 	}
 
 	.drop-cover-zoom :global(picture),
@@ -424,8 +469,13 @@ const date = guide ? dropDate(guide.data.date) : null;
 	.drop-play-frame {
 		display: block;
 		overflow: hidden;
-		aspect-ratio: 4 / 5;
+		aspect-ratio: 16 / 9;
 		background: var(--color-carbon);
+	}
+
+	.drop-play .drop-soon {
+		display: block;
+		margin-top: var(--space-12);
 	}
 
 	.drop-play-frame :global(picture),
@@ -607,6 +657,7 @@ const date = guide ? dropDate(guide.data.date) : null;
 
 	@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
 		.drop-cover-zoom,
+		.drop-play-frame :global(.drop-film),
 		.drop-play-frame :global(img),
 		.drop-pdf svg,
 		.drop-play-label svg,
@@ -620,8 +671,8 @@ const date = guide ? dropDate(guide.data.date) : null;
 
 		.drop-cover:hover .drop-cover-zoom,
 		.drop-cover:focus-visible .drop-cover-zoom,
-		.drop-play:hover .drop-play-frame :global(img),
-		.drop-play:focus-visible .drop-play-frame :global(img) {
+		.drop-play:hover .drop-play-frame :global(.drop-film),
+		.drop-play:focus-visible .drop-play-frame :global(.drop-film) {
 			transform: scale(1.04);
 		}
 
@@ -648,7 +699,7 @@ const date = guide ? dropDate(guide.data.date) : null;
 
 	@media (prefers-reduced-motion: reduce) {
 		.drop-cover-zoom,
-		.drop-play-frame :global(img),
+		.drop-play-frame :global(.drop-film),
 		.drop-pdf svg,
 		.drop-play-label svg,
 		.drop-also-list a,

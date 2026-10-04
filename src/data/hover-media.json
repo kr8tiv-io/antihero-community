@@ -1,0 +1,12 @@
+[
+  { "name": "door-guides", "aspect": "4:5", "used": "Library door, Guides" },
+  { "name": "door-prompts", "aspect": "4:5", "used": "Library door, Prompts" },
+  { "name": "door-videos", "aspect": "4:5", "used": "Library door, Videos" },
+  { "name": "door-blog", "aspect": "4:5", "used": "Library door, Blog" },
+  { "name": "guide-websites-on-autopilot", "aspect": "4:5", "used": "Guides card and the latest drop cover" },
+  { "name": "guide-build-a-brand-from-scratch-with-ai", "aspect": "4:5", "used": "Guides card" },
+  { "name": "guide-antihero-website-masterclass", "aspect": "4:5", "used": "Guides card, AntiHero Website Masterclass" },
+  { "name": "guide-email-the-channel-nobody-can-take", "aspect": "4:5", "used": "Guides card, Email" },
+  { "name": "video-websites-on-autopilot-live", "aspect": "16:9", "used": "Videos card and the latest drop replay" },
+  { "name": "video-build-a-brand-from-scratch-live", "aspect": "16:9", "used": "Videos card" }
+]

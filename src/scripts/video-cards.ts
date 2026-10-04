@@ -1,16 +1,10 @@
 /**
- * Desktop hover previews load on the first hover. Phones stay on the poster.
  * The modal builds a YouTube iframe or a native player only after a click.
+ * Card hover films live in the shared hover player.
  */
-
-import { isMobile, onReducedMotionChange, prefersReducedMotion } from "./motion";
 
 const YOUTUBE_ID = /^[A-Za-z0-9_-]{6,20}$/;
 const FOCUSABLE = "a[href], button:not([disabled]), iframe, video, [tabindex]:not([tabindex='-1'])";
-
-function previewsAllowed(): boolean {
-	return !isMobile() && !prefersReducedMotion();
-}
 
 function safePlayableUrl(value: string): string | null {
 	if (value.startsWith("/") && !value.startsWith("//") && !value.includes("\\")) return value;
@@ -23,89 +17,8 @@ function safePlayableUrl(value: string): string | null {
 	return null;
 }
 
-function ensurePreview(media: HTMLElement, src: string): HTMLVideoElement {
-	const existing = media.querySelector<HTMLVideoElement>(".video-preview");
-	if (existing) return existing;
-	const video = document.createElement("video");
-	video.className = "video-preview";
-	video.muted = true;
-	video.defaultMuted = true;
-	video.loop = true;
-	video.playsInline = true;
-	video.preload = "none";
-	video.tabIndex = -1;
-	video.setAttribute("playsinline", "");
-	video.setAttribute("aria-hidden", "true");
-	video.src = src;
-	media.appendChild(video);
-	return video;
-}
-
-function stopPreview(media: HTMLElement): void {
-	const video = media.querySelector<HTMLVideoElement>(".video-preview");
-	media.classList.remove("is-playing");
-	if (!video) return;
-	video.pause();
-	try {
-		video.currentTime = 0;
-	} catch {
-		// The file may not have a timeline yet.
-	}
-}
-
-function playPreview(media: HTMLElement): void {
-	if (!previewsAllowed()) return;
-	const src = media.dataset.preview;
-	if (!src) return;
-	const video = ensurePreview(media, src);
-	media.classList.add("is-playing");
-	void video.play().catch(() => {
-		media.classList.remove("is-playing");
-	});
-}
-
-let releaseActive: (() => void) | null = null;
-
 export function releaseVideoCards(): void {
-	releaseActive?.();
-	releaseActive = null;
-}
-
-function bootPreviews(root: HTMLElement): () => void {
-	const medias = [...root.querySelectorAll<HTMLElement>("[data-video-media][data-preview]")];
-
-	for (const media of medias) {
-		const card = media.closest<HTMLElement>("[data-video-card]");
-		if (!card) continue;
-
-		card.addEventListener("pointerenter", () => playPreview(media));
-		card.addEventListener("pointerleave", () => stopPreview(media));
-		card.addEventListener("focusin", () => playPreview(media));
-		card.addEventListener("focusout", (event) => {
-			const next = event.relatedTarget;
-			if (next instanceof Node && card.contains(next)) return;
-			stopPreview(media);
-		});
-	}
-
-	const halt = (): void => {
-		for (const media of medias) stopPreview(media);
-	};
-
-	const queries = ["(width < 768px)", "(pointer: coarse)"].map((query) => {
-		const list = window.matchMedia(query);
-		list.addEventListener("change", halt);
-		return list;
-	});
-	const unsubReduced = onReducedMotionChange((reduced) => {
-		if (reduced) halt();
-	});
-
-	return () => {
-		for (const list of queries) list.removeEventListener("change", halt);
-		unsubReduced();
-		halt();
-	};
+	// Hover films are released with the shared player.
 }
 
 function focusable(dialog: HTMLElement): HTMLElement[] {
@@ -223,7 +136,5 @@ export function bootVideoCards(): void {
 	if (!root || root.dataset.videosReady === "true") return;
 	releaseVideoCards();
 	root.dataset.videosReady = "true";
-	const releasePreviews = bootPreviews(root);
 	bootModal(root);
-	releaseActive = releasePreviews;
 }

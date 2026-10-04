@@ -42,6 +42,10 @@ const guides = defineCollection({
     cover: z.string().min(1),
     pdf: guidePdf,
     replay: z.optional(reference("videos")),
+    loop: z
+      .string()
+      .regex(/^\/media\/loops\/[a-z0-9-]+$/, "Loop stems live under /media/loops/.")
+      .optional(),
     featured: z.boolean(),
     draft: z.boolean(),
   }),
@@ -74,6 +78,10 @@ const videos = defineCollection({
     videoUrl: z.string().url().optional(),
     poster: z.string().min(1),
     preview: z.string().min(1).optional(),
+    loop: z
+      .string()
+      .regex(/^\/media\/loops\/[a-z0-9-]+$/, "Loop stems live under /media/loops/.")
+      .optional(),
     guide: z.optional(reference("guides")),
     placeholder: z.boolean(),
   }),
