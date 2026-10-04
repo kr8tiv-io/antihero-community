@@ -1,4 +1,5 @@
 ---
+import { ClientRouter } from "astro:transitions";
 import Footer from "../components/Footer.astro";
 import Header from "../components/Header.astro";
 import JoinBand from "../components/JoinBand.astro";
@@ -6,6 +7,7 @@ import Seo from "../components/Seo.astro";
 import { normalizePath } from "../data/nav";
 import { SITE_URL } from "../data/site";
 import "../styles/global.css";
+import "../styles/transitions.css";
 /* Client scripts drop this file in the static build. The layout import keeps the stopped-scroll lock. */
 import "lenis/dist/lenis.css";
 import appIconSvg from "../assets/brand/antihero-app-icon.svg?url";
@@ -50,9 +52,13 @@ const rssUrl = new URL("/rss.xml", Astro.site ?? SITE_URL).href;
 		<link rel="icon" type="image/png" sizes="180x180" href={appIcon180.src} />
 		<link rel="icon" type="image/png" sizes="512x512" href={appIcon512.src} />
 		<link rel="apple-touch-icon" sizes="180x180" href={appIcon180.src} />
+		<ClientRouter />
 	</head>
 	<body class="bg-anti font-body text-hero">
 		<a class="skip-link label-box label-box--red" href="#content">Skip to content</a>
+		<div class="route-band" data-route-band transition:name="route-band" aria-hidden="true">
+			<p class="route-band__name" data-route-name></p>
+		</div>
 		<Header />
 		<slot name="header" />
 		<main id="content" tabindex="-1">
@@ -62,11 +68,13 @@ const rssUrl = new URL("/rss.xml", Astro.site ?? SITE_URL).href;
 		<Footer />
 		<slot name="footer" />
 		<script>
-			import { initSmoothScroll } from "../scripts/smooth-scroll";
 			import { bootReveals } from "../scripts/reveals";
+			import { initSmoothScroll } from "../scripts/smooth-scroll";
+			import { bootTransitions } from "../scripts/transitions";
 
 			initSmoothScroll();
 			bootReveals();
+			bootTransitions();
 		</script>
 	</body>
 </html>

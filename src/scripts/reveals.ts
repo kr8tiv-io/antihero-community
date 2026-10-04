@@ -39,19 +39,27 @@ let teardown: (() => void) | null = null;
 let stopWatching: (() => void) | null = null;
 
 export function bootReveals(): void {
-	if (booted || typeof window === "undefined") return;
+	if (typeof window === "undefined") return;
+	if (!stopWatching) {
+		const unsub = onReducedMotionChange(() => rebuild());
+		const mq = window.matchMedia("(width < 768px), (pointer: coarse)");
+		const onMq = (): void => rebuild();
+		mq.addEventListener("change", onMq);
+		stopWatching = () => {
+			unsub();
+			mq.removeEventListener("change", onMq);
+		};
+	}
+	if (booted) return;
 	booted = true;
-
-	const unsub = onReducedMotionChange(() => rebuild());
-	const mq = window.matchMedia("(width < 768px), (pointer: coarse)");
-	const onMq = (): void => rebuild();
-	mq.addEventListener("change", onMq);
-	stopWatching = () => {
-		unsub();
-		mq.removeEventListener("change", onMq);
-	};
-
 	rebuild();
+}
+
+/** Drop the triggers so the next page-load can boot again. The media watchers stay. */
+export function releaseReveals(): void {
+	booted = false;
+	teardown?.();
+	teardown = null;
 }
 
 function tune(): Tuner {
@@ -73,7 +81,7 @@ function tune(): Tuner {
 function rebuild(): void {
 	teardown?.();
 	teardown = null;
-	if (prefersReducedMotion()) {
+	if (!booted || prefersReducedMotion()) {
 		publish(0);
 		return;
 	}
@@ -430,5 +438,3 @@ function playCount(el: HTMLElement, tl: gsap.core.Timeline, at: number, duration
 		at,
 	);
 }
-
-void stopWatching;

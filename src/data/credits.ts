@@ -30,7 +30,7 @@ export const credits: Credit[] = [
     license: "MIT",
     link: "https://astro.build",
     licenseLink: "https://github.com/withastro/astro/blob/main/LICENSE",
-    usedFor: "Static site framework",
+    usedFor: "Static site framework, including ClientRouter view transitions",
     category: "Code and libraries",
   },
   {

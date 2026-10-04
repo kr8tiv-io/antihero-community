@@ -21,6 +21,14 @@ export interface FilterShelfOptions {
 	readyKey: string;
 }
 
+let releaseActive: (() => void) | null = null;
+
+/** Drop the window listeners from the shelf that is about to leave. */
+export function releaseFilterShelf(): void {
+	releaseActive?.();
+	releaseActive = null;
+}
+
 export function bootFilterShelf(options: FilterShelfOptions): void {
 	const root = document.querySelector<HTMLElement>(options.root);
 	if (!root || root.dataset[options.readyKey] === "true") return;
@@ -31,6 +39,7 @@ export function bootFilterShelf(options: FilterShelfOptions): void {
 	const shelf = root.querySelector<HTMLElement>(options.shelf);
 	if (!grid || !empty || !shelf) return;
 
+	releaseFilterShelf();
 	root.dataset[options.readyKey] = "true";
 
 	const buttons = [...shelf.querySelectorAll<HTMLButtonElement>("[data-filter]")];
@@ -148,17 +157,23 @@ export function bootFilterShelf(options: FilterShelfOptions): void {
 		pinButton(filter);
 	});
 
-	window.addEventListener("popstate", () => {
+	const onPop = (): void => {
 		current = readFilter(known);
 		apply(current, true);
 		pinButton(current);
-	});
+	};
+	window.addEventListener("popstate", onPop);
 
-	onReducedMotionChange((reduced) => {
+	const unsubReduced = onReducedMotionChange((reduced) => {
 		if (!reduced) return;
 		clearMotion();
 		apply(current, false);
 	});
+
+	releaseActive = () => {
+		window.removeEventListener("popstate", onPop);
+		unsubReduced();
+	};
 }
 
 function readFilter(known: Set<string>): string {

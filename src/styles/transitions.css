@@ -1,0 +1,187 @@
+/*
+ * Page swap. The root lifts and the next page rises.
+ * The band is captured sitting on the bottom edge, then this sweep carries
+ * that picture up across the viewport. A transform that parks it off-screen
+ * snapshots as an empty image, so the sweep would be invisible.
+ * Header and menu keep their own names so they do not lift with the page.
+ * The footer stays inside the root snapshot (view-transition-name: none).
+ */
+
+:root {
+	--route-ms: 750ms;
+	--route-fade-ms: 150ms;
+}
+
+::view-transition {
+	background: var(--color-anti);
+}
+
+::view-transition-group(root) {
+	animation-duration: var(--route-ms);
+}
+
+::view-transition-old(root) {
+	animation: ah-lift var(--route-ms) cubic-bezier(0.65, 0, 0.35, 1) both;
+	mix-blend-mode: normal;
+}
+
+::view-transition-new(root) {
+	animation: ah-rise var(--route-ms) cubic-bezier(0.22, 1, 0.36, 1) both;
+	mix-blend-mode: normal;
+}
+
+::view-transition-group(route-band) {
+	z-index: 10;
+	animation: ah-band-sweep var(--route-ms) cubic-bezier(0.76, 0, 0.24, 1) both;
+}
+
+::view-transition-old(route-band) {
+	animation: none;
+	mix-blend-mode: normal;
+	opacity: 0;
+}
+
+::view-transition-new(route-band) {
+	animation: none;
+	mix-blend-mode: normal;
+	opacity: 1;
+}
+
+::view-transition-group(site-header),
+::view-transition-group(site-menu) {
+	z-index: 4;
+	animation: none;
+}
+
+::view-transition-old(site-header),
+::view-transition-old(site-menu) {
+	animation: none;
+	mix-blend-mode: normal;
+	opacity: 0;
+}
+
+::view-transition-new(site-header),
+::view-transition-new(site-menu) {
+	animation: none;
+	mix-blend-mode: normal;
+	opacity: 1;
+}
+
+/* A separate footer snapshot would fly when scroll resets. Keep it in the page image. */
+.site-footer {
+	view-transition-name: none !important;
+}
+
+.route-band {
+	position: fixed;
+	z-index: 70;
+	right: 0;
+	bottom: 0;
+	left: 0;
+	display: flex;
+	align-items: center;
+	height: 18vh;
+	padding-inline: 1rem;
+	background: var(--color-ignition);
+	color: var(--color-hero);
+	pointer-events: none;
+	transform: translateY(110%);
+}
+
+.route-band__name {
+	max-width: 100%;
+	overflow: hidden;
+	font-family: var(--font-display);
+	font-size: clamp(3.25rem, 12vh, 8rem);
+	font-weight: 400;
+	line-height: 0.8;
+	letter-spacing: -0.01em;
+	text-overflow: ellipsis;
+	text-transform: uppercase;
+	white-space: nowrap;
+}
+
+.route-band__name[data-long="true"] {
+	font-size: clamp(2rem, 7vh, 4.25rem);
+}
+
+/* The group is pinned to the snapshot origin, so these offsets are viewport positions. */
+@keyframes ah-band-sweep {
+	from {
+		transform: translateY(100vh);
+	}
+
+	to {
+		transform: translateY(-100%);
+	}
+}
+
+@keyframes ah-lift {
+	from {
+		transform: translateY(0);
+		opacity: 1;
+	}
+
+	to {
+		transform: translateY(-24px);
+		opacity: 0;
+	}
+}
+
+@keyframes ah-rise {
+	from {
+		transform: translateY(24px);
+		opacity: 0;
+	}
+
+	to {
+		transform: translateY(0);
+		opacity: 1;
+	}
+}
+
+@keyframes ah-fade-out {
+	from {
+		opacity: 1;
+	}
+
+	to {
+		opacity: 0;
+	}
+}
+
+@keyframes ah-fade-in {
+	from {
+		opacity: 0;
+	}
+
+	to {
+		opacity: 1;
+	}
+}
+
+/* Phones get the band and skip the name. Same breakpoint as isMobile(). */
+@media (width < 768px), (pointer: coarse) {
+	.route-band__name {
+		opacity: 0;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	:root::view-transition-old(root) {
+		animation: ah-fade-out var(--route-fade-ms) linear both !important;
+		mix-blend-mode: normal;
+	}
+
+	:root::view-transition-new(root) {
+		animation: ah-fade-in var(--route-fade-ms) linear both !important;
+		mix-blend-mode: normal;
+	}
+
+	:root::view-transition-group(route-band),
+	:root::view-transition-old(route-band),
+	:root::view-transition-new(route-band) {
+		animation: none !important;
+		opacity: 0 !important;
+	}
+}

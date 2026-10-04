@@ -8,10 +8,10 @@ const year = new Date().getFullYear();
 const kr8tivUrl = "https://kr8tiv.io";
 ---
 
-<footer class="site-footer">
+<footer class="site-footer" transition:persist="site-footer">
   <div class="site-footer__main">
     <div class="site-footer__brand">
-      <a class="site-footer__mark" href="/" aria-label="AntiHero AI, home">
+      <a class="site-footer__mark" href="/" data-nav data-label="Home" aria-label="AntiHero AI, home">
         <img src={wordmark} alt="" width="120" height="36" />
       </a>
       <p class="site-footer__tag">Be your own hero</p>
@@ -24,6 +24,8 @@ const kr8tivUrl = "https://kr8tiv.io";
               <li>
                 <a
                   href={link.href}
+                  data-nav
+                  data-label={link.label}
                   aria-current={isCurrentPath(link.href, path) ? "page" : undefined}
                 >
                   {link.label}

@@ -78,21 +78,9 @@ function sourceLink(source: { id: string } | undefined): { href: string; title: 
 </BaseLayout>
 
 <script>
-	import { bootFilterShelf } from "../../scripts/filter-shelf";
-	import { bootPromptCards } from "../../scripts/prompt-cards";
+	import { bootPromptsPage } from "../../scripts/prompt-cards";
 
-	bootFilterShelf({
-		root: "[data-prompts]",
-		grid: "[data-prompt-grid]",
-		card: "[data-prompt-card]",
-		empty: "[data-prompt-empty]",
-		status: "[data-prompt-status]",
-		shelf: "[data-filter-shelf]",
-		noun: "prompt",
-		emptyStatus: "No prompts in this category yet.",
-		readyKey: "promptsReady",
-	});
-	bootPromptCards();
+	bootPromptsPage();
 </script>
 
 <style>

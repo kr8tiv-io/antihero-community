@@ -12,6 +12,9 @@ const path = Astro.url.pathname;
 	aria-modal="true"
 	aria-label="Menu"
 	hidden
+	transition:persist="site-menu"
+	transition:name="site-menu"
+	transition:animate="none"
 >
 	<nav class="menu-overlay__nav" aria-label="Sections">
 		<ul class="menu-list" data-menu-list>
@@ -22,6 +25,8 @@ const path = Astro.url.pathname;
 							class="menu-link"
 							href={link.href}
 							data-menu-item
+							data-nav
+							data-label={link.label}
 							aria-current={isCurrentPath(link.href, path) ? "page" : undefined}
 						>
 							<span class="label-box label-box--white">{link.label}</span>

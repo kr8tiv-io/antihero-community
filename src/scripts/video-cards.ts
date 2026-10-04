@@ -64,7 +64,14 @@ function playPreview(media: HTMLElement): void {
 	});
 }
 
-function bootPreviews(root: HTMLElement): void {
+let releaseActive: (() => void) | null = null;
+
+export function releaseVideoCards(): void {
+	releaseActive?.();
+	releaseActive = null;
+}
+
+function bootPreviews(root: HTMLElement): () => void {
 	const medias = [...root.querySelectorAll<HTMLElement>("[data-video-media][data-preview]")];
 
 	for (const media of medias) {
@@ -85,14 +92,20 @@ function bootPreviews(root: HTMLElement): void {
 		for (const media of medias) stopPreview(media);
 	};
 
-	const watch = (query: string): void => {
-		window.matchMedia(query).addEventListener("change", halt);
-	};
-	watch("(width < 768px)");
-	watch("(pointer: coarse)");
-	onReducedMotionChange((reduced) => {
+	const queries = ["(width < 768px)", "(pointer: coarse)"].map((query) => {
+		const list = window.matchMedia(query);
+		list.addEventListener("change", halt);
+		return list;
+	});
+	const unsubReduced = onReducedMotionChange((reduced) => {
 		if (reduced) halt();
 	});
+
+	return () => {
+		for (const list of queries) list.removeEventListener("change", halt);
+		unsubReduced();
+		halt();
+	};
 }
 
 function focusable(dialog: HTMLElement): HTMLElement[] {
@@ -208,7 +221,9 @@ function bootModal(root: HTMLElement): void {
 export function bootVideoCards(): void {
 	const root = document.querySelector<HTMLElement>("[data-videos]");
 	if (!root || root.dataset.videosReady === "true") return;
+	releaseVideoCards();
 	root.dataset.videosReady = "true";
-	bootPreviews(root);
+	const releasePreviews = bootPreviews(root);
 	bootModal(root);
+	releaseActive = releasePreviews;
 }

@@ -4,18 +4,44 @@
  * Success label holds for 1.6s. The scale bump is transform only.
  */
 
+import { bootFilterShelf } from "./filter-shelf";
+
 const SUCCESS = "Stolen. Nice.";
 const FAILURE = "Couldn't copy. Select it and copy by hand.";
 const COPY = "Copy";
 
 const timers = new WeakMap<HTMLButtonElement, number>();
+let releaseActive: (() => void) | null = null;
+
+export function releasePromptCards(): void {
+	releaseActive?.();
+	releaseActive = null;
+}
+
+/** Shelf plus copy buttons. Safe to call again on the same DOM. */
+export function bootPromptsPage(): void {
+	bootFilterShelf({
+		root: "[data-prompts]",
+		grid: "[data-prompt-grid]",
+		card: "[data-prompt-card]",
+		empty: "[data-prompt-empty]",
+		status: "[data-prompt-status]",
+		shelf: "[data-filter-shelf]",
+		noun: "prompt",
+		emptyStatus: "No prompts in this category yet.",
+		readyKey: "promptsReady",
+	});
+	bootPromptCards();
+}
 
 export function bootPromptCards(): void {
 	const root = document.querySelector<HTMLElement>("[data-prompts]");
 	if (!root || root.dataset.cardsReady === "true") return;
+	releasePromptCards();
 	root.dataset.cardsReady = "true";
 
 	const fitToggles = (): void => {
+		if (!root.isConnected) return;
 		for (const card of root.querySelectorAll<HTMLElement>("[data-prompt-card]")) {
 			const body = card.querySelector<HTMLElement>("[data-prompt-body]");
 			const toggle = card.querySelector<HTMLButtonElement>("[data-prompt-toggle]");
@@ -41,6 +67,9 @@ export function bootPromptCards(): void {
 	window.addEventListener("resize", fitToggles);
 	document.fonts?.ready.then(fitToggles).catch(() => undefined);
 	root.addEventListener("filtershelf:change", fitToggles);
+	releaseActive = () => {
+		window.removeEventListener("resize", fitToggles);
+	};
 
 	root.addEventListener("click", (event) => {
 		const target = event.target as Element | null;
