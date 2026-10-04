@@ -26,6 +26,8 @@ function initNav(): void {
   let generation = 0;
   let lastY = window.scrollY;
   let ticking = false;
+  let scrimShown = false;
+  let headerHidden = false;
 
   const items = () =>
     [...overlay.querySelectorAll<HTMLElement>("[data-menu-item]")];
@@ -45,8 +47,32 @@ function initNav(): void {
   }
 
   function showHeader(): void {
+    if (!headerHidden) return;
+    headerHidden = false;
     gsap.to(header, {
       yPercent: 0,
+      duration: motionDuration("fast"),
+      ease: ease.out,
+      overwrite: "auto",
+    });
+  }
+
+  function hideHeader(): void {
+    if (headerHidden) return;
+    headerHidden = true;
+    gsap.to(header, {
+      yPercent: -100,
+      duration: motionDuration("fast"),
+      ease: ease.out,
+      overwrite: "auto",
+    });
+  }
+
+  function paintScrim(on: boolean): void {
+    if (on === scrimShown) return;
+    scrimShown = on;
+    gsap.to(scrim, {
+      opacity: on ? 0.85 : 0,
       duration: motionDuration("fast"),
       ease: ease.out,
       overwrite: "auto",
@@ -58,26 +84,13 @@ function initNav(): void {
     const scrolled = y > SCROLL_START;
     const goingDown = y > lastY + 6;
     const goingUp = y < lastY - 6;
-    header.classList.toggle("is-scrolled", scrolled && !open);
-
-    gsap.to(scrim, {
-      opacity: scrolled && !open ? 0.85 : 0,
-      duration: motionDuration("fast"),
-      ease: ease.out,
-      overwrite: "auto",
-    });
+    const nextScrim = scrolled && !open;
+    header.classList.toggle("is-scrolled", nextScrim);
+    paintScrim(nextScrim);
 
     const canHide = desktopQuery.matches && !open && y > SCROLL_START;
-    if (canHide && goingDown) {
-      gsap.to(header, {
-        yPercent: -100,
-        duration: motionDuration("fast"),
-        ease: ease.out,
-        overwrite: "auto",
-      });
-    } else if (!canHide || goingUp || y <= SCROLL_START) {
-      showHeader();
-    }
+    if (canHide && goingDown) hideHeader();
+    else if (!canHide || goingUp || y <= SCROLL_START) showHeader();
 
     lastY = y;
   }
@@ -128,6 +141,7 @@ function initNav(): void {
     showHeader();
     gsap.killTweensOf(overlay);
     gsap.set(scrim, { opacity: 0 });
+    scrimShown = false;
     header.classList.remove("is-scrolled");
     document.documentElement.classList.add("menu-open");
     overlay.hidden = false;

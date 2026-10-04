@@ -41,8 +41,8 @@ export function bootGuideCover(): void {
 					scrollTrigger: {
 						trigger: frame,
 						start: "top bottom",
-						end: "bottom top",
-						scrub: 1.2,
+						end: phone ? "center center" : "bottom top",
+						scrub: phone ? 0.4 : 1.2,
 					},
 				},
 			);

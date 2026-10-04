@@ -326,6 +326,9 @@
     z-index: 50;
     top: calc(var(--header-h) + var(--space-8));
     left: var(--space-16);
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
     transform: translateY(calc(-100% - var(--header-h) - var(--space-48)));
   }
 

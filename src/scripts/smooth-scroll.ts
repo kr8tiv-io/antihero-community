@@ -1,10 +1,10 @@
 import Lenis from "lenis";
-import { gsap, ScrollTrigger, onReducedMotionChange, prefersReducedMotion } from "./motion";
+import { gsap, isMobile, ScrollTrigger, onReducedMotionChange, prefersReducedMotion } from "./motion";
 
 /**
  * One window scroller for the whole site.
  * Page transitions should call destroySmoothScroll(), then initSmoothScroll().
- * prefers-reduced-motion never constructs Lenis. Touch stays native (syncTouch off).
+ * Reduced motion and phones never construct Lenis. Touch stays native.
  */
 
 let lenis: Lenis | null = null;
@@ -124,8 +124,17 @@ export function destroySmoothScroll(): void {
 	ScrollTrigger.update();
 }
 
+function nativeScroll(): boolean {
+	return prefersReducedMotion() || isMobile();
+}
+
+function syncLenis(): void {
+	if (nativeScroll()) destroySmoothScroll();
+	else create();
+}
+
 function create(): Lenis | null {
-	if (prefersReducedMotion()) {
+	if (nativeScroll()) {
 		destroySmoothScroll();
 		return null;
 	}
@@ -205,10 +214,8 @@ function create(): Lenis | null {
 
 export function initSmoothScroll(): Lenis | null {
 	if (!reducedUnsub) {
-		reducedUnsub = onReducedMotionChange(() => {
-			if (prefersReducedMotion()) destroySmoothScroll();
-			else create();
-		});
+		reducedUnsub = onReducedMotionChange(syncLenis);
+		window.matchMedia("(width < 768px), (pointer: coarse)").addEventListener("change", syncLenis);
 	}
 	return create();
 }

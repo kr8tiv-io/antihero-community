@@ -5,9 +5,10 @@
  * Hero.astro and JoinBand.astro stay untouched. bootCursor stamps them.
  */
 
-import { gsap, onReducedMotionChange, prefersReducedMotion } from "./motion";
+import { gsap, isMobile, onReducedMotionChange, prefersReducedMotion } from "./motion";
 
 const FINE = "(hover: hover) and (pointer: fine)";
+const PHONE = "(width < 768px), (pointer: coarse)";
 const LERP = 0.2;
 const MAGNET = 8;
 const SETTLE = 0.35;
@@ -66,6 +67,7 @@ export function bootCursor(): void {
 	document.addEventListener("toggle", onToggle, true);
 	document.addEventListener("submit", onSubmit);
 	window.matchMedia(FINE).addEventListener("change", applyMode);
+	window.matchMedia(PHONE).addEventListener("change", applyMode);
 	onReducedMotionChange(applyMode);
 }
 
@@ -134,7 +136,7 @@ function buildCursor(): void {
 
 function applyMode(): void {
 	const fine = window.matchMedia(FINE).matches;
-	enabled = fine && !prefersReducedMotion();
+	enabled = fine && !prefersReducedMotion() && !isMobile();
 	if (!enabled) {
 		visible = false;
 		overField = false;

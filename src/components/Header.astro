@@ -94,10 +94,6 @@ const path = Astro.url.pathname;
 		pointer-events: none;
 	}
 
-	.site-header.is-scrolled .site-header__scrim {
-		backdrop-filter: blur(16px);
-	}
-
 	.site-header__inner,
 	.site-header__end {
 		display: flex;
@@ -118,8 +114,10 @@ const path = Astro.url.pathname;
 	}
 
 	.wordmark {
-		display: block;
+		display: inline-flex;
+		align-items: center;
 		flex: none;
+		min-height: 44px;
 		line-height: 0;
 	}
 
@@ -250,6 +248,10 @@ const path = Astro.url.pathname;
 	}
 
 	@media (min-width: 1024px) {
+		.site-header.is-scrolled .site-header__scrim {
+			backdrop-filter: blur(16px);
+		}
+
 		.site-header__inner {
 			padding-right: var(--space-32);
 			padding-left: var(--space-32);

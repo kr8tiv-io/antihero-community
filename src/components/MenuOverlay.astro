@@ -123,8 +123,12 @@ const path = Astro.url.pathname;
 	}
 
 	.menu-join {
+		display: flex;
+		align-items: center;
+		justify-content: center;
 		flex: none;
 		align-self: stretch;
+		min-height: 44px;
 		margin: 0 var(--space-16) calc(var(--space-16) + env(safe-area-inset-bottom));
 		font-size: clamp(1.75rem, 7vw, 2.75rem);
 		text-align: center;
@@ -149,6 +153,32 @@ const path = Astro.url.pathname;
 		.menu-overlay [data-menu-item] {
 			opacity: 1;
 			transform: none;
+		}
+	}
+
+	@media (max-height: 520px) {
+		.menu-overlay__nav {
+			padding-top: 0;
+			padding-bottom: 0;
+		}
+
+		.menu-list {
+			gap: 0;
+		}
+
+		.menu-link {
+			align-items: center;
+			min-height: 44px;
+		}
+
+		.menu-link .label-box {
+			font-size: clamp(1.5rem, 6.5vh, 2.15rem);
+		}
+
+		.menu-join {
+			min-height: 44px;
+			margin-bottom: env(safe-area-inset-bottom);
+			font-size: 1.35rem;
 		}
 	}
 

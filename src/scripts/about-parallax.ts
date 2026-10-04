@@ -38,8 +38,8 @@ export function bootAboutParallax(): void {
 		const layer = () => ({
 			trigger: root,
 			start: "top top",
-			end: "bottom top",
-			scrub: 1.2,
+			end: phone ? "center top" : "bottom top",
+			scrub: phone ? 0.4 : 1.2,
 			invalidateOnRefresh: true,
 		});
 

@@ -340,7 +340,9 @@ const date = guide ? dropDate(guide.data.date) : null;
 	}
 
 	.drop-read {
-		display: inline-block;
+		display: inline-flex;
+		align-items: center;
+		min-height: 44px;
 		padding: 0.72em 0.85em 0.58em;
 		background: var(--color-hero);
 		color: var(--color-anti);
@@ -349,6 +351,7 @@ const date = guide ? dropDate(guide.data.date) : null;
 	.drop-pdf {
 		display: inline-flex;
 		align-items: center;
+		min-height: 44px;
 		gap: 0.5em;
 		color: var(--color-hero);
 	}
@@ -454,6 +457,9 @@ const date = guide ? dropDate(guide.data.date) : null;
 	}
 
 	.drop-also-list a {
+		display: inline-flex;
+		align-items: center;
+		min-height: 44px;
 		color: var(--color-bone);
 		font-size: clamp(1rem, 2.6vw, 1.125rem);
 		line-height: 1.35;
