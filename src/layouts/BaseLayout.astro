@@ -10,6 +10,7 @@ import "../styles/global.css";
 import "../styles/transitions.css";
 import "../styles/cursor.css";
 import "../styles/starfield.css";
+import "../styles/easter-egg.css";
 /* Client scripts drop this file in the static build. The layout import keeps the stopped-scroll lock. */
 import "lenis/dist/lenis.css";
 import appIconSvg from "../assets/brand/antihero-app-icon.svg?url";
@@ -71,6 +72,7 @@ const rssUrl = new URL("/rss.xml", Astro.site ?? SITE_URL).href;
 		<slot name="footer" />
 		<script>
 			import { bootCursor } from "../scripts/cursor";
+			import { bootEasterEgg } from "../scripts/easter-egg";
 			import { bootReveals } from "../scripts/reveals";
 			import { initSmoothScroll } from "../scripts/smooth-scroll";
 			import { bootStarfield } from "../scripts/starfield";
@@ -79,6 +81,7 @@ const rssUrl = new URL("/rss.xml", Astro.site ?? SITE_URL).href;
 			initSmoothScroll();
 			bootReveals();
 			bootCursor();
+			bootEasterEgg();
 			bootStarfield();
 			bootTransitions();
 		</script>

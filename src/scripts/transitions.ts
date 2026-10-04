@@ -8,6 +8,7 @@ import { bootDoors } from "./home-doors";
 import { bootDrop } from "./home-drop";
 import { bootPromise } from "./home-promise";
 import { bootCursor, releaseCursorMotion } from "./cursor";
+import { bootEasterEgg } from "./easter-egg";
 import { bootStarfield, releaseStarfield } from "./starfield";
 import { bootJoinGlow } from "./join-glow";
 import { gsap, isMobile, onReducedMotionChange, prefersReducedMotion, ScrollTrigger } from "./motion";
@@ -123,6 +124,7 @@ function onPage(): void {
 	initSmoothScroll();
 	bootReveals();
 	bootCursor();
+	bootEasterEgg();
 	bootStarfield();
 	bootPromise();
 	bootDoors();
