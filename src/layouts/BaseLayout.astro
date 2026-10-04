@@ -79,6 +79,7 @@ const rssUrl = new URL("/rss.xml", Astro.site ?? SITE_URL).href;
 		<link rel="icon" type="image/png" sizes="180x180" href={appIcon180.src} />
 		<link rel="icon" type="image/png" sizes="512x512" href={appIcon512.src} />
 		<link rel="apple-touch-icon" sizes="180x180" href={appIcon180.src} />
+		<slot name="head" />
 		<ClientRouter />
 	</head>
 	<body class="bg-anti font-body text-hero">

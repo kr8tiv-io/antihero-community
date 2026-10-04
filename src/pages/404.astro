@@ -1,0 +1,98 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+
+const sentence = "This page went to be its own hero somewhere else.";
+---
+
+<BaseLayout title="Missing" description={sentence}>
+	<meta slot="head" name="robots" content="noindex" />
+	<article slot="main" class="missing">
+		<p class="missing-num" aria-hidden="true">404</p>
+		<div class="missing-copy">
+			<h1 class="missing-title" data-reveal="fade-up">{sentence}</h1>
+			<nav class="missing-links" aria-label="Leave this page">
+				<a class="missing-home" href="/" data-nav data-label="Home">Home</a>
+				<a href="/guides" data-nav data-label="Guides">Guides</a>
+			</nav>
+		</div>
+	</article>
+</BaseLayout>
+
+<style>
+	.missing {
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between;
+		gap: var(--space-64);
+		min-height: 100dvh;
+		padding: calc(var(--header-h) + var(--space-32)) var(--space-16) var(--space-48);
+		overflow: hidden;
+	}
+
+	.missing-num {
+		margin: 0;
+		color: var(--color-hero);
+		font-family: var(--font-display);
+		font-size: clamp(6.5rem, 36vw, 18rem);
+		line-height: 0.76;
+		letter-spacing: -0.04em;
+	}
+
+	.missing-title {
+		max-width: 11ch;
+		margin: 0;
+		color: var(--color-bone);
+		font-family: var(--font-body);
+		font-size: clamp(1.85rem, 1.4vw + 1.35rem, 3.35rem);
+		font-weight: 500;
+		line-height: 1.08;
+		letter-spacing: 0;
+		text-transform: none;
+	}
+
+	.missing-links {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-24);
+		margin-top: var(--space-48);
+	}
+
+	.missing-links a {
+		display: inline-flex;
+		align-items: center;
+		min-height: 44px;
+		color: var(--color-hero);
+		font-family: var(--font-label);
+		font-size: var(--type-label-size);
+		font-weight: 700;
+		letter-spacing: var(--type-label-tracking);
+		text-transform: uppercase;
+	}
+
+	.missing-home {
+		border-bottom: 2px solid var(--color-ignition);
+	}
+
+	.missing-home:hover,
+	.missing-home:active {
+		border-bottom-color: var(--color-ember);
+	}
+
+	@media (min-width: 900px) {
+		.missing {
+			display: grid;
+			grid-template-columns: minmax(0, 1.15fr) minmax(16rem, 0.72fr);
+			align-items: end;
+			padding-bottom: var(--space-96);
+		}
+
+		.missing-num {
+			margin-left: -0.05em;
+		}
+
+		.missing-copy {
+			padding-bottom: var(--space-16);
+		}
+	}
+</style>
