@@ -10,7 +10,8 @@
     "build": "node scripts/check-credits.mjs && astro build",
     "preview": "astro preview",
     "media": "node scripts/optimize-media.mjs",
-    "astro": "astro"
+    "astro": "astro",
+    "qa": "npm run build && playwright test"
   },
   "dependencies": {
     "@astrojs/mdx": "^8.0.2",
@@ -27,6 +28,7 @@
     "esbuild": true
   },
   "devDependencies": {
+    "@playwright/test": "^1.63.0",
     "sharp": "^0.35.5",
     "wawoff2": "^2.0.1"
   }
