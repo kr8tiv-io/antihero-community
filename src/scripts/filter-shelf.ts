@@ -1,4 +1,19 @@
-import { Flip, gsap, onReducedMotionChange, prefersReducedMotion } from "./motion";
+import { gsap, onReducedMotionChange, prefersReducedMotion } from "./motion";
+
+type FlipPlugin = typeof import("gsap/Flip").Flip;
+
+let flipReady: Promise<FlipPlugin> | null = null;
+
+/** Flip ships in its own chunk. Only a filter click on guides or prompts asks for it. */
+function loadFlip(): Promise<FlipPlugin> {
+	if (!flipReady) {
+		flipReady = import("gsap/Flip").then((mod) => {
+			gsap.registerPlugin(mod.Flip);
+			return mod.Flip;
+		});
+	}
+	return flipReady;
+}
 
 /**
  * Shared category shelf. ?c=brand is the shareable filter.
@@ -48,6 +63,7 @@ export function bootFilterShelf(options: FilterShelfOptions): void {
 
 	let current = readFilter(known);
 	let running: gsap.core.Animation | undefined;
+	let applyGen = 0;
 
 	const clearMotion = (): void => {
 		running?.kill();
@@ -59,44 +75,47 @@ export function bootFilterShelf(options: FilterShelfOptions): void {
 		const items = cards();
 		const reduce = !animate || prefersReducedMotion();
 		if (running) clearMotion();
+		const gen = ++applyGen;
 
-		const state = reduce ? null : Flip.getState(items);
-		let spot = 0;
-		let shown = 0;
+		const paint = (flip: FlipPlugin | null): void => {
+			if (gen !== applyGen) return;
+			const state = flip ? flip.getState(items) : null;
+			let spot = 0;
+			let shown = 0;
 
-		for (const card of items) {
-			const match = filter === "all" || card.dataset.category === filter;
-			card.classList.toggle("is-gone", !match);
-			card.setAttribute("aria-hidden", match ? "false" : "true");
-			if (!match) continue;
-			card.dataset.spot = String(spot % 4);
-			spot += 1;
-			shown += 1;
-		}
+			for (const card of items) {
+				const match = filter === "all" || card.dataset.category === filter;
+				card.classList.toggle("is-gone", !match);
+				card.setAttribute("aria-hidden", match ? "false" : "true");
+				if (!match) continue;
+				card.dataset.spot = String(spot % 4);
+				spot += 1;
+				shown += 1;
+			}
 
-		empty.hidden = shown > 0;
+			empty.hidden = shown > 0;
 
-		for (const button of buttons) {
-			button.setAttribute("aria-pressed", button.dataset.filter === filter ? "true" : "false");
-		}
+			for (const button of buttons) {
+				button.setAttribute("aria-pressed", button.dataset.filter === filter ? "true" : "false");
+			}
 
-		if (animate && status) {
-			status.textContent =
-				shown === 0
-					? options.emptyStatus
-					: `Showing ${shown} ${shown === 1 ? options.noun : `${options.noun}s`}.`;
-		}
+			if (animate && status) {
+				status.textContent =
+					shown === 0
+						? options.emptyStatus
+						: `Showing ${shown} ${shown === 1 ? options.noun : `${options.noun}s`}.`;
+			}
 
-		const notify = (): void => {
-			root.dispatchEvent(new CustomEvent("filtershelf:change"));
-		};
+			const notify = (): void => {
+				root.dispatchEvent(new CustomEvent("filtershelf:change"));
+			};
 
-		if (!state) {
-			notify();
-			return;
-		}
+			if (!state || !flip) {
+				notify();
+				return;
+			}
 
-		running = Flip.from(state, {
+			running = flip.from(state, {
 			absolute: true,
 			stagger: 0.03,
 			duration: 0.6,
@@ -120,6 +139,13 @@ export function bootFilterShelf(options: FilterShelfOptions): void {
 				notify();
 			},
 		});
+		};
+
+		if (reduce) {
+			paint(null);
+			return;
+		}
+		void loadFlip().then((flip) => paint(flip));
 	};
 
 	const writeUrl = (filter: string): void => {

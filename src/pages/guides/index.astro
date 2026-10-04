@@ -70,6 +70,7 @@ function guideDate(date: Date): { iso: string; label: string } {
 							dateLabel={date.label}
 							cover={localMedia(guide.data.cover)}
 							spot={index}
+							priority={index === 0}
 						/>
 					);
 				})

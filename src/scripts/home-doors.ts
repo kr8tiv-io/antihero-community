@@ -32,7 +32,12 @@ export function bootDoors(): void {
 			return Boolean(connection?.saveData);
 		}
 
+		function setPlaying(video: HTMLVideoElement, playing: boolean): void {
+			video.classList.toggle("is-playing", playing);
+		}
+
 		function showPoster(video: HTMLVideoElement): void {
+			setPlaying(video, false);
 			video.pause();
 			video.querySelectorAll("source").forEach((source) => source.removeAttribute("src"));
 			video.removeAttribute("src");
@@ -63,6 +68,7 @@ export function bootDoors(): void {
 
 			if (!shouldPlay) {
 				video.pause();
+				setPlaying(video, false);
 				return;
 			}
 
@@ -70,9 +76,16 @@ export function bootDoors(): void {
 			video.muted = true;
 			void video.play().then(
 				() => {
-					if (playGen.get(video) !== generation) video.pause();
+					if (playGen.get(video) !== generation) {
+						video.pause();
+						setPlaying(video, false);
+						return;
+					}
+					setPlaying(video, true);
 				},
-				() => {},
+				() => {
+					setPlaying(video, false);
+				},
 			);
 		}
 

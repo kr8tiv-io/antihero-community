@@ -1,10 +1,9 @@
 import gsap from "gsap";
-import { Flip } from "gsap/Flip";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 
 const hasWindow = typeof window !== "undefined";
 
-export { gsap, ScrollTrigger, Flip };
+export { gsap, ScrollTrigger };
 
 export const ease = {
   out: "power3.out",
@@ -22,7 +21,7 @@ export const duration = {
 export const stagger = 0.06;
 
 if (hasWindow) {
-  gsap.registerPlugin(ScrollTrigger, Flip);
+  gsap.registerPlugin(ScrollTrigger);
   gsap.defaults({
     duration: duration.base,
     ease: ease.out,

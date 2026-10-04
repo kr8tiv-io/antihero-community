@@ -1,0 +1,81 @@
+---
+import { Picture } from "astro:assets";
+import { rasterFrom, rasterWidths } from "../lib/raster";
+
+interface Props {
+	src: string | null;
+	alt: string;
+	sizes: string;
+	widths?: number[];
+	loading?: "eager" | "lazy";
+	fetchpriority?: "high" | "low" | "auto";
+	reveal?: boolean;
+	class?: string;
+	fallbackWidth?: number;
+	fallbackHeight?: number;
+}
+
+const {
+	src,
+	alt,
+	sizes,
+	widths = [480, 800, 1200],
+	loading = "lazy",
+	fetchpriority,
+	reveal = false,
+	class: className,
+	fallbackWidth = 800,
+	fallbackHeight = 1000,
+} = Astro.props;
+
+const image = rasterFrom(src);
+const pictureClass = ["ah-raster", className].filter(Boolean).join(" ");
+const pictureAttributes: Record<string, string> = { class: pictureClass };
+if (reveal) pictureAttributes["data-reveal"] = "clip";
+---
+
+{
+	image ? (
+		<Picture
+			src={image}
+			formats={["avif", "webp"]}
+			alt={alt}
+			widths={rasterWidths(image, widths)}
+			sizes={sizes}
+			loading={loading}
+			decoding="async"
+			fetchpriority={fetchpriority}
+			pictureAttributes={pictureAttributes}
+		/>
+	) : (
+		src && (
+			<img
+				class={pictureClass}
+				src={src}
+				alt={alt}
+				width={fallbackWidth}
+				height={fallbackHeight}
+				loading={loading}
+				decoding="async"
+				fetchpriority={fetchpriority}
+				data-reveal={reveal ? "clip" : undefined}
+			/>
+		)
+	)
+}
+
+<style>
+	:global(picture.ah-raster) {
+		display: block;
+		width: 100%;
+		height: 100%;
+	}
+
+	:global(picture.ah-raster img),
+	:global(img.ah-raster) {
+		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+	}
+</style>

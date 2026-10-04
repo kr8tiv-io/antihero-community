@@ -1,21 +1,18 @@
 import { isCurrentPath } from "../data/nav";
-import { bootAboutParallax } from "./about-parallax";
-import { releaseFilterShelf } from "./filter-shelf";
-import { bootGuideCover } from "./guide-cover";
-import { bootGuidesFilter } from "./guides-filter";
-import { initHero } from "./hero-scrub";
-import { bootDoors } from "./home-doors";
-import { bootDrop } from "./home-drop";
-import { bootPromise } from "./home-promise";
 import { bootCursor, releaseCursorMotion } from "./cursor";
 import { bootEasterEgg } from "./easter-egg";
-import { bootStarfield, releaseStarfield } from "./starfield";
-import { bootJoinGlow } from "./join-glow";
 import { gsap, isMobile, onReducedMotionChange, prefersReducedMotion, ScrollTrigger } from "./motion";
-import { bootPromptsPage, releasePromptCards } from "./prompt-cards";
 import { bootReveals, releaseReveals } from "./reveals";
 import { destroySmoothScroll, initSmoothScroll } from "./smooth-scroll";
-import { releaseVideoCards, bootVideoCards } from "./video-cards";
+import { bootStarfield, releaseStarfield } from "./starfield";
+
+/**
+ * Page modules stay out of this file's static graph. Each one loads on the
+ * route that has its markup, including the trip back through ClientRouter.
+ */
+let releaseShelf: (() => void) | null = null;
+let releasePrompts: (() => void) | null = null;
+let releaseVideos: (() => void) | null = null;
 
 /**
  * One listener set for the life of the tab.
@@ -108,9 +105,9 @@ function onSwap(event: Event): void {
 	} catch {
 		// Old page cleanup threw. Keep tearing the scroll system down.
 	}
-	releaseFilterShelf();
-	releasePromptCards();
-	releaseVideoCards();
+	releaseShelf?.();
+	releasePrompts?.();
+	releaseVideos?.();
 	releaseReveals();
 	gsap.killTweensOf("[data-join-glow]");
 	document.querySelectorAll("video").forEach((video) => {
@@ -126,25 +123,76 @@ function onPage(): void {
 	bootCursor();
 	bootEasterEgg();
 	bootStarfield();
-	bootPromise();
-	bootDoors();
-	bootDrop();
-	bootGuidesFilter();
-	bootPromptsPage();
-	bootVideoCards();
-	bootAboutParallax();
-	bootGuideCover();
-	bootJoinGlow();
 	bootJoinBands();
-	const hero = document.querySelector<HTMLElement>("[data-hero]");
-	if (hero) initHero(hero);
 	syncCurrent(window.location.pathname);
 	const band = document.querySelector<HTMLElement>("[data-route-band]");
 	if (band) band.style.transform = "";
-	ScrollTrigger.refresh();
 	const pending = finish;
 	finish = null;
-	pending?.then(() => ScrollTrigger.refresh()).catch(() => undefined);
+	void bootRoute().finally(() => {
+		ScrollTrigger.refresh();
+		pending?.then(() => ScrollTrigger.refresh()).catch(() => undefined);
+	});
+}
+
+/** Load the scripts this document actually uses. Other routes never download them. */
+function bootRoute(): Promise<void> {
+	const jobs: Array<Promise<void>> = [];
+
+	if (document.querySelector("[data-hero]")) {
+		jobs.push(
+			import("./hero-scrub").then((mod) => {
+				const hero = document.querySelector<HTMLElement>("[data-hero]");
+				if (hero) mod.initHero(hero);
+			}),
+		);
+	}
+	if (document.querySelector("[data-doors]")) {
+		jobs.push(import("./home-doors").then((mod) => mod.bootDoors()));
+	}
+	if (document.querySelector("[data-drop]")) {
+		jobs.push(import("./home-drop").then((mod) => mod.bootDrop()));
+	}
+	if (document.querySelector("[data-promise]")) {
+		jobs.push(import("./home-promise").then((mod) => mod.bootPromise()));
+	}
+	if (document.querySelector("[data-guides], [data-prompts]")) {
+		jobs.push(
+			import("./filter-shelf").then((mod) => {
+				releaseShelf = mod.releaseFilterShelf;
+			}),
+		);
+	}
+	if (document.querySelector("[data-guides]")) {
+		jobs.push(import("./guides-filter").then((mod) => mod.bootGuidesFilter()));
+	}
+	if (document.querySelector("[data-prompts]")) {
+		jobs.push(
+			import("./prompt-cards").then((mod) => {
+				releasePrompts = mod.releasePromptCards;
+				mod.bootPromptsPage();
+			}),
+		);
+	}
+	if (document.querySelector("[data-video-modal]")) {
+		jobs.push(
+			import("./video-cards").then((mod) => {
+				releaseVideos = mod.releaseVideoCards;
+				mod.bootVideoCards();
+			}),
+		);
+	}
+	if (document.querySelector("[data-about-hero]")) {
+		jobs.push(import("./about-parallax").then((mod) => mod.bootAboutParallax()));
+	}
+	if (document.querySelector("[data-guide-detail]")) {
+		jobs.push(import("./guide-cover").then((mod) => mod.bootGuideCover()));
+	}
+	if (document.querySelector("[data-join-page]")) {
+		jobs.push(import("./join-glow").then((mod) => mod.bootJoinGlow()));
+	}
+
+	return Promise.all(jobs).then(() => undefined);
 }
 
 function resolveName(source: EventTarget | null, doc: Document): string {

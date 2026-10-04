@@ -13,6 +13,7 @@ import "../styles/starfield.css";
 import "../styles/easter-egg.css";
 /* Client scripts drop this file in the static build. The layout import keeps the stopped-scroll lock. */
 import "lenis/dist/lenis.css";
+import heroWordmark from "../assets/brand/antihero-wordmark-white.svg?url";
 import appIconSvg from "../assets/brand/antihero-app-icon.svg?url";
 import appIcon180 from "../assets/brand/antihero-app-icon_180px.png";
 import appIcon512 from "../assets/brand/antihero-app-icon_512px.png";
@@ -51,6 +52,29 @@ const rssUrl = new URL("/rss.xml", Astro.site ?? SITE_URL).href;
 		{jsonLd && <script is:inline type="application/ld+json" set:html={jsonLd} />}
 		<link rel="preload" href="/fonts/BebasNeue-Regular.woff2" as="font" type="font/woff2" crossorigin />
 		<link rel="preload" href="/fonts/Barlow-Regular.woff2" as="font" type="font/woff2" crossorigin />
+		{
+			path === "/" && (
+				<>
+					<link
+						rel="preload"
+						as="image"
+						href="/media/hero-mobile-poster.avif"
+						type="image/avif"
+						media="(max-width: 767px)"
+						fetchpriority="high"
+					/>
+					<link
+						rel="preload"
+						as="image"
+						href="/media/hero-desktop-poster.avif"
+						type="image/avif"
+						media="(min-width: 768px)"
+						fetchpriority="high"
+					/>
+					<link rel="preload" as="image" href={heroWordmark} type="image/svg+xml" fetchpriority="high" />
+				</>
+			)
+		}
 		<link rel="icon" type="image/svg+xml" href={appIconSvg} />
 		<link rel="icon" type="image/png" sizes="180x180" href={appIcon180.src} />
 		<link rel="icon" type="image/png" sizes="512x512" href={appIcon512.src} />

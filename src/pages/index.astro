@@ -4,12 +4,23 @@ import Hero from "../components/home/Hero.astro";
 import LatestDrop from "../components/home/LatestDrop.astro";
 import LibraryDoors from "../components/home/LibraryDoors.astro";
 import Promise from "../components/home/Promise.astro";
+import { facebookGroupUrl } from "../data/nav";
+import { SITE_URL } from "../data/site";
 import BaseLayout from "../layouts/BaseLayout.astro";
+
+const jsonLd = JSON.stringify({
+	"@context": "https://schema.org",
+	"@type": "Organization",
+	name: "AntiHero AI",
+	url: SITE_URL,
+	sameAs: [facebookGroupUrl],
+}).replace(/</g, "\\u003c");
 ---
 
 <BaseLayout
 	title="AntiHero AI"
 	description="AI for people with real jobs. No jargon, no catch."
+	jsonLd={jsonLd}
 >
 	<Hero slot="main" />
 	<Promise slot="main" />

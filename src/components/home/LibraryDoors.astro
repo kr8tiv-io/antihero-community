@@ -1,4 +1,6 @@
 ---
+import Raster from "../Raster.astro";
+
 const doors = [
 	{
 		href: "/guides",
@@ -46,12 +48,22 @@ const doors = [
 			doors.map((door) => (
 				<a class="door" href={door.href} data-door data-label={door.title} data-cursor="Go in">
 					<div class="door-face" data-door-face>
+						<Raster
+							src={door.poster}
+							alt={`Still from the ${door.title} door.`}
+							sizes="(min-width: 1024px) 22vw, (min-width: 768px) 45vw, 78vw"
+							widths={[480, 720, 1080]}
+							fallbackWidth={1080}
+							fallbackHeight={1350}
+							class="door-still"
+						/>
 						<video
 							muted
 							loop
 							playsinline
 							preload="none"
-							poster={door.poster}
+							width="1080"
+							height="1350"
 							tabindex="-1"
 							aria-hidden="true"
 						>
@@ -154,13 +166,22 @@ const doors = [
 		transform-style: preserve-3d;
 	}
 
+	.door-face :global(picture.door-still),
 	.door-face video {
 		position: absolute;
 		inset: 0;
 		display: block;
 		width: 100%;
 		height: 100%;
+	}
+
+	.door-face video {
 		object-fit: cover;
+		opacity: 0;
+	}
+
+	.door-face video.is-playing {
+		opacity: 1;
 	}
 
 	.door-streak {

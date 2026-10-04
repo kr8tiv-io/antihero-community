@@ -56,6 +56,27 @@ export function releaseStarfield(): void {
 	document.documentElement.classList.remove("ah-stars");
 }
 
+/** Same attributes as the renderer, so a software GL driver never downloads Three.js. */
+function hasWebGL(): boolean {
+	try {
+		const canvas = document.createElement("canvas");
+		const gl = canvas.getContext("webgl2", {
+			alpha: true,
+			depth: false,
+			stencil: false,
+			antialias: false,
+			premultipliedAlpha: false,
+			powerPreference: "high-performance",
+			failIfMajorPerformanceCaveat: true,
+		});
+		if (!gl) return false;
+		gl.getExtension("WEBGL_lose_context")?.loseContext();
+		return true;
+	} catch {
+		return false;
+	}
+}
+
 function allowed(path: string): boolean {
 	if (!ROUTES.has(path)) return false;
 	if (prefersReducedMotion()) return false;
@@ -63,6 +84,7 @@ function allowed(path: string): boolean {
 	if ((navigator.hardwareConcurrency ?? 0) < 4) return false;
 	const connection = (navigator as Navigator & { connection?: { saveData?: boolean } }).connection;
 	if (connection?.saveData) return false;
+	if (!hasWebGL()) return false;
 	return true;
 }
 
