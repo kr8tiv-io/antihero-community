@@ -1,5 +1,4 @@
 ---
-import RevealHeading from "../components/RevealHeading.astro";
 import { creditCategories, credits } from "../data/credits";
 import BaseLayout from "../layouts/BaseLayout.astro";
 
@@ -9,50 +8,45 @@ const groups = creditCategories
 		items: credits.filter((item) => item.category === category),
 	}))
 	.filter((group) => group.items.length > 0);
+
+const intro = "AntiHero stands on the generosity of open-source makers. Thank you.";
 ---
 
-<BaseLayout title="Credits" description="What this site borrows, and who licensed it.">
+<BaseLayout title="Credits" description={intro}>
 	<article slot="main" class="credits">
-		<header class="credits-hero" data-reveal="stagger">
-			<RevealHeading as="h1" id="credits-title" class="credits-title" text="Credits" />
-			<p class="credits-lead" data-reveal="fade-up">What this site borrows, and who licensed it.</p>
+		<header class="credits-hero">
+			<h1 class="credits-title">
+				<span class="label-box label-box--red">Credits</span>
+			</h1>
+			<p class="credits-lead" data-reveal="fade-up">{intro}</p>
 		</header>
 
 		{
 			groups.map((group) => (
-				<section class="credits-group" data-reveal="stagger">
-					<RevealHeading as="h2" class="credits-group__title" text={group.category} />
-					<ol class="credits-list">
-						{group.items.map((item, index) => (
-							<li>
-								<span class="credits-num mono" data-reveal-count aria-hidden="true">
-									{String(index + 1).padStart(2, "0")}
-								</span>
-								<a
-									class="credits-name"
-									href={item.link}
-									target="_blank"
-									rel="noopener noreferrer"
-								>
+				<section class="credits-group" aria-labelledby={`credits-${group.category.replaceAll(" ", "-")}`}>
+					<h2 id={`credits-${group.category.replaceAll(" ", "-")}`} class="credits-cat label" data-reveal="fade-up">
+						{group.category}
+					</h2>
+					<ul class="credits-list">
+						{group.items.map((item) => (
+							<li class="credits-row" data-reveal="fade-up">
+								<a class="credits-name" href={item.link} target="_blank" rel="noopener noreferrer">
 									{item.name}
 									<span class="visually-hidden"> (opens in a new tab)</span>
 								</a>
+								<p class="credits-author">{item.author}</p>
+								{item.licenseLink ? (
+									<a class="credits-license mono" href={item.licenseLink} target="_blank" rel="noopener noreferrer">
+										{item.license}
+										<span class="visually-hidden"> (opens in a new tab)</span>
+									</a>
+								) : (
+									<p class="credits-license mono">{item.license}</p>
+								)}
 								<p class="credits-use">{item.usedFor}</p>
-								<p class="caption credits-meta">
-									{item.author}.{" "}
-									{item.licenseLink ? (
-										<a href={item.licenseLink} target="_blank" rel="noopener noreferrer">
-											{item.license}
-											<span class="visually-hidden"> (opens in a new tab)</span>
-										</a>
-									) : (
-										item.license
-									)}
-									.
-								</p>
 							</li>
 						))}
-					</ol>
+					</ul>
 				</section>
 			))
 		}
@@ -68,8 +62,8 @@ const groups = creditCategories
 		display: flex;
 		flex-direction: column;
 		align-items: flex-start;
-		gap: var(--space-24);
-		max-width: 40rem;
+		gap: var(--space-32);
+		max-width: 46rem;
 	}
 
 	.credits-title {
@@ -79,97 +73,128 @@ const groups = creditCategories
 	}
 
 	.credits-lead {
-		max-width: 26ch;
+		max-width: 28ch;
 		margin: 0;
 		color: var(--color-bone);
+		font-size: var(--type-body-size);
+		line-height: var(--type-body-leading);
 	}
 
 	.credits-group {
-		max-width: 44rem;
-		margin-top: var(--space-96);
+		display: grid;
+		gap: var(--space-24);
+		margin-top: var(--space-80);
 	}
 
-	.credits-group:nth-of-type(even) {
-		margin-left: clamp(0rem, 14vw, 12rem);
-	}
-
-	.credits-group__title {
+	.credits-cat {
 		margin: 0;
-		font-size: clamp(2rem, 6vw, 3.4rem);
+		color: var(--color-hero);
 	}
 
 	.credits-list {
-		margin: var(--space-32) 0 0;
+		margin: 0;
 		padding: 0;
 		list-style: none;
 	}
 
-	.credits-list li {
+	.credits-row {
 		display: grid;
-		grid-template-columns: 3rem minmax(0, 1fr);
-		column-gap: var(--space-16);
+		grid-template-columns: minmax(0, 1fr);
+		gap: 0.15rem var(--space-16);
+		align-items: baseline;
 		padding: var(--space-24) 0;
 		border-top: 1px solid var(--color-graphite);
 	}
 
-	.credits-list li:last-child {
+	.credits-row:last-child {
 		border-bottom: 1px solid var(--color-graphite);
 	}
 
-	.credits-num {
-		grid-row: 1 / span 3;
-		color: var(--color-ignition);
-		font-size: 1.05rem;
+	.credits-name,
+	.credits-license {
+		display: inline-flex;
+		align-items: center;
+		min-height: 44px;
+		text-decoration: none;
 	}
 
 	.credits-name {
-		display: inline-block;
-		min-height: 44px;
-		font-family: var(--font-display);
-		font-size: clamp(2rem, 5vw, 3.25rem);
-		line-height: 0.9;
-		letter-spacing: -0.01em;
-		text-transform: uppercase;
-		text-decoration: none;
 		color: var(--color-hero);
+		font-family: var(--font-body);
+		font-size: clamp(1.2rem, 2.4vw, 1.65rem);
+		font-weight: 600;
+		line-height: 1.15;
+		letter-spacing: 0;
+		text-transform: none;
 	}
 
 	.credits-name:hover {
 		color: var(--color-bone);
 	}
 
-	.credits-name:focus-visible,
-	.credits-meta a:focus-visible {
-		outline: 2px solid var(--color-hero);
-		outline-offset: 3px;
-	}
-
-	.credits-use {
-		max-width: 42ch;
-		margin: var(--space-8) 0 0;
+	.credits-author,
+	.credits-use,
+	.credits-license {
+		margin: 0;
 		color: var(--color-bone);
 	}
 
-	.credits-meta {
-		margin: var(--space-4) 0 0;
+	.credits-license {
+		justify-self: start;
+		color: var(--color-hero);
 	}
 
-	.credits-meta a {
-		display: inline-flex;
-		align-items: center;
-		min-width: 44px;
-		min-height: 44px;
-		padding-inline: 4px;
-		color: inherit;
+	a.credits-license:hover {
+		color: var(--color-bone);
+	}
+
+	.credits-use {
+		max-width: 52ch;
 	}
 
 	@media (min-width: 768px) {
 		.credits {
-			padding: calc(var(--header-h) + var(--space-96)) 8vw var(--space-192) 10vw;
+			padding: calc(var(--header-h) + var(--space-96)) 8vw var(--space-192) 6vw;
 		}
 
-		.credits-group:nth-of-type(3) {
-			margin-left: 4vw;
+		.credits-hero {
+			margin-left: 8vw;
+		}
+
+		.credits-group {
+			grid-template-columns: minmax(8.5rem, 14rem) minmax(0, 46rem);
+			column-gap: clamp(2rem, 6vw, 5rem);
+			align-items: start;
+			margin-top: var(--space-96);
+		}
+
+		.credits-group:nth-of-type(even) {
+			grid-template-columns: minmax(12rem, 20rem) minmax(0, 40rem);
+		}
+
+		.credits-row {
+			grid-template-columns: minmax(0, 1.3fr) minmax(8rem, 0.9fr) minmax(7rem, auto);
+			grid-template-areas:
+				"name author license"
+				"use use use";
+		}
+
+		.credits-name {
+			grid-area: name;
+		}
+
+		.credits-author {
+			grid-area: author;
+		}
+
+		.credits-license {
+			grid-area: license;
+			justify-self: end;
+			text-align: right;
+		}
+
+		.credits-use {
+			grid-area: use;
 		}
 	}
 </style>
