@@ -2,6 +2,7 @@
 import { Picture } from "astro:assets";
 import join from "../assets/media/join.jpg";
 import EmailForm from "../components/EmailForm.astro";
+import RevealHeading from "../components/RevealHeading.astro";
 import { facebookGroupUrl } from "../data/nav";
 import BaseLayout from "../layouts/BaseLayout.astro";
 
@@ -38,31 +39,25 @@ const rules = [
 	<div slot="main" class="join" data-join-page>
 		<section class="join-hero" aria-labelledby="join-title">
 			<div class="join-hero__media" aria-hidden="true">
-				<Picture
-					src={join}
-					formats={["avif", "webp"]}
-					alt=""
-					widths={pictureWidths}
-					sizes="100vw"
-					loading="eager"
-					fetchpriority="high"
-					decoding="async"
-				/>
+				<div class="join-hero__clip" data-reveal="clip">
+					<Picture
+						src={join}
+						formats={["avif", "webp"]}
+						alt=""
+						widths={pictureWidths}
+						sizes="100vw"
+						loading="eager"
+						fetchpriority="high"
+						decoding="async"
+					/>
+				</div>
 			</div>
 			<div class="join-hero__veil" aria-hidden="true"></div>
 
-			<div class="join-hero__copy">
-				<h1 id="join-title" class="join-hero__title label-stack">
-					{
-						lines.map((line) => (
-							<span class:list={["label-box", line.red ? "label-box--red" : "label-box--white"]}>
-								{line.text}
-							</span>
-						))
-					}
-				</h1>
+			<div class="join-hero__copy" data-reveal="stagger">
+				<RevealHeading as="h1" id="join-title" class="join-hero__title" lines={lines} />
 
-				<div class="join-cta">
+				<div class="join-cta" data-reveal="fade-up">
 					<div class="join-glow" data-join-glow aria-hidden="true"></div>
 					<a
 						class="join-go label-box label-box--red"
@@ -75,34 +70,38 @@ const rules = [
 					</a>
 				</div>
 
-				<div class="join-mail">
+				<div class="join-mail" data-reveal="fade-up">
 					<EmailForm id="join-email" />
 				</div>
 			</div>
 		</section>
 
-		<section class="join-get" aria-labelledby="join-get-title">
-			<h2 id="join-get-title" class="label">What you get</h2>
+		<section class="join-get" data-reveal="stagger" aria-labelledby="join-get-title">
+			<RevealHeading as="h2" id="join-get-title" text="What you get" />
 			<ol class="join-list">
 				{
 					gets.map((line, index) => (
 						<li>
-							<span class="join-num mono">{String(index + 1).padStart(2, "0")}</span>
+							<span class="join-num mono" data-reveal-count aria-hidden="true">
+								{String(index + 1).padStart(2, "0")}
+							</span>
 							<p>{line}</p>
 						</li>
 					))
 				}
 			</ol>
-			<p class="caption join-review">TODO: Matt confirms each line.</p>
+			<p class="caption join-review" data-reveal="fade-up">TODO: Matt confirms each line.</p>
 		</section>
 
-		<section class="join-cost" aria-labelledby="join-cost-title">
-			<h2 id="join-cost-title" class="label">What it costs</h2>
-			<p class="join-cost__box label-box label-box--white">Nothing. No catch. Just show up and build.</p>
+		<section class="join-cost" data-reveal="stagger" aria-labelledby="join-cost-title">
+			<RevealHeading as="h2" id="join-cost-title" text="What it costs" />
+			<p class="join-cost__box label-box label-box--white" data-reveal="fade-up">
+				Nothing. No catch. Just show up and build.
+			</p>
 		</section>
 
-		<section class="join-rules" aria-labelledby="join-rules-title">
-			<h2 id="join-rules-title" class="label">The rules</h2>
+		<section class="join-rules" data-reveal="stagger" aria-labelledby="join-rules-title">
+			<RevealHeading as="h2" id="join-rules-title" text="The rules" />
 			<ul>
 				{rules.map((rule) => <li>{rule}</li>)}
 			</ul>
@@ -131,6 +130,11 @@ const rules = [
 		position: absolute;
 		inset: 0;
 		pointer-events: none;
+	}
+
+	.join-hero__clip {
+		width: 100%;
+		height: 100%;
 	}
 
 	.join-hero__media :global(picture),
@@ -233,7 +237,7 @@ const rules = [
 	.join-cost h2,
 	.join-rules h2 {
 		margin: 0 0 var(--space-24);
-		color: var(--color-bone);
+		font-size: clamp(2.4rem, 8vw, 4.5rem);
 	}
 
 	.join-list {

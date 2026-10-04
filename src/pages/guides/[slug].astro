@@ -3,6 +3,7 @@ import { existsSync, statSync } from "node:fs";
 import { join } from "node:path";
 import { getCollection, getEntry, render } from "astro:content";
 import type { CollectionEntry } from "astro:content";
+import RevealHeading from "../../components/RevealHeading.astro";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 
 /** Newest UTC date first, featured wins a same-day tie, then slug. */
@@ -159,6 +160,7 @@ const jsonLd = JSON.stringify({
 								loading="eager"
 								fetchpriority="high"
 								decoding="async"
+								data-reveal="clip"
 							/>
 						) : (
 							<div class="guide-plate-fill" aria-hidden="true"></div>
@@ -175,22 +177,26 @@ const jsonLd = JSON.stringify({
 				}
 			</div>
 
-			<div class="guide-copy">
-				<p class="guide-cat mono">{guide.data.category}</p>
-				<h1 class="guide-title label-stack">
-					{boxes.map((line) => <span class="label-box label-box--white">{line}</span>)}
-				</h1>
+			<div class="guide-copy" data-reveal="stagger">
+				<p class="guide-cat mono" data-reveal="fade-up">{guide.data.category}</p>
+				<RevealHeading
+					as="h1"
+					class="guide-title"
+					lines={boxes.map((line) => ({ text: line }))}
+				/>
 				<ol class="guide-lines">
 					{
 						guide.data.summary.map((line, i) => (
 							<li>
-								<span class="guide-num mono">{String(i + 1).padStart(2, "0")}</span>
+								<span class="guide-num mono" data-reveal-count aria-hidden="true">
+									{String(i + 1).padStart(2, "0")}
+								</span>
 								<p class="guide-line">{line}</p>
 							</li>
 						))
 					}
 				</ol>
-				<div class="guide-actions">
+				<div class="guide-actions" data-reveal="fade-up">
 					<a
 						class="guide-download label-box label-box--red"
 						href={guide.data.pdf}
@@ -214,16 +220,16 @@ const jsonLd = JSON.stringify({
 
 		{
 			GuideBody && (
-				<section class="guide-body" aria-labelledby="guide-body-title">
-					<h2 id="guide-body-title">What's inside</h2>
-					<div class="guide-prose">
+				<section class="guide-body" data-reveal="stagger" aria-labelledby="guide-body-title">
+					<RevealHeading as="h2" id="guide-body-title" text="What's inside" />
+					<div class="guide-prose" data-reveal="contents">
 						<GuideBody />
 					</div>
 				</section>
 			)
 		}
 
-		<section class="guide-replay" aria-label="Replay">
+		<section class="guide-replay" data-reveal="stagger" aria-label="Replay">
 			{
 				replayLink ? (
 					<a
@@ -242,6 +248,7 @@ const jsonLd = JSON.stringify({
 									height="720"
 									loading="lazy"
 									decoding="async"
+									data-reveal="clip"
 								/>
 							) : (
 								<div class="guide-plate guide-plate--wide">
@@ -252,7 +259,7 @@ const jsonLd = JSON.stringify({
 						</div>
 						<div class="guide-replay__copy">
 							<p class="guide-replay__kicker mono">Replay</p>
-							<h2 class="guide-replay__title">{replayLink.title}</h2>
+							<RevealHeading as="h2" class="guide-replay__title" text={replayLink.title} wordsPerLine={2} />
 							{replayLink.duration && <p class="caption mono">{replayLink.duration}</p>}
 							<p class="guide-replay__watch">Watch the replay</p>
 						</div>
@@ -265,8 +272,8 @@ const jsonLd = JSON.stringify({
 
 		{
 			related.length > 0 && (
-				<section class="guide-prompts" aria-labelledby="guide-prompts-title">
-					<h2 id="guide-prompts-title">Prompts from this guide</h2>
+				<section class="guide-prompts" data-reveal="stagger" aria-labelledby="guide-prompts-title">
+					<RevealHeading as="h2" id="guide-prompts-title" text="Prompts from this guide" wordsPerLine={2} />
 					<ol class="guide-prompt-list">
 						{related.map((prompt) => (
 							<li>
@@ -281,7 +288,7 @@ const jsonLd = JSON.stringify({
 			)
 		}
 
-		<nav class="guide-nav" aria-label="Other guides">
+		<nav class="guide-nav" data-reveal="stagger" aria-label="Other guides">
 			{
 				older && (
 					<a class="guide-nav__prev" href={`/guides/${older.data.slug}`}>

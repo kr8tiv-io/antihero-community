@@ -63,8 +63,10 @@ const rssUrl = new URL("/rss.xml", Astro.site ?? SITE_URL).href;
 		<slot name="footer" />
 		<script>
 			import { initSmoothScroll } from "../scripts/smooth-scroll";
+			import { bootReveals } from "../scripts/reveals";
 
 			initSmoothScroll();
+			bootReveals();
 		</script>
 	</body>
 </html>

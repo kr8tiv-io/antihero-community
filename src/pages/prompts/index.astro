@@ -2,6 +2,7 @@
 import { getCollection } from "astro:content";
 import FilterShelf from "../../components/FilterShelf.astro";
 import PromptCard from "../../components/PromptCard.astro";
+import RevealHeading from "../../components/RevealHeading.astro";
 import { facebookGroupUrl } from "../../data/nav";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 
@@ -24,9 +25,15 @@ function sourceLink(source: { id: string } | undefined): { href: string; title: 
 	description="Prompts that actually work. Tested on a live audience. Copy it, paste it into Grok or any decent AI, fill in the brackets."
 >
 	<div slot="main" class="prompts" data-prompts>
-		<header class="prompts-hero">
-			<h1>Prompts that actually work. Tested on a live audience.</h1>
-			<p>Copy it, paste it into Grok or any decent AI, fill in the brackets.</p>
+		<header class="prompts-hero" data-reveal="stagger">
+			<RevealHeading
+				as="h1"
+				lines={[
+					{ text: "Prompts that actually work." },
+					{ text: "Tested on a live audience." },
+				]}
+			/>
+			<p data-reveal="fade-up">Copy it, paste it into Grok or any decent AI, fill in the brackets.</p>
 		</header>
 
 		<FilterShelf
@@ -36,7 +43,7 @@ function sourceLink(source: { id: string } | undefined): { href: string; title: 
 			cardSelector="[data-prompts] [data-prompt-card]"
 			emptySelector="[data-prompts] [data-prompt-empty]"
 		>
-			<div class="prompt-grid" id="prompt-grid" data-prompt-grid>
+			<div class="prompt-grid" id="prompt-grid" data-prompt-grid data-reveal="stagger">
 				{
 					prompts.map((prompt, index) => {
 						const source = sourceLink(prompt.data.source);
@@ -98,7 +105,7 @@ function sourceLink(source: { id: string } | undefined): { href: string; title: 
 	}
 
 	.prompts-hero h1 {
-		max-width: 11ch;
+		max-width: none;
 		margin: 0;
 	}
 

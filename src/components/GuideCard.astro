@@ -1,4 +1,6 @@
 ---
+import RevealHeading from "./RevealHeading.astro";
+
 interface Props {
 	href: string;
 	title: string;
@@ -25,7 +27,15 @@ const categoryId = category.toLowerCase();
 			<div class="guide-card__zoom">
 				{
 					cover ? (
-						<img src={cover} alt="" width="800" height="1000" loading="lazy" decoding="async" />
+						<img
+							src={cover}
+							alt=""
+							width="800"
+							height="1000"
+							loading="lazy"
+							decoding="async"
+							data-reveal="clip"
+						/>
 					) : (
 						<div class="guide-card__plate">
 							<span class="guide-card__plate-cat mono">{category}</span>
@@ -41,7 +51,7 @@ const categoryId = category.toLowerCase();
 				{dateLabel}
 			</time>
 		</p>
-		<h2 class="guide-card__title">{title}</h2>
+		<RevealHeading as="h2" class="guide-card__title" text={title} wordsPerLine={2} />
 		<p class="guide-card__summary">{summary}</p>
 	</a>
 </article>
@@ -124,7 +134,7 @@ const categoryId = category.toLowerCase();
 	}
 
 	.guide-card__title {
-		max-width: 14ch;
+		max-width: 100%;
 		margin: 0;
 		font-size: clamp(2.4rem, 4vw, 4.25rem);
 		line-height: 0.88;

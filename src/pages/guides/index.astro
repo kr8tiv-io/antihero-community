@@ -4,6 +4,7 @@ import { join } from "node:path";
 import { getCollection } from "astro:content";
 import FilterShelf from "../../components/FilterShelf.astro";
 import GuideCard from "../../components/GuideCard.astro";
+import RevealHeading from "../../components/RevealHeading.astro";
 import { facebookGroupUrl } from "../../data/nav";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 
@@ -36,11 +37,16 @@ function guideDate(date: Date): { iso: string; label: string } {
 
 <BaseLayout title="Guides" description="Every guide from every live, in one place. No email wall.">
 	<div slot="main" class="guides" data-guides>
-		<header class="guides-hero">
-			<h1 id="guides-title" class="guides-title label-stack">
-				{lines.map((line) => <span class="label-box label-box--white">{line}</span>)}
-			</h1>
-			<p class="guides-intro">Every guide from every live, in one place. No email wall.</p>
+		<header class="guides-hero" data-reveal="stagger">
+			<RevealHeading
+				as="h1"
+				id="guides-title"
+				class="guides-title"
+				lines={lines.map((line) => ({ text: line }))}
+			/>
+			<p class="guides-intro" data-reveal="fade-up">
+				Every guide from every live, in one place. No email wall.
+			</p>
 		</header>
 
 		<FilterShelf
@@ -50,7 +56,7 @@ function guideDate(date: Date): { iso: string; label: string } {
 			cardSelector="[data-guides] [data-guide-card]"
 			emptySelector="[data-guides] [data-guide-empty]"
 		>
-		<div class="guide-grid" id="guide-grid" data-guide-grid>
+		<div class="guide-grid" id="guide-grid" data-guide-grid data-reveal="stagger">
 			{
 				guides.map((guide, index) => {
 					const date = guideDate(guide.data.date);

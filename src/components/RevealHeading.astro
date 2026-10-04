@@ -1,0 +1,72 @@
+---
+interface Line {
+	text: string;
+	red?: boolean;
+}
+
+interface Props {
+	as?: "h1" | "h2";
+	lines?: Line[];
+	text?: string;
+	/** 0 keeps the whole string in one box. Cards use 2. */
+	wordsPerLine?: number;
+	id?: string;
+	class?: string;
+}
+
+const {
+	as: Tag = "h2",
+	lines,
+	text = "",
+	wordsPerLine = 0,
+	id,
+	class: className,
+} = Astro.props;
+
+function splitWords(value: string, per: number): Line[] {
+	const words = value.trim().split(/\s+/).filter(Boolean);
+	if (words.length === 0) return [{ text: value }];
+	if (!per || per < 1) return [{ text: words.join(" ") }];
+	const out: Line[] = [];
+	for (let i = 0; i < words.length; i += per) {
+		out.push({ text: words.slice(i, i + per).join(" ") });
+	}
+	return out;
+}
+
+const items = lines && lines.length > 0 ? lines : splitWords(text, wordsPerLine);
+---
+
+<Tag id={id} class:list={["label-stack", "reveal-heading", className]} data-reveal-heading>
+	{
+		items.map((line) => (
+			<span
+				class:list={[
+					"label-box",
+					"reveal-heading__line",
+					line.red ? "label-box--red" : "label-box--white",
+				]}
+			>
+				<span class="reveal-heading__text">{line.text}</span>
+			</span>
+		))
+	}
+</Tag>
+
+<style>
+	.reveal-heading__line {
+		overflow: hidden;
+		max-width: 100%;
+		transform-origin: left center;
+	}
+
+	.reveal-heading__text {
+		display: block;
+	}
+
+	/* A heading box is not a button. Red stays ignition. */
+	.reveal-heading .label-box--red:hover,
+	.reveal-heading .label-box--red:active {
+		background: var(--color-ignition);
+	}
+</style>

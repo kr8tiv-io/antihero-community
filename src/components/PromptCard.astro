@@ -1,4 +1,6 @@
 ---
+import RevealHeading from "./RevealHeading.astro";
+
 interface Props {
 	id: string;
 	title: string;
@@ -64,7 +66,7 @@ function highlightBrackets(raw: string): string {
 >
 	<header class="prompt-card__head">
 		<p class="prompt-card__cat mono">{category}</p>
-		<h2 class="prompt-card__title">{title}</h2>
+		<RevealHeading as="h2" class="prompt-card__title" text={title} wordsPerLine={2} />
 		<p class="prompt-card__use">
 			<span>Use it for</span>
 			{useItFor}
@@ -140,7 +142,7 @@ function highlightBrackets(raw: string): string {
 	}
 
 	.prompt-card__title {
-		max-width: 14ch;
+		max-width: 100%;
 		margin: 0;
 		font-size: clamp(2.4rem, 4vw, 4.25rem);
 		line-height: 0.88;

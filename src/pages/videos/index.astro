@@ -2,6 +2,7 @@
 import { existsSync } from "node:fs";
 import { join } from "node:path";
 import { getCollection } from "astro:content";
+import RevealHeading from "../../components/RevealHeading.astro";
 import VideoCard from "../../components/VideoCard.astro";
 import { facebookGroupUrl } from "../../data/nav";
 import BaseLayout from "../../layouts/BaseLayout.astro";
@@ -76,12 +77,17 @@ const cards = videos.map((video, index) => {
 	description="Every live, minus the buffering. Replays of every live. Watch the parts you need, skip the part where I fight the screen share."
 >
 	<div slot="main" class="videos" data-videos>
-		<header class="videos-hero">
-			<h1>Every live, minus the buffering.</h1>
-			<p>Replays of every live. Watch the parts you need, skip the part where I fight the screen share.</p>
+		<header class="videos-hero" data-reveal="stagger">
+			<RevealHeading
+				as="h1"
+				lines={[{ text: "Every live," }, { text: "minus the buffering." }]}
+			/>
+			<p data-reveal="fade-up">
+				Replays of every live. Watch the parts you need, skip the part where I fight the screen share.
+			</p>
 		</header>
 
-		<div class="video-grid">
+		<div class="video-grid" data-reveal="stagger">
 			{
 				cards.map((card) => (
 					<VideoCard
@@ -132,7 +138,7 @@ const cards = videos.map((video, index) => {
 	}
 
 	.videos-hero h1 {
-		max-width: 9ch;
+		max-width: none;
 		margin: 0;
 	}
 

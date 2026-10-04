@@ -1,4 +1,6 @@
 ---
+import RevealHeading from "./RevealHeading.astro";
+
 interface Props {
 	id: string;
 	title: string;
@@ -60,7 +62,15 @@ const soon = mode === "placeholder";
 						<span class="video-card__zoom">
 							{
 								poster ? (
-									<img src={poster} alt="" width="1280" height="720" loading="lazy" decoding="async" />
+									<img
+									src={poster}
+									alt=""
+									width="1280"
+									height="720"
+									loading="lazy"
+									decoding="async"
+									data-reveal="clip"
+								/>
 								) : (
 									<span class="video-card__plate" />
 								)
@@ -87,7 +97,15 @@ const soon = mode === "placeholder";
 					>
 						<span class="video-card__zoom">
 							{poster ? (
-								<img src={poster} alt="" width="1280" height="720" loading="lazy" decoding="async" />
+								<img
+									src={poster}
+									alt=""
+									width="1280"
+									height="720"
+									loading="lazy"
+									decoding="async"
+									data-reveal="clip"
+								/>
 							) : (
 								<span class="video-card__plate">
 									<span class="video-card__plate-note">Poster still to come.</span>
@@ -103,7 +121,7 @@ const soon = mode === "placeholder";
 	</div>
 
 	<div class="video-card__body">
-		<h2>{title}</h2>
+		<RevealHeading as="h2" text={title} wordsPerLine={2} />
 		<p class="video-card__meta mono">
 			<time datetime={dateIso}>{dateLabel}</time>
 			{duration && <span>{duration}</span>}
@@ -219,7 +237,7 @@ const soon = mode === "placeholder";
 
 	.video-card h2 {
 		margin: 0;
-		max-width: 14ch;
+		max-width: 100%;
 		font-size: clamp(1.7rem, 2vw, 2.35rem);
 		line-height: 0.9;
 	}
@@ -227,7 +245,7 @@ const soon = mode === "placeholder";
 	.video-card--lead h2 {
 		font-size: clamp(2.6rem, 4.5vw, 4.75rem);
 		line-height: 0.86;
-		max-width: 11ch;
+		max-width: 100%;
 	}
 
 	.video-card__meta {

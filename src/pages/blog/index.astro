@@ -1,5 +1,6 @@
 ---
 import { getCollection } from "astro:content";
+import RevealHeading from "../../components/RevealHeading.astro";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 
 /** Dev shows drafts. Production builds hide them. Newest UTC date first. */
@@ -34,17 +35,22 @@ const notes = posts.map((post) => {
 	description="Short posts about what worked, what broke, and what I'd do differently."
 >
 	<div slot="main" class="notes">
-		<header class="notes-hero">
-			<p class="notes-tools">
+		<header class="notes-hero" data-reveal="stagger">
+			<p class="notes-tools" data-reveal="fade-up">
 				<a class="notes-rss label" href="/rss.xml">RSS</a>
 			</p>
-			<h1>Notes from the trenches.</h1>
-			<p class="notes-intro">Short posts about what worked, what broke, and what I'd do differently.</p>
+			<RevealHeading
+				as="h1"
+				lines={[{ text: "Notes from" }, { text: "the trenches." }]}
+			/>
+			<p class="notes-intro" data-reveal="fade-up">
+				Short posts about what worked, what broke, and what I'd do differently.
+			</p>
 		</header>
 
 		{
 			notes.length > 0 ? (
-				<ul class="note-list">
+				<ul class="note-list" data-reveal="stagger">
 					{notes.map((note) => (
 						<li>
 							<a class="note" href={`/blog/${note.id}`}>
@@ -55,8 +61,8 @@ const notes = posts.map((post) => {
 									{note.draft && <span class="note-draft label-box label-box--white">DRAFT</span>}
 								</span>
 								<span class="note-copy">
-									<h2 class="note-title">{note.title}</h2>
-									<p class="note-desc">{note.description}</p>
+									<RevealHeading as="h2" class="note-title" text={note.title} wordsPerLine={2} />
+									<p class="note-desc" data-reveal="fade-up">{note.description}</p>
 								</span>
 								<svg
 									class="note-arrow"
@@ -78,7 +84,7 @@ const notes = posts.map((post) => {
 					))}
 				</ul>
 			) : (
-				<p class="notes-empty">No notes yet.</p>
+				<p class="notes-empty" data-reveal="fade-up">No notes yet.</p>
 			)
 		}
 	</div>
@@ -111,7 +117,7 @@ const notes = posts.map((post) => {
 	}
 
 	.notes-hero h1 {
-		max-width: 9ch;
+		max-width: none;
 		margin: var(--space-8) 0 0;
 	}
 
@@ -167,6 +173,7 @@ const notes = posts.map((post) => {
 
 	.note-title {
 		margin: 0;
+		max-width: 100%;
 		font-size: clamp(2rem, 8vw, 2.75rem);
 		line-height: 0.9;
 	}

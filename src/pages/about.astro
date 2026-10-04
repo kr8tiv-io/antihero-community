@@ -1,6 +1,7 @@
 ---
 import { Picture } from "astro:assets";
 import about from "../assets/media/about.jpg";
+import RevealHeading from "../components/RevealHeading.astro";
 import BaseLayout from "../layouts/BaseLayout.astro";
 
 const widths = [640, 1280, 1920, 2560].filter((size) => size <= about.width);
@@ -20,58 +21,58 @@ const lines = [
 	<div slot="main" class="about">
 		<section class="about-hero" data-about-hero aria-labelledby="about-title">
 			<div class="about-hero__photo" data-about-photo>
-				<Picture
-					src={about}
-					formats={["avif", "webp"]}
-					alt="A lone figure on a cliff above the clouds, with a giant red planet."
-					widths={widths}
-					sizes="100vw"
-					loading="eager"
-					fetchpriority="high"
-					decoding="async"
-				/>
+				<div class="about-hero__clip" data-reveal="clip">
+					<Picture
+						src={about}
+						formats={["avif", "webp"]}
+						alt="A lone figure on a cliff above the clouds, with a giant red planet."
+						widths={widths}
+						sizes="100vw"
+						loading="eager"
+						fetchpriority="high"
+						decoding="async"
+					/>
+				</div>
 			</div>
 			<div class="about-hero__mist" data-about-mist aria-hidden="true"></div>
 			<div class="about-hero__shade" aria-hidden="true"></div>
 			<div class="about-hero__copy" data-about-copy>
-				<h1 id="about-title" class="about-hero__title label-stack">
-					{
-						lines.map((line) => (
-							<span class:list={["label-box", line.red ? "label-box--red" : "label-box--white"]}>
-								{line.text}
-							</span>
-						))
-					}
-				</h1>
+				<RevealHeading as="h1" id="about-title" class="about-hero__title" lines={lines} />
 			</div>
 		</section>
 
-		<section class="about-mission" aria-label="What this is">
+		<section class="about-mission" data-reveal="stagger" aria-label="What this is">
 			<article class="about-block about-block--jobs">
-				<h2>AI for people with real jobs.</h2>
-				<p>Most AI content is made by people who sell AI content.</p>
-				<p>This is for plumbers, bakers, and anyone with a business to run.</p>
+				<p class="about-num"><span class="mono" data-reveal-count aria-hidden="true">01</span></p>
+				<RevealHeading
+					as="h2"
+					lines={[{ text: "AI for people" }, { text: "with real jobs." }]}
+				/>
+				<p data-reveal="fade-up">Most AI content is made by people who sell AI content.</p>
+				<p data-reveal="fade-up">This is for plumbers, bakers, and anyone with a business to run.</p>
 			</article>
 
 			<article class="about-block about-block--receipts">
-				<h2>We show the receipts.</h2>
-				<p>Every guide comes from a real live build, mistakes included.</p>
+				<p class="about-num"><span class="mono" data-reveal-count aria-hidden="true">02</span></p>
+				<RevealHeading as="h2" lines={[{ text: "We show" }, { text: "the receipts." }]} />
+				<p data-reveal="fade-up">Every guide comes from a real live build, mistakes included.</p>
 			</article>
 
 			<article class="about-block about-block--catch">
-				<h2>No catch.</h2>
-				<p>The group costs nothing and sells nothing.</p>
-				<p>If that ever changes, you'll hear it from Matt first.</p>
+				<p class="about-num"><span class="mono" data-reveal-count aria-hidden="true">03</span></p>
+				<RevealHeading as="h2" text="No catch." />
+				<p data-reveal="fade-up">The group costs nothing and sells nothing.</p>
+				<p data-reveal="fade-up">If that ever changes, you'll hear it from Matt first.</p>
 			</article>
 
-			<p class="caption about-review">TODO: Matt reviews this copy.</p>
+			<p class="caption about-review" data-reveal="fade-up">TODO: Matt reviews this copy.</p>
 		</section>
 
-		<section class="about-founder" aria-label="A note from Matt">
-			<div class="about-portrait">
+		<section class="about-founder" data-reveal="stagger" aria-label="A note from Matt">
+			<div class="about-portrait" data-reveal="fade-up">
 				<p class="caption">Portrait still to come.</p>
 			</div>
-			<div class="about-note">
+			<div class="about-note" data-reveal="fade-up">
 				<p>TODO: Matt writes this note. A few plain sentences, first person.</p>
 				<p class="about-sign">Matt</p>
 			</div>
@@ -105,6 +106,11 @@ const lines = [
 		left: -4%;
 		width: 108%;
 		height: 128%;
+	}
+
+	.about-hero__clip {
+		width: 100%;
+		height: 100%;
 	}
 
 	.about-hero__photo :global(picture),
@@ -169,7 +175,15 @@ const lines = [
 		margin-top: var(--space-96);
 	}
 
+	.about-block .about-num {
+		max-width: none;
+		margin: 0 0 var(--space-12);
+		color: var(--color-ignition);
+		font-size: clamp(1.15rem, 2vw, 1.5rem);
+	}
+
 	.about-block h2 {
+		max-width: none;
 		margin: 0 0 var(--space-16);
 	}
 
@@ -184,7 +198,7 @@ const lines = [
 	}
 
 	.about-block--jobs h2 {
-		max-width: 9ch;
+		max-width: none;
 		font-size: clamp(2.6rem, 10vw, 4.6rem);
 	}
 
@@ -193,7 +207,7 @@ const lines = [
 	}
 
 	.about-block--receipts h2 {
-		max-width: 8ch;
+		max-width: none;
 	}
 
 	.about-block--catch {

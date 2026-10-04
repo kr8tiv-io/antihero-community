@@ -1,4 +1,5 @@
 ---
+import RevealHeading from "../components/RevealHeading.astro";
 import BaseLayout from "./BaseLayout.astro";
 
 interface Related {
@@ -35,16 +36,6 @@ const {
 	relatedPrompt = null,
 } = Astro.props;
 
-function titleBoxes(value: string): string[] {
-	const words = value.trim().split(/\s+/).filter(Boolean);
-	const boxes: string[] = [];
-	for (let i = 0; i < words.length; i += 2) {
-		boxes.push(words.slice(i, i + 2).join(" "));
-	}
-	return boxes.length > 0 ? boxes : [value];
-}
-
-const boxes = titleBoxes(title);
 const minuteLabel = `${minutes} min`;
 const hasRelated = Boolean(relatedGuide || relatedPrompt);
 ---
@@ -58,36 +49,38 @@ const hasRelated = Boolean(relatedGuide || relatedPrompt);
 	jsonLd={jsonLd}
 >
 	<article slot="main" class="post">
-		<header class="post-hero">
-			<p class="post-meta mono">
+		<header class="post-hero" data-reveal="stagger">
+			<p class="post-meta mono" data-reveal="fade-up">
 				<time datetime={dateIso}>{dateLabel}</time>
 				<span aria-hidden="true"> / </span>
 				<span>{minuteLabel}</span>
 			</p>
-			{draft && <p class="post-draft"><span class="label-box label-box--white">DRAFT</span></p>}
-			<h1 class="post-title label-stack">
-				{boxes.map((line) => <span class="label-box label-box--white">{line}</span>)}
-			</h1>
+			{draft && (
+				<p class="post-draft" data-reveal="fade-up">
+					<span class="label-box label-box--white">DRAFT</span>
+				</p>
+			)}
+			<RevealHeading as="h1" class="post-title" text={title} wordsPerLine={2} />
 		</header>
 
-		<div class="post-prose">
+		<div class="post-prose" data-reveal="stagger">
 			<slot />
 		</div>
 
 		{
 			hasRelated && (
-				<aside class="post-refs">
+				<aside class="post-refs" data-reveal="stagger">
 					{relatedGuide && (
 						<a class="post-ref" href={relatedGuide.href}>
 							<p class="label">Related guide</p>
-							<h2 class="post-ref__title">{relatedGuide.title}</h2>
+							<RevealHeading as="h2" class="post-ref__title" text={relatedGuide.title} wordsPerLine={2} />
 							<p class="post-ref__line">{relatedGuide.line}</p>
 						</a>
 					)}
 					{relatedPrompt && (
 						<a class="post-ref post-ref--prompt" href={relatedPrompt.href}>
 							<p class="label">Related prompt</p>
-							<h2 class="post-ref__title">{relatedPrompt.title}</h2>
+							<RevealHeading as="h2" class="post-ref__title" text={relatedPrompt.title} wordsPerLine={2} />
 							<p class="post-ref__line">{relatedPrompt.line}</p>
 						</a>
 					)}
@@ -248,7 +241,7 @@ const hasRelated = Boolean(relatedGuide || relatedPrompt);
 	}
 
 	.post-ref__title {
-		max-width: 9em;
+		max-width: 100%;
 		margin: 0;
 	}
 
