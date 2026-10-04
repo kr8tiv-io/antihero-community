@@ -3,7 +3,7 @@ title: Websites on Autopilot
 slug: websites-on-autopilot
 summary:
   - The October 2 live, and the prompts from it.
-  - Same workflow as the Aura Homes build. The demo brand that night was Antigirl.
+  - Same workflow as the Aura Homes build. The demo brand that night was AntiHero.
   - Copy a box, run it, check the work, then take the next one.
 category: Websites
 date: 2026-10-02

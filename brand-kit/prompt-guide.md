@@ -3,7 +3,7 @@
 AntiHero AI · Facebook Live · Friday, October 2, 2026
 Group: https://www.facebook.com/groups/antiheroai
 
-This is the exact workflow we used to build the Aura Homes site, cleaned up so you can copy it. Tonight's demo brand is Antigirl. Later we use the same playbook for an AntiHero site that lists every guide in the group.
+This is the exact workflow we used to build the Aura Homes site, cleaned up so you can copy it. Tonight's demo brand is AntiHero. Later we use the same playbook for an AntiHero site that lists every guide in the group.
 
 How to read this: every grey box is a prompt. Copy the whole box. Text in [square brackets] is yours to fill in. Everything else stays as is.
 
@@ -122,10 +122,10 @@ Fill this in once. It goes at the top of every prompt. This is what keeps an aut
 RULES: This is the [Brand] [Astro] site. Do NOT change [the protected page, video or section] in any way. Do not deploy. Do not delete files; move unused ones to /_archive. Fonts: [display font] for headlines, [body font] for text. Colors: [name #hex], [name #hex], [accent name #hex] (accent used sparingly). Use the logo in /src/assets/logo wherever a logo is needed. Brand name is "[Brand]" everywhere. Never say: [banned words or claims, e.g. prices, guarantees, competitor names]. Tone: [three voice traits]. No em dashes, no exclamation points. Motion must feel [calm, slow and expensive / quick and playful]: [long eases, nothing bouncy], respect prefers-reduced-motion, animate only transform and opacity. Elevated by default: aim for an Awwwards Site of the Day result, not a regular website; one bold idea per section, real copy, specific details. Follow the NO SLOP RULES: [paste them]. Commit to git when done with a short message.
 ```
 
-**Antigirl example** (fill with your real kit):
+**AntiHero example** (fill with your real kit):
 
 ```
-RULES: This is the Antigirl Astro site. Do NOT change the homepage hero video or its scroll logic once it is approved. Do not deploy. Do not delete files; move unused ones to /_archive. Fonts: [Bebas Neue] for headlines, [Barlow] for text. Colors: [Anti Black #0A0A0B] 60 percent, [Bone #ECE8E1] 30 percent, [accent #hex] 10 percent. Use the Antigirl logo in /src/assets/logo wherever a logo is needed. Brand name is "Antigirl" everywhere. Never say: delve, unlock, elevate, seamless, game-changer, empower, journey. Tone: direct, funny, human. No em dashes, no exclamation points. Motion must feel confident and quick but never bouncy: short eases, respect prefers-reduced-motion, animate only transform and opacity. Elevated by default: aim for an Awwwards Site of the Day result, not a regular website. Follow the NO SLOP RULES (Stage 9). Commit to git when done with a short message.
+RULES: This is the AntiHero Astro site. Do NOT change the homepage hero video or its scroll logic once it is approved. Do not deploy. Do not delete files; move unused ones to /_archive. Fonts: [Bebas Neue] for headlines, [Barlow] for text. Colors: [Anti Black #0A0A0B] 60 percent, [Bone #ECE8E1] 30 percent, [accent #hex] 10 percent. Use the AntiHero logo in /src/assets/logo wherever a logo is needed. Brand name is "AntiHero" everywhere. Never say: delve, unlock, elevate, seamless, game-changer, empower, journey. Tone: direct, funny, human. No em dashes, no exclamation points. Motion must feel confident and quick but never bouncy: short eases, respect prefers-reduced-motion, animate only transform and opacity. Elevated by default: aim for an Awwwards Site of the Day result, not a regular website. Follow the NO SLOP RULES (Stage 9). Commit to git when done with a short message.
 ```
 
 In every TASK prompt below, `[RULES]` means "paste your full RULES paragraph here".
@@ -277,7 +277,7 @@ Animate this image. Slow, steady camera [push-in / dolly right / rise], no cuts,
 
 Why "no cuts, no shake": a scroll-scrubbed video gets played backwards and forwards by your thumb. Any jump looks like a glitch. Smooth, single-move shots scrub beautifully.
 
-**Rules:** make them in the brand's world (Antigirl's might be [her world here]); keep the same light across every image; never put text in the image, the site adds it.
+**Rules:** make them in the brand's world (AntiHero's might be [its world here]); keep the same light across every image; never put text in the image, the site adds it.
 
 ---
 
@@ -417,7 +417,7 @@ You don't need all of this. Most sites shouldn't use all of this.
 | Your site | Use | Skip |
 |---|---|---|
 | Local business, 3 to 5 pages | Stages 1 to 4, hero, nav, sections, Lenis, reveals, media pass, QA | 3D, scroll video, glow |
-| Personal brand or creator (Antigirl) | All of the above plus one scroll-scrubbed video, page transitions, hover glow | Heavy 3D |
+| Personal brand or creator (AntiHero) | All of the above plus one scroll-scrubbed video, page transitions, hover glow | Heavy 3D |
 | Product launch or "wow" landing page | Everything, including one 3D scene | More than one 3D scene per page |
 | Guides library (the AntiHero site) | Hero, nav, a card grid of guides with filters, reveals, transitions, credits, QA | Scroll video, 3D |
 
