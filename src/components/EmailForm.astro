@@ -38,18 +38,28 @@ const ready = action.length > 0;
         <label class="visually-hidden" for={id}>
           Email
         </label>
-        <input
-          id={id}
-          type="email"
-          name="EMAIL"
-          required
-          autocomplete="email"
-          inputmode="email"
-          spellcheck="false"
-          placeholder="you@email.com"
-        />
+        <span class="email-field">
+          <input
+            id={id}
+            type="email"
+            name="EMAIL"
+            required
+            autocomplete="email"
+            inputmode="email"
+            spellcheck="false"
+            placeholder="you@email.com"
+          />
+          <span class="email-field__line" aria-hidden="true"></span>
+        </span>
         <button class="email-form__submit" type="submit">
-          Send me the good stuff
+          <span class="swap-label">
+            <span class="swap-label__line">Send me the good stuff</span>
+            <span class="swap-label__line" aria-hidden="true">Send me the good stuff</span>
+          </span>
+          <span class="email-check" aria-hidden="true">
+            <span class="email-check__bar email-check__bar--short"></span>
+            <span class="email-check__bar email-check__bar--long"></span>
+          </span>
         </button>
       </div>
       <div class="visually-hidden" aria-hidden="true">
@@ -65,9 +75,19 @@ const ready = action.length > 0;
         <label class="visually-hidden" for={id}>
           Email
         </label>
-        <input id={id} type="email" name="EMAIL" autocomplete="email" disabled value="" />
+        <span class="email-field">
+          <input id={id} type="email" name="EMAIL" autocomplete="email" disabled value="" />
+          <span class="email-field__line" aria-hidden="true"></span>
+        </span>
         <button class="email-form__submit" type="button" disabled>
-          Send me the good stuff
+          <span class="swap-label">
+            <span class="swap-label__line">Send me the good stuff</span>
+            <span class="swap-label__line" aria-hidden="true">Send me the good stuff</span>
+          </span>
+          <span class="email-check" aria-hidden="true">
+            <span class="email-check__bar email-check__bar--short"></span>
+            <span class="email-check__bar email-check__bar--long"></span>
+          </span>
         </button>
       </div>
       <p class="email-form__note caption">
@@ -96,6 +116,18 @@ const ready = action.length > 0;
     gap: var(--space-8);
   }
 
+  .email-field {
+    position: relative;
+    display: block;
+    width: 100%;
+    min-width: 0;
+  }
+
+  .email-form--compact .email-field {
+    flex: 1 1 12rem;
+    width: auto;
+  }
+
   .email-form input[type="email"] {
     width: 100%;
     min-width: 0;
@@ -110,9 +142,20 @@ const ready = action.length > 0;
     line-height: 1.2;
   }
 
-  .email-form--compact input[type="email"] {
-    flex: 1 1 12rem;
-    width: auto;
+  .email-field__line {
+    position: absolute;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    height: 2px;
+    background: var(--color-ignition);
+    transform: scaleX(0);
+    transform-origin: left center;
+    pointer-events: none;
+  }
+
+  .email-field:focus-within .email-field__line {
+    transform: scaleX(1);
   }
 
   .email-form input[type="email"]::placeholder {
@@ -120,7 +163,7 @@ const ready = action.length > 0;
   }
 
   .email-form input[type="email"]:focus-visible {
-    outline: 2px solid var(--color-hero);
+    outline: 2px solid var(--color-ignition);
     outline-offset: 3px;
   }
 
@@ -130,6 +173,7 @@ const ready = action.length > 0;
   }
 
   .email-form__submit {
+    position: relative;
     min-height: 48px;
     padding: 0 var(--space-16);
     border: 1px solid var(--color-hero);
@@ -145,14 +189,75 @@ const ready = action.length > 0;
     cursor: pointer;
   }
 
-  .email-form__submit:hover:not(:disabled),
-  .email-form__submit:active:not(:disabled) {
+  .email-form__submit:hover:not(:disabled) {
     background: var(--color-hero);
     color: var(--color-anti);
   }
 
+  .email-form__submit:active:not(:disabled) {
+    background: var(--color-ember);
+    color: var(--color-hero);
+    border-color: var(--color-ember);
+  }
+
+  .email-form__submit.is-sent,
+  .email-form__submit.is-sent:hover,
+  .email-form__submit.is-sent:active {
+    background: var(--color-ember);
+    color: var(--color-hero);
+    border-color: var(--color-ember);
+  }
+
+  .email-form__submit.is-sent .swap-label {
+    opacity: 0;
+  }
+
+  .email-check {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    opacity: 0;
+    transform: translate(-50%, -50%);
+    pointer-events: none;
+  }
+
+  .email-form__submit.is-sent .email-check {
+    opacity: 1;
+  }
+
+  .email-check__bar {
+    position: absolute;
+    height: 2px;
+    background: var(--color-hero);
+    transform-origin: left center;
+  }
+
+  .email-check__bar--short {
+    top: 11px;
+    left: 2px;
+    width: 6px;
+    transform: rotate(45deg) scaleX(0);
+  }
+
+  .email-check__bar--long {
+    top: 15px;
+    left: 6px;
+    width: 12px;
+    transform: rotate(-45deg) scaleX(0);
+  }
+
+  .email-form__submit.is-sent .email-check__bar--short {
+    transform: rotate(45deg) scaleX(1);
+  }
+
+  .email-form__submit.is-sent .email-check__bar--long {
+    transform: rotate(-45deg) scaleX(1);
+  }
+
   .email-form__submit:focus-visible {
-    outline: 2px solid var(--color-hero);
+    outline: 2px solid var(--color-ignition);
     outline-offset: 3px;
   }
 
@@ -177,7 +282,23 @@ const ready = action.length > 0;
   }
 
   .email-form__note a:focus-visible {
-    outline: 2px solid var(--color-hero);
+    outline: 2px solid var(--color-ignition);
     outline-offset: 3px;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .email-field__line,
+    .email-check,
+    .email-form__submit .swap-label {
+      transition: transform 0.32s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.12s linear;
+    }
+
+    .email-check__bar {
+      transition: transform 0.16s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+
+    .email-check__bar--long {
+      transition-delay: 0.1s;
+    }
   }
 </style>

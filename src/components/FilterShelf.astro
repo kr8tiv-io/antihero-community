@@ -33,7 +33,10 @@ const filters = [
 				data-filter={filter.id}
 				aria-pressed={filter.id === "all" ? "true" : "false"}
 			>
-				{filter.label}
+				<span class="swap-label">
+					<span class="swap-label__line">{filter.label}</span>
+					<span class="swap-label__line" aria-hidden="true">{filter.label}</span>
+				</span>
 			</button>
 		))
 	}
@@ -109,13 +112,14 @@ const filters = [
 	}
 
 	.filter-shelf button[aria-pressed="true"]:hover,
-	.filter-shelf button[aria-pressed="true"]:active {
+	.filter-shelf button[aria-pressed="true"]:active,
+	.filter-shelf button:active {
 		background: var(--color-ember);
 		color: var(--color-hero);
 	}
 
 	.filter-shelf button:focus-visible {
-		outline: 2px solid var(--color-hero);
+		outline: 2px solid var(--color-ignition);
 		outline-offset: 3px;
 	}
 

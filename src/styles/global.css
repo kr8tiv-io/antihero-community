@@ -331,12 +331,13 @@
 
   .skip-link:focus {
     transform: translateY(0);
-    outline: 2px solid var(--color-hero);
+    outline: 2px solid var(--color-ignition);
     outline-offset: 3px;
   }
 
   #content:focus {
-    outline: none;
+    outline: 2px solid var(--color-ignition);
+    outline-offset: 3px;
   }
 
   @media (min-width: 768px) {

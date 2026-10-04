@@ -53,6 +53,7 @@ const soon = mode === "placeholder";
 					href={groupUrl}
 					target="_blank"
 					rel="noopener noreferrer"
+					data-cursor="Play"
 				>
 					<span
 						class="video-card__media"
@@ -77,7 +78,12 @@ const soon = mode === "placeholder";
 							}
 						</span>
 					</span>
-					<span class="label-box label-box--red video-card__play">Replay coming soon</span>
+					<span class="label-box label-box--red video-card__play">
+						<span class="swap-label">
+							<span class="swap-label__line">Replay coming soon</span>
+							<span class="swap-label__line" aria-hidden="true">Replay coming soon</span>
+						</span>
+					</span>
 					<span class="visually-hidden">{title}. Opens in a new tab.</span>
 				</a>
 			) : (
@@ -85,6 +91,7 @@ const soon = mode === "placeholder";
 					type="button"
 					class="video-hit"
 					data-video-open
+					data-cursor="Play"
 					data-video-title={title}
 					data-youtube-id={mode === "youtube" ? youtubeId : undefined}
 					data-video-url={mode === "file" ? videoUrl : undefined}
@@ -113,7 +120,12 @@ const soon = mode === "placeholder";
 							)}
 						</span>
 					</span>
-					<span class="label-box label-box--red video-card__play">Play</span>
+					<span class="label-box label-box--red video-card__play">
+						<span class="swap-label">
+							<span class="swap-label__line">Play</span>
+							<span class="swap-label__line" aria-hidden="true">Play</span>
+						</span>
+					</span>
 					<span class="visually-hidden">Play {title}</span>
 				</button>
 			)

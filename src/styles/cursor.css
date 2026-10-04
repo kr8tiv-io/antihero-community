@@ -1,0 +1,183 @@
+/*
+ * Cursor ring, label slide, body-link draw, and the red focus ring.
+ * Motion is transform and opacity only. Coarse pointers and reduced motion
+ * keep the native cursor, a still label, and a resting underline.
+ */
+
+:focus-visible {
+	outline: 2px solid var(--color-ignition) !important;
+	outline-offset: 3px !important;
+}
+
+html.ah-use-cursor,
+html.ah-use-cursor * {
+	cursor: none !important;
+}
+
+html.ah-use-cursor :is(input, textarea, select, [contenteditable="true"]),
+html.ah-use-cursor :is(input, textarea, select, [contenteditable="true"]) * {
+	cursor: text !important;
+}
+
+html.ah-use-cursor :is(input, textarea, select):disabled {
+	cursor: not-allowed !important;
+}
+
+.ah-cursor {
+	position: fixed;
+	z-index: 80;
+	top: 0;
+	left: 0;
+	width: 0;
+	height: 0;
+	pointer-events: none;
+	mix-blend-mode: difference;
+	opacity: 0;
+}
+
+.ah-cursor.is-on {
+	opacity: 1;
+}
+
+html:not(.ah-use-cursor) .ah-cursor,
+html.ah-cursor-field .ah-cursor,
+html:active-view-transition .ah-cursor {
+	opacity: 0 !important;
+}
+
+.ah-cursor,
+.ah-cursor * {
+	pointer-events: none;
+}
+
+.ah-cursor__ring {
+	position: absolute;
+	top: 0;
+	left: 0;
+	width: 16px;
+	height: 16px;
+	margin: -8px 0 0 -8px;
+	border: 1.5px solid #fff;
+	border-radius: 50%;
+	box-sizing: border-box;
+	transform: scale(1);
+}
+
+.ah-cursor.is-hot .ah-cursor__ring {
+	transform: scale(4.5);
+}
+
+.ah-cursor__word {
+	position: absolute;
+	top: 0;
+	left: 0;
+	transform: translate(-50%, -50%);
+	opacity: 0;
+	color: #fff;
+	font-family: var(--font-label);
+	font-size: 0.72rem;
+	font-weight: 700;
+	letter-spacing: 0.06em;
+	line-height: 1;
+	white-space: nowrap;
+	text-transform: none;
+}
+
+.ah-cursor.is-hot .ah-cursor__word {
+	opacity: 1;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	.ah-cursor {
+		transition: opacity 0.18s linear;
+	}
+
+	.ah-cursor__ring,
+	.ah-cursor__word {
+		transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.2s linear;
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.ah-cursor {
+		display: none;
+	}
+}
+
+.swap-label {
+	display: grid;
+	overflow: hidden;
+	max-width: 100%;
+}
+
+.swap-label__line {
+	grid-area: 1 / 1;
+	min-width: 0;
+	transform: translateY(0);
+}
+
+.swap-label__line + .swap-label__line {
+	transform: translateY(100%);
+}
+
+:is(.hero-join, .join-button, .join-go) > .swap-label {
+	width: 100%;
+}
+
+@media (hover: hover) and (pointer: fine) {
+	@media (prefers-reduced-motion: no-preference) {
+		:is(a, button):is(:hover, :focus-visible) .swap-label__line:first-child {
+			transform: translateY(-100%);
+		}
+
+		:is(a, button):is(:hover, :focus-visible) .swap-label__line + .swap-label__line {
+			transform: translateY(0);
+		}
+	}
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	.swap-label__line {
+		transition: transform 0.42s cubic-bezier(0.22, 1, 0.36, 1);
+	}
+}
+
+:is(p > a, .post-prose a, .guide-prose a) {
+	position: relative;
+	text-decoration-line: none;
+}
+
+:is(p > a, .post-prose a, .guide-prose a)::after {
+	content: "";
+	position: absolute;
+	right: 0;
+	bottom: 0.02em;
+	left: 0;
+	height: 1px;
+	background: currentColor;
+	transform: scaleX(1);
+	transform-origin: left center;
+	pointer-events: none;
+}
+
+@media (hover: hover) and (pointer: fine) {
+	@media (prefers-reduced-motion: no-preference) {
+		:is(p > a, .post-prose a, .guide-prose a)::after {
+			transform: scaleX(0);
+		}
+
+		:is(p > a, .post-prose a, .guide-prose a):is(:hover, :focus-visible)::after {
+			transform: scaleX(1);
+		}
+	}
+}
+
+:is(p > a, .post-prose a, .guide-prose a):focus-visible::after {
+	transform: scaleX(1);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+	:is(p > a, .post-prose a, .guide-prose a)::after {
+		transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
+	}
+}

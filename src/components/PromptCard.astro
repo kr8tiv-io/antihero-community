@@ -78,8 +78,11 @@ function highlightBrackets(raw: string): string {
 	</div>
 
 	<div class="prompt-tools">
-		<button type="button" class="prompt-copy" data-copy aria-label="Copy">
-			<span data-copy-label aria-hidden="true">Copy</span>
+		<button type="button" class="prompt-copy" data-copy data-cursor="Copy" data-magnetic="true" aria-label="Copy">
+			<span class="swap-label">
+				<span class="swap-label__line" data-copy-label aria-hidden="true">Copy</span>
+				<span class="swap-label__line" data-copy-label aria-hidden="true">Copy</span>
+			</span>
 		</button>
 		<button
 			type="button"
@@ -88,7 +91,10 @@ function highlightBrackets(raw: string): string {
 			aria-expanded="false"
 			aria-controls={bodyId}
 		>
-			Show the whole thing
+			<span class="swap-label">
+				<span class="swap-label__line">Show the whole thing</span>
+				<span class="swap-label__line" aria-hidden="true">Show the whole thing</span>
+			</span>
 		</button>
 		<p id={liveId} class="visually-hidden" data-copy-live aria-live="polite"></p>
 	</div>
@@ -120,10 +126,6 @@ function highlightBrackets(raw: string): string {
 	.prompt-card:target {
 		outline: 1px solid var(--color-ash);
 		outline-offset: var(--space-12);
-	}
-
-	.prompt-card:focus {
-		outline: none;
 	}
 
 	.prompt-card__head {
@@ -223,6 +225,9 @@ function highlightBrackets(raw: string): string {
 		color: var(--color-hero);
 		letter-spacing: 0.02em;
 		text-transform: none;
+	}
+
+	.prompt-copy.is-stolen .swap-label {
 		animation: prompt-copy-bump 0.36s cubic-bezier(0.22, 1, 0.36, 1);
 	}
 
@@ -240,6 +245,27 @@ function highlightBrackets(raw: string): string {
 		text-transform: none;
 	}
 
+	.prompt-copy.is-failed .swap-label {
+		display: block;
+		height: auto;
+		overflow: visible;
+	}
+
+	.prompt-copy.is-failed .swap-label__line {
+		transform: none !important;
+		white-space: normal;
+	}
+
+	.prompt-copy.is-failed .swap-label__line + .swap-label__line {
+		display: none;
+	}
+
+	.prompt-copy:active,
+	.prompt-more:active {
+		background: var(--color-ember);
+		color: var(--color-hero);
+	}
+
 	.prompt-more {
 		padding: 0.2em 0;
 		color: var(--color-hero);
@@ -249,6 +275,10 @@ function highlightBrackets(raw: string): string {
 		letter-spacing: 0.12em;
 		line-height: 1;
 		text-transform: uppercase;
+		text-decoration: none;
+	}
+
+	.prompt-more .swap-label__line {
 		text-decoration: underline;
 		text-underline-offset: 0.22em;
 	}
@@ -256,7 +286,7 @@ function highlightBrackets(raw: string): string {
 	.prompt-copy:focus-visible,
 	.prompt-more:focus-visible,
 	.prompt-source a:focus-visible {
-		outline: 2px solid var(--color-hero);
+		outline: 2px solid var(--color-ignition);
 		outline-offset: 3px;
 	}
 
@@ -291,7 +321,7 @@ function highlightBrackets(raw: string): string {
 	}
 
 	@media (prefers-reduced-motion: reduce) {
-		.prompt-copy.is-stolen {
+		.prompt-copy.is-stolen .swap-label {
 			animation: none;
 		}
 	}

@@ -44,7 +44,7 @@ const doors = [
 	<div class="doors-row">
 		{
 			doors.map((door) => (
-				<a class="door" href={door.href} data-door data-label={door.title}>
+				<a class="door" href={door.href} data-door data-label={door.title} data-cursor="Go in">
 					<div class="door-face" data-door-face>
 						<video
 							muted
@@ -138,11 +138,6 @@ const doors = [
 		color: inherit;
 		text-decoration: none;
 		perspective: 900px;
-	}
-
-	.door:focus,
-	.door:focus-visible {
-		outline: none;
 	}
 
 	.door:focus-visible .door-face {

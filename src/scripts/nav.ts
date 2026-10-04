@@ -1,3 +1,4 @@
+import { setSwapText } from "./cursor";
 import {
   duration,
   ease,
@@ -39,7 +40,7 @@ function initNav(): void {
 
   function setExpanded(next: boolean): void {
     button.setAttribute("aria-expanded", next ? "true" : "false");
-    label.textContent = next ? "Close" : "Menu";
+    setSwapText(label, next ? "Close" : "Menu");
     button.classList.toggle("is-open", next);
   }
 

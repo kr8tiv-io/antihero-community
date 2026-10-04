@@ -4,6 +4,7 @@
  * Success label holds for 1.6s. The scale bump is transform only.
  */
 
+import { setSwapText } from "./cursor";
 import { bootFilterShelf } from "./filter-shelf";
 
 const SUCCESS = "Stolen. Nice.";
@@ -82,7 +83,7 @@ export function bootPromptCards(): void {
 			const open = toggle.getAttribute("aria-expanded") === "true";
 			const next = !open;
 			toggle.setAttribute("aria-expanded", next ? "true" : "false");
-			toggle.textContent = next ? "Show less" : "Show the whole thing";
+			setSwapText(toggle, next ? "Show less" : "Show the whole thing");
 			body?.classList.toggle("is-clamped", !next);
 			return;
 		}
@@ -91,11 +92,10 @@ export function bootPromptCards(): void {
 		if (!button || !root.contains(button)) return;
 		const card = button.closest<HTMLElement>("[data-prompt-card]");
 		const body = card?.querySelector<HTMLElement>("[data-prompt-body]");
-		const label = button.querySelector<HTMLElement>("[data-copy-label]");
 		const live = card?.querySelector<HTMLElement>("[data-copy-live]");
-		if (!body || !label || !live) return;
+		if (!body || !live || button.querySelector(".swap-label__line") === null) return;
 		const text = body.textContent ?? "";
-		void copyExact(text).then((ok) => showResult(button, label, live, ok));
+		void copyExact(text).then((ok) => showResult(button, live, ok));
 	});
 }
 
@@ -132,18 +132,13 @@ function selectAndCopy(text: string): boolean {
 	return ok;
 }
 
-function showResult(
-	button: HTMLButtonElement,
-	label: HTMLElement,
-	live: HTMLElement,
-	ok: boolean,
-): void {
+function showResult(button: HTMLButtonElement, live: HTMLElement, ok: boolean): void {
 	const pending = timers.get(button);
 	if (pending) window.clearTimeout(pending);
 	timers.delete(button);
 
 	button.classList.remove("is-stolen", "is-failed");
-	label.textContent = ok ? SUCCESS : FAILURE;
+	setSwapText(button, ok ? SUCCESS : FAILURE);
 	live.textContent = "";
 	window.requestAnimationFrame(() => {
 		live.textContent = ok ? SUCCESS : FAILURE;
@@ -158,7 +153,7 @@ function showResult(
 	button.classList.add("is-stolen");
 	const timeout = window.setTimeout(() => {
 		button.classList.remove("is-stolen");
-		label.textContent = COPY;
+		setSwapText(button, COPY);
 		live.textContent = "";
 		timers.delete(button);
 	}, 1600);

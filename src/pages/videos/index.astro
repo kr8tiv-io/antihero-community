@@ -114,7 +114,12 @@ const cards = videos.map((video, index) => {
 			<div class="video-modal__panel">
 				<div class="video-modal__bar">
 					<p id="video-modal-title" class="video-modal__title" data-video-title></p>
-					<button type="button" class="label-box" data-video-close>Close</button>
+					<button type="button" class="label-box" data-video-close>
+						<span class="swap-label">
+							<span class="swap-label__line">Close</span>
+							<span class="swap-label__line" aria-hidden="true">Close</span>
+						</span>
+					</button>
 				</div>
 				<div class="video-modal__stage" data-video-stage></div>
 			</div>
@@ -211,8 +216,13 @@ const cards = videos.map((video, index) => {
 	}
 
 	.video-modal [data-video-close]:focus-visible {
-		outline: 2px solid var(--color-hero);
+		outline: 2px solid var(--color-ignition);
 		outline-offset: 3px;
+	}
+
+	.video-modal [data-video-close]:active {
+		background: var(--color-ember);
+		color: var(--color-hero);
 	}
 
 	@media (min-width: 900px) {

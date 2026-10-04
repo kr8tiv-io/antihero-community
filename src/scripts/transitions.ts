@@ -7,6 +7,7 @@ import { initHero } from "./hero-scrub";
 import { bootDoors } from "./home-doors";
 import { bootDrop } from "./home-drop";
 import { bootPromise } from "./home-promise";
+import { bootCursor, releaseCursorMotion } from "./cursor";
 import { bootJoinGlow } from "./join-glow";
 import { gsap, isMobile, onReducedMotionChange, prefersReducedMotion, ScrollTrigger } from "./motion";
 import { bootPromptsPage, releasePromptCards } from "./prompt-cards";
@@ -25,8 +26,10 @@ import { releaseVideoCards, bootVideoCards } from "./video-cards";
  * This file calls initHero on page-load instead. Leaving home dispatches
  * pagehide so the hero's own cleanup stops the old loop.
  *
- * There is no cursor module. The only tilt is the door face inside
- * LibraryDoors. Its script runs once; page-load calls bootDoors again.
+ * bootCursor stamps labels again after each swap. The ring lives on
+ * documentElement, so the body replacement does not drop it.
+ * The only tilt is the door face inside LibraryDoors. Its script runs
+ * once; page-load calls bootDoors again.
  */
 
 const PARKED_OFF = "translateY(110%)";
@@ -92,6 +95,7 @@ function onSwap(event: Event): void {
 	const swap = event as SwapEvent;
 	finish = swap.viewTransition?.finished ?? null;
 	syncCurrent(swap.to?.pathname ?? window.location.pathname);
+	releaseCursorMotion();
 	closeMenu();
 	closeDialogs();
 	parkHeader();
@@ -115,6 +119,7 @@ function onSwap(event: Event): void {
 function onPage(): void {
 	initSmoothScroll();
 	bootReveals();
+	bootCursor();
 	bootPromise();
 	bootDoors();
 	bootDrop();

@@ -22,7 +22,7 @@ const categoryId = category.toLowerCase();
 	data-category={categoryId}
 	data-spot={spot % 4}
 >
-	<a class="guide-card__link" href={href} data-label={title}>
+	<a class="guide-card__link" href={href} data-label={title} data-cursor="Read">
 		<div class="guide-card__cover">
 			<div class="guide-card__zoom">
 				{
@@ -71,7 +71,7 @@ const categoryId = category.toLowerCase();
 	}
 
 	.guide-card__link:focus-visible {
-		outline: 2px solid var(--color-hero);
+		outline: 2px solid var(--color-ignition);
 		outline-offset: 4px;
 	}
 

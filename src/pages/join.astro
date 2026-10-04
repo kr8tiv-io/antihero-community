@@ -64,8 +64,13 @@ const rules = [
 						href={facebookGroupUrl}
 						target="_blank"
 						rel="noopener noreferrer"
+						data-cursor="Join"
+						data-magnetic="true"
 					>
-						Join the Facebook group
+						<span class="swap-label">
+							<span class="swap-label__line">Join the Facebook group</span>
+							<span class="swap-label__line" aria-hidden="true">Join the Facebook group</span>
+						</span>
 						<span class="visually-hidden"> (opens in a new tab)</span>
 					</a>
 				</div>
@@ -210,7 +215,7 @@ const rules = [
 	}
 
 	.join-go:focus-visible {
-		outline: 2px solid var(--color-hero);
+		outline: 2px solid var(--color-ignition);
 		outline-offset: 4px;
 	}
 

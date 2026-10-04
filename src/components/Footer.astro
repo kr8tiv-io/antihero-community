@@ -35,8 +35,18 @@ const kr8tivUrl = "https://kr8tiv.io";
           }
         </ul>
       </nav>
-      <a class="site-footer__group" href={facebookGroupUrl} target="_blank" rel="noopener noreferrer">
-        Join the group
+      <a
+        class="site-footer__group"
+        href={facebookGroupUrl}
+        target="_blank"
+        rel="noopener noreferrer"
+        data-cursor="Join"
+        data-magnetic="true"
+      >
+        <span class="swap-label">
+          <span class="swap-label__line">Join the group</span>
+          <span class="swap-label__line" aria-hidden="true">Join the group</span>
+        </span>
         <span class="visually-hidden"> (opens in a new tab)</span>
       </a>
       <EmailForm id="footer-email" compact />
@@ -130,11 +140,15 @@ const kr8tivUrl = "https://kr8tiv.io";
     color: var(--color-hero);
   }
 
+  .site-footer__group:active {
+    color: var(--color-ember);
+  }
+
   .site-footer__mark:focus-visible,
   .site-footer__links a:focus-visible,
   .site-footer__group:focus-visible,
   .site-footer__kr8tiv:focus-visible {
-    outline: 2px solid var(--color-hero);
+    outline: 2px solid var(--color-ignition);
     outline-offset: 3px;
   }
 

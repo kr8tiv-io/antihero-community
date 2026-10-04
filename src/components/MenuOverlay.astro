@@ -44,8 +44,13 @@ const path = Astro.url.pathname;
 		target="_blank"
 		rel="noopener noreferrer"
 		aria-label="Join the group (opens in a new tab)"
+		data-cursor="Join"
+		data-magnetic="true"
 	>
-		Join the group
+		<span class="swap-label">
+			<span class="swap-label__line">Join the group</span>
+			<span class="swap-label__line" aria-hidden="true">Join the group</span>
+		</span>
 	</a>
 </div>
 
@@ -94,7 +99,7 @@ const path = Astro.url.pathname;
 	}
 
 	.menu-link:focus-visible {
-		outline: 2px solid var(--color-hero);
+		outline: 2px solid var(--color-ignition);
 		outline-offset: 4px;
 	}
 
@@ -127,7 +132,7 @@ const path = Astro.url.pathname;
 	}
 
 	.menu-join:focus-visible {
-		outline: 2px solid var(--color-hero);
+		outline: 2px solid var(--color-ignition);
 		outline-offset: 4px;
 	}
 
