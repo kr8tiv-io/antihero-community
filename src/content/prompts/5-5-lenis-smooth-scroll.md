@@ -2,6 +2,7 @@
 title: "5.5 Lenis smooth scroll"
 useItFor: "Make scrolling feel weighted, and switch it off when someone wants less motion."
 category: Websites
+goal: grok-build
 source: websites-on-autopilot
 order: 10
 ---

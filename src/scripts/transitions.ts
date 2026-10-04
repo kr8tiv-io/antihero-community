@@ -12,6 +12,7 @@ import { bootStarfield, releaseStarfield } from "./starfield";
  */
 let releaseShelf: (() => void) | null = null;
 let releasePrompts: (() => void) | null = null;
+let releaseGoals: (() => void) | null = null;
 let releaseVideos: (() => void) | null = null;
 let releaseHover: (() => void) | null = null;
 
@@ -108,6 +109,8 @@ function onSwap(event: Event): void {
 	}
 	releaseShelf?.();
 	releasePrompts?.();
+	releaseGoals?.();
+	releaseGoals = null;
 	releaseVideos?.();
 	releaseHover?.();
 	releaseHover = null;
@@ -167,21 +170,25 @@ function bootRoute(): Promise<void> {
 	if (document.querySelector("[data-promise]")) {
 		jobs.push(import("./home-promise").then((mod) => mod.bootPromise()));
 	}
-	if (document.querySelector("[data-guides], [data-prompts]")) {
+	if (document.querySelector("[data-guides]")) {
 		jobs.push(
 			import("./filter-shelf").then((mod) => {
 				releaseShelf = mod.releaseFilterShelf;
 			}),
 		);
-	}
-	if (document.querySelector("[data-guides]")) {
 		jobs.push(import("./guides-filter").then((mod) => mod.bootGuidesFilter()));
 	}
 	if (document.querySelector("[data-prompts]")) {
 		jobs.push(
 			import("./prompt-cards").then((mod) => {
 				releasePrompts = mod.releasePromptCards;
-				mod.bootPromptsPage();
+				mod.bootPromptCards();
+			}),
+		);
+		jobs.push(
+			import("./prompt-goal-menu").then((mod) => {
+				releaseGoals = mod.releasePromptGoals;
+				mod.bootPromptGoals();
 			}),
 		);
 	}

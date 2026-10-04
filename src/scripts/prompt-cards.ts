@@ -5,7 +5,6 @@
  */
 
 import { setSwapText } from "./cursor";
-import { bootFilterShelf } from "./filter-shelf";
 
 const SUCCESS = "Stolen. Nice.";
 const FAILURE = "Couldn't copy. Select it and copy by hand.";
@@ -17,22 +16,6 @@ let releaseActive: (() => void) | null = null;
 export function releasePromptCards(): void {
 	releaseActive?.();
 	releaseActive = null;
-}
-
-/** Shelf plus copy buttons. Safe to call again on the same DOM. */
-export function bootPromptsPage(): void {
-	bootFilterShelf({
-		root: "[data-prompts]",
-		grid: "[data-prompt-grid]",
-		card: "[data-prompt-card]",
-		empty: "[data-prompt-empty]",
-		status: "[data-prompt-status]",
-		shelf: "[data-filter-shelf]",
-		noun: "prompt",
-		emptyStatus: "No prompts in this category yet.",
-		readyKey: "promptsReady",
-	});
-	bootPromptCards();
 }
 
 export function bootPromptCards(): void {
@@ -67,7 +50,6 @@ export function bootPromptCards(): void {
 	fitToggles();
 	window.addEventListener("resize", fitToggles);
 	document.fonts?.ready.then(fitToggles).catch(() => undefined);
-	root.addEventListener("filtershelf:change", fitToggles);
 	releaseActive = () => {
 		window.removeEventListener("resize", fitToggles);
 	};

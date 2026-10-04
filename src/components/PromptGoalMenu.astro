@@ -1,0 +1,434 @@
+---
+import { promptCountLabel, type PromptGoalId } from "../data/prompt-goals";
+
+interface Goal {
+	id: PromptGoalId;
+	label: string;
+	description: string;
+	count: number;
+}
+
+interface Props {
+	goals: Goal[];
+}
+
+const { goals } = Astro.props;
+const menuId = "prompt-goal-menu";
+---
+
+<div class="goal-menu" data-goal-menu>
+	<button
+		type="button"
+		class="goal-trigger"
+		data-goal-open
+		data-goal-sentinel
+		aria-expanded="false"
+		aria-controls={menuId}
+	>
+		What are you trying to do?
+	</button>
+
+	<noscript>
+		<style>
+			.goal-trigger,
+			.goal-sticky,
+			.goal-dialog {
+				display: none !important;
+			}
+		</style>
+		<nav class="goal-index" aria-label="Goals">
+			<ul>
+				{
+					goals.map((goal) => (
+						<li>
+							<a href={`#goal-${goal.id}`}>
+								{goal.label}, {promptCountLabel(goal.count)}
+							</a>
+						</li>
+					))
+				}
+			</ul>
+		</nav>
+	</noscript>
+
+	<div
+		id={menuId}
+		class="goal-dialog"
+		role="dialog"
+		aria-modal="true"
+		aria-labelledby="prompt-goal-menu-title"
+		aria-hidden="true"
+		inert
+		data-goal-dialog
+	>
+		<div class="goal-dialog__shade" data-goal-close></div>
+		<div class="goal-dialog__sheet" data-goal-sheet>
+			<div class="goal-dialog__top">
+				<h2 id="prompt-goal-menu-title" class="goal-dialog__title">What are you trying to do?</h2>
+				<button type="button" class="goal-close" data-goal-close>Close</button>
+			</div>
+			<ul class="goal-list" data-goal-list>
+				{
+					goals.map((goal) => (
+						<li>
+							<a
+								class="goal-link"
+								href={`#goal-${goal.id}`}
+								data-goal-link
+								data-goal={goal.id}
+								data-cursor="Go"
+							>
+								<span class="goal-link__main">
+									<span class="goal-link__label">{goal.label}</span>
+									<span class="goal-link__count mono">{promptCountLabel(goal.count)}</span>
+								</span>
+								<span class="goal-link__line">{goal.description}</span>
+							</a>
+						</li>
+					))
+				}
+			</ul>
+			<span class="goal-bar" data-goal-bar aria-hidden="true"></span>
+		</div>
+	</div>
+
+	<button
+		type="button"
+		class="goal-sticky"
+		data-goal-open
+		data-goal-sticky
+		hidden
+		aria-expanded="false"
+		aria-controls={menuId}
+	>
+		<span class="goal-sticky__line">
+			You're in: <span data-goal-here></span>, <span class="mono" data-goal-here-count></span>
+		</span>
+	</button>
+</div>
+
+<style>
+	.goal-menu {
+		padding: 0 var(--space-16) var(--space-32);
+	}
+
+	.goal-trigger,
+	.goal-close {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 44px;
+		padding: 0.7em 0.85em 0.6em;
+		border: 1px solid var(--color-hero);
+		background: var(--color-anti);
+		color: var(--color-hero);
+		font-family: var(--font-label);
+		font-size: var(--type-label-size);
+		font-weight: 700;
+		letter-spacing: var(--type-label-tracking);
+		line-height: 1;
+		text-transform: uppercase;
+		cursor: pointer;
+	}
+
+	.goal-trigger:hover,
+	.goal-close:hover,
+	.goal-trigger:focus-visible,
+	.goal-close:focus-visible {
+		background: var(--color-hero);
+		color: var(--color-anti);
+	}
+
+	.goal-trigger:active,
+	.goal-close:active {
+		background: var(--color-ember);
+		border-color: var(--color-ember);
+		color: var(--color-hero);
+	}
+
+	.goal-trigger:focus-visible,
+	.goal-close:focus-visible,
+	.goal-sticky:focus-visible,
+	.goal-link:focus-visible {
+		outline: 2px solid var(--color-hero);
+		outline-offset: 3px;
+	}
+
+	.goal-index {
+		margin-top: var(--space-24);
+	}
+
+	.goal-index ul {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: var(--space-8);
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.goal-index a {
+		color: var(--color-hero);
+		font-family: var(--font-body);
+		text-underline-offset: 0.2em;
+	}
+
+	.goal-dialog {
+		position: fixed;
+		z-index: 45;
+		inset: 0;
+		display: flex;
+		flex-direction: column;
+		justify-content: flex-end;
+		visibility: hidden;
+		opacity: 0;
+		pointer-events: none;
+	}
+
+	.goal-dialog.is-open {
+		pointer-events: auto;
+	}
+
+	.goal-dialog__shade {
+		position: absolute;
+		inset: 0;
+		background: rgb(10 10 11 / 46%);
+	}
+
+	.goal-dialog__sheet {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		height: 88vh;
+		max-height: 88vh;
+		padding:
+			var(--space-16)
+			max(var(--space-16), env(safe-area-inset-right))
+			calc(var(--space-24) + env(safe-area-inset-bottom))
+			max(var(--space-16), env(safe-area-inset-left));
+		background: var(--color-anti);
+		overflow: auto;
+		overscroll-behavior: contain;
+	}
+
+	.goal-dialog__top {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: var(--space-16);
+	}
+
+	.goal-dialog__title {
+		margin: 0;
+		color: var(--color-bone);
+		font-family: var(--font-label);
+		font-size: var(--type-label-size);
+		font-weight: 700;
+		letter-spacing: var(--type-label-tracking);
+		line-height: 1;
+		text-transform: uppercase;
+	}
+
+	.goal-list {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		justify-content: flex-end;
+		gap: 0.04em;
+		margin: auto 0 0;
+		padding: var(--space-24) 0 0;
+		list-style: none;
+	}
+
+	.goal-link {
+		position: relative;
+		display: block;
+		padding: 0.04em 0 0.35em;
+		color: var(--color-hero);
+		text-decoration: none;
+	}
+
+	.goal-link__main {
+		display: flex;
+		align-items: baseline;
+		justify-content: space-between;
+		gap: var(--space-16);
+	}
+
+	.goal-link__label {
+		font-family: var(--font-display);
+		font-size: clamp(3rem, 9vw, 9rem);
+		font-weight: 400;
+		letter-spacing: -0.01em;
+		line-height: 0.84;
+		text-transform: uppercase;
+	}
+
+	.goal-link__count {
+		flex: none;
+		color: var(--color-bone);
+		font-size: clamp(0.8rem, 1.4vw, 1rem);
+	}
+
+	.goal-link__line {
+		display: block;
+		max-width: 36ch;
+		margin-top: 0.55em;
+		color: var(--color-bone);
+		font-family: var(--font-body);
+		font-size: var(--type-body-size);
+		font-weight: 400;
+		letter-spacing: 0;
+		line-height: 1.4;
+		text-transform: none;
+		opacity: 0;
+		transform: translateY(6px);
+	}
+
+	.goal-bar {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 2rem;
+		height: 4px;
+		background: var(--color-ignition);
+		pointer-events: none;
+		transform: scaleX(0);
+		transform-origin: left center;
+	}
+
+	.goal-sticky {
+		position: fixed;
+		z-index: 35;
+		right: max(var(--space-16), env(safe-area-inset-right));
+		bottom: calc(var(--space-12) + env(safe-area-inset-bottom));
+		left: max(var(--space-16), env(safe-area-inset-left));
+		display: flex;
+		align-items: center;
+		min-height: 44px;
+		padding: 0.65em 0.9em;
+		border: 1px solid var(--color-graphite);
+		background: var(--color-carbon);
+		color: var(--color-bone);
+		font-family: var(--font-label);
+		font-size: var(--type-label-size);
+		font-weight: 700;
+		letter-spacing: 0.04em;
+		line-height: 1.2;
+		text-align: left;
+		text-transform: none;
+		cursor: pointer;
+	}
+
+	.goal-sticky[hidden] {
+		display: none;
+	}
+
+	.goal-sticky__line {
+		min-width: 0;
+	}
+
+	.goal-sticky .mono {
+		color: var(--color-hero);
+		font-size: 0.85rem;
+		letter-spacing: 0;
+	}
+
+	.goal-sticky:hover,
+	.goal-sticky:focus-visible {
+		border-color: var(--color-hero);
+		color: var(--color-hero);
+	}
+
+	.goal-sticky:active {
+		background: var(--color-ember);
+		border-color: var(--color-ember);
+		color: var(--color-hero);
+	}
+
+	:global(html.goal-open),
+	:global(html.goal-open body) {
+		overflow: hidden;
+	}
+
+	:global(html.menu-open) .goal-sticky {
+		visibility: hidden;
+	}
+
+	@media (min-width: 768px) and (hover: hover) and (pointer: fine) {
+		.goal-dialog {
+			justify-content: stretch;
+		}
+
+		.goal-dialog__shade {
+			background: transparent;
+		}
+
+		.goal-dialog__sheet {
+			height: 100%;
+			max-height: none;
+			padding: calc(var(--header-h) + var(--space-32)) 8vw var(--space-48) 10vw;
+		}
+
+		.goal-list.is-rising .goal-link {
+			transition: none;
+		}
+
+		.goal-link {
+			transition:
+				transform 0.35s ease,
+				opacity 0.35s ease;
+		}
+
+		.goal-link__line {
+			transition:
+				transform 0.35s ease,
+				opacity 0.35s ease;
+		}
+
+		.goal-list:has(.goal-link:hover) .goal-link:not(:hover),
+		.goal-list:has(.goal-link:focus-visible) .goal-link:not(:focus-visible) {
+			opacity: 0.35;
+		}
+
+		.goal-link:hover,
+		.goal-link:focus-visible {
+			transform: translateX(24px);
+		}
+
+		.goal-link:hover .goal-link__line,
+		.goal-link:focus-visible .goal-link__line {
+			opacity: 1;
+			transform: none;
+		}
+
+		.goal-sticky {
+			right: max(4vw, env(safe-area-inset-right));
+			bottom: auto;
+			left: auto;
+			top: calc(var(--header-h) + var(--space-8));
+			width: max-content;
+			max-width: min(28rem, calc(100vw - 8vw));
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.goal-link,
+		.goal-link__line {
+			transition: none;
+			transform: none;
+		}
+
+		.goal-link:hover,
+		.goal-link:focus-visible {
+			transform: none;
+		}
+	}
+
+	@media (min-width: 1024px) {
+		.goal-menu {
+			padding: 0 8vw var(--space-48) 12vw;
+		}
+	}
+</style>

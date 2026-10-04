@@ -2,6 +2,7 @@
 title: "5.13 QA with Playwright"
 useItFor: "Open every page in a real browser and catch what broke."
 category: Websites
+goal: grok-build
 source: websites-on-autopilot
 order: 18
 ---

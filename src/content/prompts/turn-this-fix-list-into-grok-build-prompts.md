@@ -2,6 +2,7 @@
 title: "Turn this fix list into Grok Build prompts"
 useItFor: "Turn a fix list into prompts you can run one commit at a time."
 category: Websites
+goal: grok-build
 source: websites-on-autopilot
 order: 31
 ---

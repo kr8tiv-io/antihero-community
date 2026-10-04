@@ -2,6 +2,7 @@
 title: "Act as a jury of three Awwwards judges"
 useItFor: "Score the site the way a jury would, and skip the pep talk."
 category: Websites
+goal: websites
 source: websites-on-autopilot
 order: 30
 ---

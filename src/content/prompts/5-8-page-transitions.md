@@ -2,6 +2,7 @@
 title: "5.8 Page transitions"
 useItFor: "Move between pages without a hard cut, and keep the nav steady."
 category: Websites
+goal: grok-build
 source: websites-on-autopilot
 order: 13
 ---

@@ -2,6 +2,7 @@
 title: "Stage 8. Review and the fix list"
 useItFor: "Get a numbered fix list, most important first, written so you can paste it back."
 category: Websites
+goal: grok-bot
 source: websites-on-autopilot
 order: 22
 ---

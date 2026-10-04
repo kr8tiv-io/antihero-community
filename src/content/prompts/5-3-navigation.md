@@ -2,6 +2,7 @@
 title: "5.3 Navigation"
 useItFor: "Add the slim top bar, and a full-screen menu for the phone."
 category: Websites
+goal: grok-build
 source: websites-on-autopilot
 order: 8
 ---

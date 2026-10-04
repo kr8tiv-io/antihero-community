@@ -2,6 +2,7 @@
 title: "Typography and spacing pass"
 useItFor: "Give the type and the gaps one scale, and stop every section from sharing a shape."
 category: Websites
+goal: grok-build
 source: websites-on-autopilot
 order: 26
 ---

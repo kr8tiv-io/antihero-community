@@ -2,6 +2,7 @@
 title: "Motion pass"
 useItFor: "Keep the motion that has a job. Take out the motion that is only there to move."
 category: Websites
+goal: grok-build
 source: websites-on-autopilot
 order: 27
 ---

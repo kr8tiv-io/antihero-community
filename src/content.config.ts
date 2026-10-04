@@ -1,6 +1,7 @@
 import { defineCollection, reference } from "astro:content";
 import { glob } from "astro/loaders";
 import { z } from "astro/zod";
+import { promptGoalIds, type PromptGoalId } from "./data/prompt-goals";
 
 const category = z.enum(["Brand", "Websites", "Video", "Prompts"]);
 
@@ -60,6 +61,7 @@ const prompts = defineCollection({
     title: z.string().min(1),
     useItFor: z.string().min(1),
     category,
+    goal: z.enum(promptGoalIds as unknown as [PromptGoalId, ...PromptGoalId[]]),
     source: z.optional(reference("guides")),
     order: z.number().int().positive(),
   }),

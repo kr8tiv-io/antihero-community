@@ -2,6 +2,7 @@
 title: "Stage 3. The meta-prompt: \"write me all the build prompts\""
 useItFor: "Have the AI write every build prompt, in order, each one ready to paste on its own."
 category: Websites
+goal: websites
 source: websites-on-autopilot
 order: 3
 ---

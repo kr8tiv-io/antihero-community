@@ -2,6 +2,7 @@
 title: "The watcher prompt"
 useItFor: "Hand each commit to a second AI and ask if the task is actually done."
 category: Websites
+goal: grok-bot
 source: websites-on-autopilot
 order: 21
 ---

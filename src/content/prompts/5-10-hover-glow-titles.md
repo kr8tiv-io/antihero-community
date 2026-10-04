@@ -2,6 +2,7 @@
 title: "5.10 Hover glow titles"
 useItFor: "Warm a heading up under the cursor. Phones stay still."
 category: Websites
+goal: grok-build
 source: websites-on-autopilot
 order: 15
 ---

@@ -2,6 +2,7 @@
 title: "9.1 The NO SLOP RULES (written for the AI, not for you)"
 useItFor: "Paste this into the RULES so the site does not come out looking like every other one."
 category: Websites
+goal: grok-build
 source: websites-on-autopilot
 order: 23
 ---

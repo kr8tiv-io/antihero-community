@@ -2,6 +2,7 @@
 title: "Copy pass"
 useItFor: "Rewrite the lines in your voice, and mark TODO where a real fact is missing."
 category: Websites
+goal: grok-build
 source: websites-on-autopilot
 order: 29
 ---

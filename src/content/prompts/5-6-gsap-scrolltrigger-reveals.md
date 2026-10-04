@@ -2,6 +2,7 @@
 title: "5.6 GSAP ScrollTrigger reveals"
 useItFor: "Bring headings, images, and cards in as they reach the screen."
 category: Websites
+goal: grok-build
 source: websites-on-autopilot
 order: 11
 ---

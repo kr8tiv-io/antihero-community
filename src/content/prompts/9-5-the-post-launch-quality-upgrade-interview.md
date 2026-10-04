@@ -2,6 +2,7 @@
 title: "9.5 The Post-launch Quality Upgrade Interview"
 useItFor: "A week after the site is live, find what feels flat and write the upgrades."
 category: Websites
+goal: websites
 source: websites-on-autopilot
 order: 32
 ---

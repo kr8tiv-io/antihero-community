@@ -2,6 +2,7 @@
 title: "Stage 2. The section plan"
 useItFor: "Turn the brief into pages, sections, and the pictures you still need to make."
 category: Websites
+goal: websites
 source: websites-on-autopilot
 order: 2
 ---

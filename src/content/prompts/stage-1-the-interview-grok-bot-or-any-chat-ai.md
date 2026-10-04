@@ -2,6 +2,7 @@
 title: "Stage 1. The interview (Grok Bot or any chat AI)"
 useItFor: "Plan the site in one chat, one question at a time, before anyone opens a file."
 category: Websites
+goal: websites
 source: websites-on-autopilot
 order: 1
 ---

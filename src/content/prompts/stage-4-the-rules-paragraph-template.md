@@ -2,6 +2,7 @@
 title: "Stage 4. The RULES paragraph template"
 useItFor: "Fill this in once. It sits at the top of every build prompt after that."
 category: Websites
+goal: grok-build
 source: websites-on-autopilot
 order: 4
 ---

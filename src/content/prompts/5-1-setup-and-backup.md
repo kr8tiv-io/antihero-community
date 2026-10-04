@@ -2,6 +2,7 @@
 title: "5.1 Setup and backup"
 useItFor: "Start the Astro project, save a first commit, and put the logo and fonts in place."
 category: Websites
+goal: grok-build
 source: websites-on-autopilot
 order: 6
 ---

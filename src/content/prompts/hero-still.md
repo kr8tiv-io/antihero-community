@@ -2,6 +2,7 @@
 title: "Hero still"
 useItFor: "Ask for the first picture, with calm space left for the headline."
 category: Websites
+goal: images-video
 source: websites-on-autopilot
 order: 19
 ---

@@ -1,9 +1,9 @@
 ---
 import { getCollection } from "astro:content";
-import FilterShelf from "../../components/FilterShelf.astro";
 import PromptCard from "../../components/PromptCard.astro";
+import PromptGoalMenu from "../../components/PromptGoalMenu.astro";
 import RevealHeading from "../../components/RevealHeading.astro";
-import { facebookGroupUrl } from "../../data/nav";
+import { promptCountLabel, promptGoals, type PromptGoalId } from "../../data/prompt-goals";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 
 const prompts = await getCollection("prompts");
@@ -18,6 +18,26 @@ function sourceLink(source: { id: string } | undefined): { href: string; title: 
 	if (!guide || guide.data.draft) return null;
 	return { href: `/guides/${guide.data.slug}`, title: guide.data.title };
 }
+
+const grouped = new Map<PromptGoalId, typeof prompts>();
+for (const prompt of prompts) {
+	const list = grouped.get(prompt.data.goal) ?? [];
+	list.push(prompt);
+	grouped.set(prompt.data.goal, list);
+}
+
+const sections = promptGoals.flatMap((goal) => {
+	const items = grouped.get(goal.id);
+	if (!items || items.length === 0) return [];
+	return [{ ...goal, prompts: items }];
+});
+
+const menuGoals = sections.map((section) => ({
+	id: section.id,
+	label: section.label,
+	description: section.description,
+	count: section.prompts.length,
+}));
 ---
 
 <BaseLayout
@@ -36,51 +56,67 @@ function sourceLink(source: { id: string } | undefined): { href: string; title: 
 			<p data-reveal="fade-up">Copy it, paste it into Grok or any decent AI, fill in the brackets.</p>
 		</header>
 
-		<FilterShelf
-			label="Filter prompts by category"
-			controls="prompt-grid"
-			shelfSelector="[data-prompts] [data-filter-shelf]"
-			cardSelector="[data-prompts] [data-prompt-card]"
-			emptySelector="[data-prompts] [data-prompt-empty]"
-		>
-			<div class="prompt-grid" id="prompt-grid" data-prompt-grid data-reveal="stagger">
-				{
-					prompts.map((prompt, index) => {
-						const source = sourceLink(prompt.data.source);
-						return (
-							<PromptCard
-								id={prompt.id}
-								title={prompt.data.title}
-								useItFor={prompt.data.useItFor}
-								category={prompt.data.category}
-								body={prompt.body ?? ""}
-								sourceHref={source?.href ?? null}
-								sourceTitle={source?.title ?? null}
-								spot={index}
-							/>
-						);
-					})
-				}
-			</div>
+		<PromptGoalMenu goals={menuGoals} />
 
-			<div class="prompt-empty" data-prompt-empty hidden>
-				<p class="prompt-empty__copy">No prompts in this category yet.</p>
-				<p class="prompt-empty__action">
-					<a href={facebookGroupUrl} target="_blank" rel="noopener noreferrer">
-						Join the group
-						<span class="visually-hidden"> (opens in a new tab)</span>
-					</a>
-				</p>
-			</div>
-			<p class="visually-hidden" data-prompt-status aria-live="polite"></p>
-		</FilterShelf>
+		{
+			sections.map((section, index) => {
+				const wide = section.prompts.length < 4;
+				const side = index % 2 === 0 ? "left" : "right";
+				return (
+					<section
+						id={`goal-${section.id}`}
+						class:list={["goal-section", `goal-section--${side}`]}
+						aria-labelledby={`goal-${section.id}-title`}
+						data-goal-section
+						data-goal={section.id}
+						data-label={section.label}
+						data-count-label={promptCountLabel(section.prompts.length)}
+					>
+						<header class="goal-head">
+							<h2
+								id={`goal-${section.id}-title`}
+								class="goal-title label-stack"
+								tabindex="-1"
+								data-goal-title
+							>
+								<span class="label-box label-box--white">{section.label}</span>
+							</h2>
+							<p class="goal-desc">{section.description}</p>
+							<p class="goal-count mono">{promptCountLabel(section.prompts.length)}</p>
+						</header>
+						<div
+							class:list={["prompt-grid", wide ? "prompt-grid--wide" : "prompt-grid--offset"]}
+							data-reveal="stagger"
+						>
+							{section.prompts.map((prompt, spot) => {
+								const source = sourceLink(prompt.data.source);
+								return (
+									<PromptCard
+										id={prompt.id}
+										title={prompt.data.title}
+										useItFor={prompt.data.useItFor}
+										category={prompt.data.category}
+										body={prompt.body ?? ""}
+										sourceHref={source?.href ?? null}
+										sourceTitle={source?.title ?? null}
+										spot={spot}
+									/>
+								);
+							})}
+						</div>
+					</section>
+				);
+			})
+		}
 	</div>
 </BaseLayout>
 
 <script>
-	import { bootPromptsPage } from "../../scripts/prompt-cards";
+	import { bootPromptCards } from "../../scripts/prompt-cards";
+	import { bootPromptGoals } from "../../scripts/prompt-goal-menu";
 
-	bootPromptsPage();
+	bootPromptCards();
+	bootPromptGoals();
 </script>
 
 <style>
@@ -89,7 +125,7 @@ function sourceLink(source: { id: string } | undefined): { href: string; title: 
 		flex-direction: column;
 		align-items: flex-start;
 		gap: var(--space-24);
-		padding: calc(var(--header-h) + var(--space-32)) var(--space-16) var(--space-32);
+		padding: calc(var(--header-h) + var(--space-32)) var(--space-16) var(--space-16);
 	}
 
 	.prompts-hero h1 {
@@ -103,49 +139,77 @@ function sourceLink(source: { id: string } | undefined): { href: string; title: 
 		color: var(--color-bone);
 	}
 
+	.goal-section {
+		scroll-margin-top: calc(var(--header-h) + var(--space-24));
+		padding: var(--space-32) var(--space-16) var(--space-16);
+	}
+
+	.goal-section + .goal-section {
+		padding-top: var(--space-96);
+	}
+
+	.goal-head {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: var(--space-12);
+		max-width: 22ch;
+		margin-bottom: var(--space-48);
+	}
+
+	.goal-title {
+		margin: 0;
+		font-size: clamp(3.25rem, 7vw, 6.5rem);
+		line-height: 0.86;
+	}
+
+	.goal-title:focus {
+		outline: 2px solid var(--color-hero);
+		outline-offset: 6px;
+	}
+
+	.goal-title .label-box {
+		font-size: inherit;
+	}
+
+	.goal-desc {
+		max-width: 28ch;
+		margin: 0;
+		color: var(--color-bone);
+	}
+
+	.goal-count {
+		margin: 0;
+		color: var(--color-bone);
+		font-size: 0.85rem;
+	}
+
 	.prompt-grid {
-		position: relative;
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-64);
-		padding: var(--space-48) var(--space-16) var(--space-96);
 	}
 
-	.prompt-empty {
-		padding: 0 var(--space-16) var(--space-96);
+	.prompt-grid--wide {
+		max-width: 72rem;
 	}
 
-	.prompt-empty__copy {
-		max-width: 14ch;
-		margin: 0 0 var(--space-16);
-		font-family: var(--font-display);
-		font-size: clamp(2rem, 5vw, 3.5rem);
-		line-height: 0.9;
-		text-transform: uppercase;
-		color: var(--color-hero);
-	}
-
-	.prompt-empty__action {
-		margin: 0;
-	}
-
-	.prompt-empty a {
-		color: var(--color-hero);
-		font-family: var(--font-label);
-		font-size: var(--type-label-size);
-		font-weight: 700;
-		letter-spacing: var(--type-label-tracking);
-		text-transform: uppercase;
-		text-underline-offset: 0.2em;
-	}
-
-	.prompt-empty a:focus-visible {
-		outline: 2px solid var(--color-hero);
-		outline-offset: 3px;
+	@media (max-width: 767px), (pointer: coarse) {
+		:global(body:has(.prompts)) {
+			padding-bottom: calc(5rem + env(safe-area-inset-bottom));
+		}
 	}
 
 	@media (min-width: 768px) {
-		.prompt-grid {
+		.goal-section--right .goal-head {
+			align-items: flex-end;
+			max-width: none;
+			width: min(100%, 34rem);
+			margin-left: 18%;
+			text-align: right;
+		}
+
+		.prompt-grid--offset {
 			display: grid;
 			grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
 			column-gap: var(--space-48);
@@ -153,8 +217,8 @@ function sourceLink(source: { id: string } | undefined): { href: string; title: 
 			align-items: start;
 		}
 
-		.prompt-grid :global([data-prompt-card][data-spot="1"]),
-		.prompt-grid :global([data-prompt-card][data-spot="3"]) {
+		.prompt-grid--offset :global([data-prompt-card][data-spot="1"]),
+		.prompt-grid--offset :global([data-prompt-card][data-spot="3"]) {
 			margin-top: clamp(4rem, 12vh, 8rem);
 		}
 	}
@@ -164,20 +228,24 @@ function sourceLink(source: { id: string } | undefined): { href: string; title: 
 			display: grid;
 			grid-template-columns: minmax(0, 1.4fr) minmax(14rem, 0.7fr);
 			align-items: end;
-			min-height: 56vh;
-			padding: calc(var(--header-h) + var(--space-64)) 8vw var(--space-48) 12vw;
+			min-height: 52vh;
+			padding: calc(var(--header-h) + var(--space-64)) 8vw var(--space-16) 12vw;
 		}
 
 		.prompts-hero p {
 			justify-self: end;
 		}
 
-		.prompt-grid {
-			padding: var(--space-64) 8vw var(--space-128) 12vw;
+		.goal-section {
+			padding: var(--space-48) 8vw var(--space-32) 12vw;
 		}
 
-		.prompt-empty {
-			padding: 0 8vw var(--space-128) 12vw;
+		.goal-section + .goal-section {
+			padding-top: var(--space-128);
+		}
+
+		.goal-section--right .goal-head {
+			margin-left: 32%;
 		}
 	}
 </style>

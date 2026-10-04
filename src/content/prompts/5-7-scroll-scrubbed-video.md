@@ -2,6 +2,7 @@
 title: "5.7 Scroll-scrubbed video"
 useItFor: "Play a video forward and back with the scroll."
 category: Websites
+goal: grok-build
 source: websites-on-autopilot
 order: 12
 ---

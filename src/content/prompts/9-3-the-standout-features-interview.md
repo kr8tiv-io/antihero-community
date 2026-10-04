@@ -2,6 +2,7 @@
 title: "9.3 The Standout Features Interview"
 useItFor: "Pick the 3 to 5 moments worth building, and drop the tricks."
 category: Websites
+goal: websites
 source: websites-on-autopilot
 order: 25
 ---

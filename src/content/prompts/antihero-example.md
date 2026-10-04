@@ -2,6 +2,7 @@
 title: "AntiHero example"
 useItFor: "A filled-in RULES paragraph for a demo brand, so you can see the shape."
 category: Websites
+goal: grok-build
 source: websites-on-autopilot
 order: 5
 ---

@@ -2,6 +2,7 @@
 title: "5.2 Hero"
 useItFor: "Build the first screen: one big headline, one line under it, one button."
 category: Websites
+goal: grok-build
 source: websites-on-autopilot
 order: 7
 ---

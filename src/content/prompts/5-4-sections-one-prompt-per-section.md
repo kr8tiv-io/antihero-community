@@ -2,6 +2,7 @@
 title: "5.4 Sections (one prompt per section)"
 useItFor: "Add one section with real copy and layout. Motion comes later."
 category: Websites
+goal: grok-build
 source: websites-on-autopilot
 order: 9
 ---

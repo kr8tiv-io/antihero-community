@@ -2,6 +2,7 @@
 title: "9.2 The Visual Interview"
 useItFor: "Settle the look, the type, and the motion before anyone writes CSS."
 category: Websites
+goal: websites
 source: websites-on-autopilot
 order: 24
 ---

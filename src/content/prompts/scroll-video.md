@@ -2,6 +2,7 @@
 title: "Scroll video"
 useItFor: "Turn a still you already like into one slow shot you can scrub."
 category: Websites
+goal: images-video
 source: websites-on-autopilot
 order: 20
 ---

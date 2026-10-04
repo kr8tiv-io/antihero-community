@@ -2,6 +2,7 @@
 title: "5.9 Three.js 3D scene"
 useItFor: "Put one 3D scene on a big screen, and a still image on a phone."
 category: Websites
+goal: grok-build
 source: websites-on-autopilot
 order: 14
 ---

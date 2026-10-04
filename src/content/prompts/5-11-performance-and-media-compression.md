@@ -2,6 +2,7 @@
 title: "5.11 Performance and media compression"
 useItFor: "Shrink the pictures and video so the first screen shows up fast."
 category: Websites
+goal: grok-build
 source: websites-on-autopilot
 order: 16
 ---

@@ -2,6 +2,7 @@
 title: "5.12 Credits page"
 useItFor: "Name everything you borrowed, with the person, the license, and the link."
 category: Websites
+goal: grok-build
 source: websites-on-autopilot
 order: 17
 ---

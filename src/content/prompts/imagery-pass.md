@@ -2,6 +2,7 @@
 title: "Imagery pass"
 useItFor: "Check every picture against the brand, and mark a replacement where one is off."
 category: Websites
+goal: grok-build
 source: websites-on-autopilot
 order: 28
 ---
