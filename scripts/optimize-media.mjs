@@ -230,17 +230,91 @@ async function writeStill(job) {
 	return { width: meta.width ?? job.width, placeholder: true };
 }
 
-async function posterFrom(video, stem, kind) {
+const HERO_CAP = 6 * 1024 * 1024;
+const POSTER_CAP = 250 * 1024;
+
+async function encodeBuffer(source, format, quality) {
+	const image = sharp(source);
+	if (format === "jpeg") return image.jpeg({ quality, mozjpeg: true }).toBuffer();
+	if (format === "webp") return image.webp({ quality }).toBuffer();
+	return image.avif({ quality }).toBuffer();
+}
+
+async function underCap(source, format, quality, cap, step, floor) {
+	let next = quality;
+	let buffer = await encodeBuffer(source, format, next);
+	while (buffer.length > cap && next - step >= floor) {
+		next -= step;
+		buffer = await encodeBuffer(source, format, next);
+	}
+	return { buffer, quality: next };
+}
+
+async function posterFrom(video, stem, kind, extras = {}) {
+	const cap = extras.cap ?? Number.POSITIVE_INFINITY;
 	const jpg = path.join(PUBLIC_MEDIA, `${stem}-poster.jpg`);
 	const avif = path.join(PUBLIC_MEDIA, `${stem}-poster.avif`);
-	await ffmpeg(["-i", video, "-frames:v", "1", "-q:v", "3", jpg]);
-	await sharp(jpg).jpeg({ quality: 82, mozjpeg: true }).toFile(`${jpg}.tmp`);
-	await rm(jpg);
-	await copyFile(`${jpg}.tmp`, jpg);
-	await rm(`${jpg}.tmp`);
-	await sharp(jpg).avif({ quality: 50 }).toFile(avif);
+	const grabbed = path.join(PUBLIC_MEDIA, `.grab-${stem}.png`);
+	await ffmpeg(["-i", video, "-frames:v", "1", grabbed]);
+	const jpeg = await underCap(grabbed, "jpeg", 82, cap, 6, 46);
+	const avifImage = await underCap(grabbed, "avif", 50, cap, 5, 30);
+	await writeFile(jpg, jpeg.buffer);
+	await writeFile(avif, avifImage.buffer);
 	await mark(jpg, kind);
 	await mark(avif, kind);
+	if (extras.webp) {
+		const webp = path.join(PUBLIC_MEDIA, `${stem}-poster.webp`);
+		const webpImage = await underCap(grabbed, "webp", 72, cap, 6, 40);
+		await writeFile(webp, webpImage.buffer);
+		await mark(webp, kind);
+		console.log(`${stem} poster webp q${webpImage.quality} ${webpImage.buffer.length}`);
+	}
+	await rm(grabbed, { force: true });
+	console.log(
+		`${stem} poster jpeg q${jpeg.quality} ${jpeg.buffer.length} avif q${avifImage.quality} ${avifImage.buffer.length}`,
+	);
+}
+
+function heroAttempts(job) {
+	const full = { width: job.width, height: job.height };
+	const attempts = [
+		{ crf: 24, g: 1, ...full },
+		{ crf: 26, g: 1, ...full },
+		{ crf: 28, g: 1, ...full },
+		{ crf: 28, g: 4, ...full },
+	];
+	if (job.frames === "desktop") attempts.push({ crf: 28, g: 4, width: 1600, height: 900 });
+	return attempts;
+}
+
+async function writeScrub(input, out, still, attempt) {
+	const lead = still
+		? ["-loop", "1", "-framerate", "24", "-t", "6", "-i", input]
+		: ["-i", input, "-t", "10"];
+	const interval = String(attempt.g);
+	await ffmpeg([
+		...lead,
+		"-an",
+		"-vf",
+		`scale=${attempt.width}:${attempt.height}:flags=lanczos,fps=24`,
+		"-c:v",
+		"libx264",
+		"-crf",
+		String(attempt.crf),
+		"-preset",
+		"slow",
+		"-g",
+		interval,
+		"-keyint_min",
+		interval,
+		"-sc_threshold",
+		"0",
+		"-pix_fmt",
+		"yuv420p",
+		"-movflags",
+		"+faststart",
+		out,
+	]);
 }
 
 async function encodeScrub(job) {
@@ -254,33 +328,29 @@ async function encodeScrub(job) {
 		await plate(job.width, job.height, job.file, input);
 		kind = "placeholder";
 		still = true;
+	} else {
+		const [durationText] = await ffprobe(input, "format=duration");
+		const duration = Number(durationText);
+		console.log(`${job.file} source ${duration.toFixed(3)}s`);
+		if (duration > 10) console.log(`${job.file} trimmed to 10s`);
 	}
-	const args = still
-		? ["-loop", "1", "-framerate", "24", "-t", "6", "-i", input]
-		: ["-i", input];
-	await ffmpeg([
-		...args,
-		"-an",
-		"-vf",
-		`scale=${job.width}:${job.height}:flags=lanczos,fps=24`,
-		"-c:v",
-		"libx264",
-		"-crf",
-		"20",
-		"-preset",
-		"slow",
-		"-g",
-		"1",
-		"-keyint_min",
-		"1",
-		"-pix_fmt",
-		"yuv420p",
-		"-movflags",
-		"+faststart",
-		out,
-	]);
+	const attempts = still ? [{ crf: 24, g: 1, width: job.width, height: job.height }] : heroAttempts(job);
+	let chosen = attempts[0];
+	for (const attempt of attempts) {
+		chosen = attempt;
+		await writeScrub(input, out, still, attempt);
+		const info = await stat(out);
+		console.log(
+			`${job.file} crf ${attempt.crf} g ${attempt.g} ${attempt.width}x${attempt.height} ${info.size}`,
+		);
+		if (still || info.size <= HERO_CAP) break;
+	}
+	const finalInfo = await stat(out);
+	if (!still && finalInfo.size > HERO_CAP) {
+		console.log(`${job.file} still over ${HERO_CAP} after ${chosen.crf}/${chosen.g}`);
+	}
 	await mark(out, kind);
-	await posterFrom(out, job.file.replace(/\.mp4$/, ""), kind);
+	await posterFrom(out, job.file.replace(/\.mp4$/, ""), kind, { webp: true, cap: POSTER_CAP });
 	await exportFrames(out, job.frames, kind);
 	if (source.placeholder) await rm(input, { force: true });
 }

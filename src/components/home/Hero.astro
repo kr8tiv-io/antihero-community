@@ -1,7 +1,8 @@
 ---
 /**
- * Home hero. Protected once approved: leave this file, hero-scrub.ts,
- * and the hero videos alone unless a task names them.
+ * Home hero. The film scrubs with scroll. The red sweep is drawn in
+ * code, on top of the film. Leave this file, hero-scrub.ts, and the
+ * hero videos alone unless a task names them.
  */
 import wordmark from "../../assets/brand/antihero-wordmark-white.svg?url";
 import { facebookGroupUrl } from "../../data/nav";
@@ -20,10 +21,16 @@ const monoLine = "No jargon. No catch. No garbage.";
 				/>
 				<source
 					media="(min-width: 768px)"
+					srcset="/media/hero-desktop-poster.webp"
+					type="image/webp"
+				/>
+				<source
+					media="(min-width: 768px)"
 					srcset="/media/hero-desktop-poster.jpg"
 					type="image/jpeg"
 				/>
 				<source srcset="/media/hero-mobile-poster.avif" type="image/avif" />
+				<source srcset="/media/hero-mobile-poster.webp" type="image/webp" />
 				<img
 					src="/media/hero-mobile-poster.jpg"
 					alt=""
@@ -45,6 +52,7 @@ const monoLine = "No jargon. No catch. No garbage.";
 			<canvas class="hero-canvas" data-hero-canvas aria-hidden="true"></canvas>
 		</div>
 		<div class="hero-vignette" aria-hidden="true"></div>
+		<span class="hero-sweep" data-hero-sweep aria-hidden="true"></span>
 		<div class="hero-wordmark" data-hero-wordmark aria-hidden="true">
 			<img src={wordmark} alt="" width="1456" height="436" />
 		</div>
@@ -67,7 +75,7 @@ const monoLine = "No jargon. No catch. No garbage.";
 		</div>
 		<p class="hero-mono mono" data-hero-mono>
 			<span class="visually-hidden">{monoLine}</span>
-			<span data-hero-mono-visual data-line={monoLine} aria-hidden="true"></span>
+			<span class="hero-mono-visual" data-hero-mono-visual data-line={monoLine} aria-hidden="true"></span>
 		</p>
 		<div class="hero-scroll" data-hero-scroll aria-hidden="true">
 			<span class="label">Scroll</span>
@@ -133,8 +141,20 @@ const monoLine = "No jargon. No catch. No garbage.";
 		z-index: 1;
 		pointer-events: none;
 		background:
-			linear-gradient(to top, rgb(10 10 11 / 0.78), transparent 46%),
-			radial-gradient(ellipse at center, transparent 42%, rgb(10 10 11 / 0.62) 100%);
+			linear-gradient(to top right, rgb(10 10 11 / 0.7), transparent 55%),
+			radial-gradient(ellipse at center, transparent 68%, rgb(10 10 11 / 0.25) 100%);
+	}
+
+	.hero-sweep {
+		position: absolute;
+		z-index: 1;
+		top: 0;
+		left: 0;
+		height: 100%;
+		width: clamp(4px, 0.625vw, 12px);
+		background: var(--color-ignition);
+		pointer-events: none;
+		will-change: transform;
 	}
 
 	.hero-wordmark {
@@ -196,12 +216,41 @@ const monoLine = "No jargon. No catch. No garbage.";
 		position: absolute;
 		z-index: 2;
 		left: var(--space-16);
-		right: var(--space-16);
-		bottom: calc(var(--space-80, 5rem) + env(safe-area-inset-bottom));
+		right: 4.5rem;
+		bottom: calc(var(--space-32) + env(safe-area-inset-bottom));
 		margin: 0;
 		max-width: none;
 		color: var(--color-hero);
-		font-size: clamp(0.8rem, 2.8vw, 1rem);
+		font-family: var(--font-mono);
+		font-size: clamp(1.6rem, 6.4vw, 2rem);
+		font-weight: 400;
+		letter-spacing: -0.01em;
+		line-height: 1.1;
+	}
+
+	.hero-mono-visual {
+		display: block;
+	}
+
+	/* These nodes are built in hero-scrub.ts, so they never get the Astro scope attribute. */
+	:global(.hero-mono-sentence) {
+		display: block;
+		width: fit-content;
+		background: rgb(10 10 11 / 0.86);
+		padding: 0.02em 0.14em 0.06em;
+	}
+
+	:global(.hero-mono-word) {
+		display: inline-block;
+		white-space: nowrap;
+	}
+
+	:global(.hero-mono-gap) {
+		white-space: pre;
+	}
+
+	:global(.hero-mono-gap--sentence) {
+		display: none;
 	}
 
 	.hero-scroll {
@@ -237,7 +286,8 @@ const monoLine = "No jargon. No catch. No garbage.";
 		display: none;
 	}
 
-	.hero--still .hero-wordmark {
+	.hero--still .hero-wordmark,
+	.hero--still .hero-sweep {
 		will-change: auto;
 	}
 
@@ -274,9 +324,20 @@ const monoLine = "No jargon. No catch. No garbage.";
 
 		.hero-mono {
 			left: 7vw;
-			right: auto;
+			right: 7vw;
 			bottom: 14vh;
-			font-size: clamp(1rem, 1.4vw, 1.25rem);
+			font-size: clamp(2rem, 2.8vw, 2.75rem);
+		}
+
+		:global(.hero-mono-sentence) {
+			display: inline;
+			width: auto;
+			box-decoration-break: clone;
+			-webkit-box-decoration-break: clone;
+		}
+
+		:global(.hero-mono-gap--sentence) {
+			display: inline;
 		}
 
 		.hero-scroll-line {
@@ -306,7 +367,8 @@ const monoLine = "No jargon. No catch. No garbage.";
 			display: none;
 		}
 
-		.hero-wordmark {
+		.hero-wordmark,
+		.hero-sweep {
 			will-change: auto;
 		}
 	}

@@ -87,17 +87,47 @@ export function initHero(root: HTMLElement): void {
   const mono = root.querySelector<HTMLElement>("[data-hero-mono]");
   const visual = root.querySelector<HTMLElement>("[data-hero-mono-visual]");
   const scrollHint = root.querySelector<HTMLElement>("[data-hero-scroll]");
+  const sweep = root.querySelector<HTMLElement>("[data-hero-sweep]");
   const button = root.querySelector<HTMLAnchorElement>("[data-hero-join]");
-  if (!video || !canvas || !wordmark || !copy || !mono || !visual || !scrollHint) return;
+  if (!video || !canvas || !wordmark || !copy || !mono || !visual || !scrollHint || !sweep) return;
 
   const line = visual.dataset.line ?? visual.textContent ?? "";
   visual.textContent = "";
-  const chars = Array.from(line).map((char) => {
-    const span = document.createElement("span");
-    span.textContent = char === " " ? "\u00a0" : char;
-    gsap.set(span, { opacity: 0 });
-    visual.append(span);
-    return span;
+  const chars: HTMLElement[] = [];
+  const sentences = line.split(/(?<=\.)\s+/).filter((sentence) => sentence.length > 0);
+  sentences.forEach((sentence, sentenceIndex) => {
+    const sentenceSpan = document.createElement("span");
+    sentenceSpan.className = "hero-mono-sentence";
+    const words = sentence.split(" ").filter((word) => word.length > 0);
+    words.forEach((word, wordIndex) => {
+      const wordSpan = document.createElement("span");
+      wordSpan.className = "hero-mono-word";
+      Array.from(word).forEach((char) => {
+        const span = document.createElement("span");
+        span.textContent = char;
+        gsap.set(span, { opacity: 0 });
+        wordSpan.append(span);
+        chars.push(span);
+      });
+      sentenceSpan.append(wordSpan);
+      if (wordIndex < words.length - 1) {
+        const gap = document.createElement("span");
+        gap.className = "hero-mono-gap";
+        gap.textContent = " ";
+        gsap.set(gap, { opacity: 0 });
+        sentenceSpan.append(gap);
+        chars.push(gap);
+      }
+    });
+    visual.append(sentenceSpan);
+    if (sentenceIndex < sentences.length - 1) {
+      const gap = document.createElement("span");
+      gap.className = "hero-mono-gap hero-mono-gap--sentence";
+      gap.textContent = " ";
+      gsap.set(gap, { opacity: 0 });
+      visual.append(gap);
+      chars.push(gap);
+    }
   });
 
   const desktopQuery = window.matchMedia(DESKTOP_QUERY);
@@ -127,6 +157,31 @@ export function initHero(root: HTMLElement): void {
   let targetX = 0;
   let targetY = 0;
   let targetRot = 0;
+  let sweepTravel = 0;
+
+  function measureSweep(): void {
+    const stageWidth = stage?.clientWidth ?? 0;
+    const barWidth = sweep?.offsetWidth ?? 0;
+    if (stageWidth <= 0) return;
+    sweepTravel = Math.max(0, stageWidth - barWidth);
+  }
+
+  function parkSweep(): void {
+    const stageWidth = stage?.clientWidth ?? window.innerWidth;
+    const left = desktopQuery.matches ? stageWidth * 0.07 : 16;
+    sweep.style.transform = `translate3d(${left}px, 0, 0)`;
+    sweep.style.opacity = "1";
+  }
+
+  function placeSweep(next: number, clear: number): void {
+    if (mode === "still") {
+      parkSweep();
+      return;
+    }
+    if (sweepTravel === 0) measureSweep();
+    sweep.style.transform = `translate3d(${next * sweepTravel}px, 0, 0)`;
+    sweep.style.opacity = String(1 - clear);
+  }
 
   function applyScene(next: number): void {
     progress = next;
@@ -152,6 +207,7 @@ export function initHero(root: HTMLElement): void {
     const hint = (1 - segment(next, 0.08, 0.22)) * (1 - clear);
     gsap.set(scrollHint, { opacity: hint, y: 12 * (1 - hint) });
     gsap.set(wordmark, { opacity: 1 - clear });
+    placeSweep(next, clear);
 
     if (!fineQuery.matches && mode !== "still") {
       targetX = (next - 0.5) * TOUCH_DRIFT;
@@ -370,9 +426,11 @@ export function initHero(root: HTMLElement): void {
     video.muted = true;
     video.playsInline = true;
     if (video.getAttribute("src") !== paths.video) {
+      root.classList.remove("is-video");
       video.src = paths.video;
       video.load();
     }
+    measureSweep();
     startScrub();
   }
 
@@ -396,6 +454,7 @@ export function initHero(root: HTMLElement): void {
     copy.style.pointerEvents = "";
     button?.removeAttribute("tabindex");
     chars.forEach((span) => gsap.set(span, { opacity: 0 }));
+    parkSweep();
   }
 
   function boot(): void {
@@ -423,7 +482,7 @@ export function initHero(root: HTMLElement): void {
   }
 
   video.addEventListener("loadeddata", () => {
-    if (mode === "video") root.classList.add("is-video");
+    if (mode === "video" && video.readyState >= 2) root.classList.add("is-video");
   });
   video.addEventListener("error", () => {
     root.classList.remove("is-video");
@@ -433,6 +492,13 @@ export function initHero(root: HTMLElement): void {
   const stage = root.querySelector<HTMLElement>("[data-hero-stage]");
   stage?.addEventListener("pointermove", onPointer);
   stage?.addEventListener("pointerleave", onPointerLeave);
+
+  function onResize(): void {
+    measureSweep();
+    if (mode === "still") parkSweep();
+    else applyScene(progress);
+  }
+  window.addEventListener("resize", onResize);
 
   const stopReduced = onReducedMotionChange(() => {
     stalls = 0;
@@ -450,6 +516,7 @@ export function initHero(root: HTMLElement): void {
   window.addEventListener("pagehide", () => {
     running = false;
     cancelAnimationFrame(rafId);
+    window.removeEventListener("resize", onResize);
     stopScrub();
     stopReduced();
   });
