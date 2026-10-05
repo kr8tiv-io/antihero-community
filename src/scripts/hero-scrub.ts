@@ -19,7 +19,6 @@ const DESKTOP_QUERY = "(min-width: 768px)";
 const FINE_QUERY = "(hover: hover) and (pointer: fine) and (min-width: 768px)";
 const DRIFT_MAX = 24;
 const ROTATE_MAX = 3;
-const TOUCH_DRIFT = 10;
 
 const MEDIA: Record<Kind, { video: string; poster: string; frames: string }> = {
   desktop: {
@@ -146,6 +145,7 @@ export function initHero(root: HTMLElement): void {
   let framesTried = false;
   let manifest: FrameManifest | null = null;
   let tween: gsap.core.Tween | undefined;
+  let meltTween: gsap.core.Tween | undefined;
   let rafId = 0;
   const frameCache = new Map<number, HTMLImageElement>();
   const frameLoading = new Set<number>();
@@ -210,7 +210,8 @@ export function initHero(root: HTMLElement): void {
     placeSweep(next, clear);
 
     if (!fineQuery.matches && mode !== "still") {
-      targetX = (next - 0.5) * TOUCH_DRIFT;
+      // Parked on phones. A drift here would eat the 16px side clearance.
+      targetX = 0;
       targetY = 0;
       targetRot = 0;
     }
@@ -380,10 +381,90 @@ export function initHero(root: HTMLElement): void {
     drawFrame(progress);
   }
 
+  function readRootNumber(name: string, fallback: number): number {
+    const raw = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    const value = Number.parseFloat(raw);
+    return Number.isFinite(value) ? value : fallback;
+  }
+
+  function readRootPx(name: string, fallbackVh: number): number {
+    const raw = getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+    if (raw.endsWith("vh")) return (Number.parseFloat(raw) / 100) * window.innerHeight;
+    if (raw.endsWith("px")) return Number.parseFloat(raw);
+    return window.innerHeight * fallbackVh;
+  }
+
+  function meltEl(): HTMLElement | null {
+    return root.querySelector<HTMLElement>("[data-hero-melt]");
+  }
+
+  function stopMelt(): void {
+    meltTween?.scrollTrigger?.kill();
+    meltTween?.kill();
+    meltTween = undefined;
+  }
+
+  function parkMelt(): void {
+    stopMelt();
+    const el = meltEl();
+    if (!el) return;
+    el.style.willChange = "auto";
+    el.style.filter = "none";
+    el.style.setProperty("--melt", String(readRootNumber("--hero-melt", 0.07)));
+  }
+
+  function startMelt(): void {
+    stopMelt();
+    const el = meltEl();
+    if (!el) return;
+    const phone = !desktopQuery.matches;
+    const maxMelt = readRootNumber("--hero-melt", phone ? 0.5 : 0.48);
+    const maxBlur = phone ? 0 : 12;
+    const state = { v: 0 };
+    let shownBlur = -1;
+    el.style.willChange = "auto";
+    el.style.filter = "none";
+    el.style.setProperty("--melt", "0");
+
+    meltTween = gsap.to(state, {
+      v: maxMelt,
+      ease: "none",
+      scrollTrigger: {
+        trigger: root,
+        start: () => {
+          const vh = window.innerHeight;
+          const overlap = readRootPx("--hero-overlap", phone ? 0.58 : 0.56);
+          // Phone: the last 42vh of the film, always inside the overlap.
+          // Desktop: the fade runs across the overlap minus a short buffer.
+          const lead = phone
+            ? Math.min(Math.max(0, overlap - vh * 0.06), vh * 0.42)
+            : Math.max(vh * 0.14, overlap - vh * 0.1);
+          return `bottom-=${Math.round(lead)}px bottom`;
+        },
+        end: "bottom bottom",
+        scrub: phone ? true : 0.65,
+        invalidateOnRefresh: true,
+        onToggle: (self) => {
+          el.style.willChange = self.isActive && maxBlur > 0 ? "filter" : "auto";
+        },
+      },
+      onUpdate: () => {
+        el.style.setProperty("--melt", state.v.toFixed(4));
+        if (maxBlur <= 0) return;
+        const blur = maxMelt > 0 ? (state.v / maxMelt) * maxBlur : 0;
+        const next = blur > 0.15 ? blur : 0;
+        if (Math.abs(next - shownBlur) < 0.08) return;
+        shownBlur = next;
+        el.style.filter = next === 0 ? "none" : `blur(${next.toFixed(2)}px)`;
+      },
+    });
+  }
+
   function stopScrub(): void {
     tween?.scrollTrigger?.kill();
     tween?.kill();
     tween = undefined;
+    stopMelt();
     video.pause();
   }
 
@@ -400,6 +481,13 @@ export function initHero(root: HTMLElement): void {
         end: "bottom bottom",
         scrub: 0.5,
         invalidateOnRefresh: true,
+        onToggle: (self) => {
+          const moving = self.isActive ? "transform, opacity" : "auto";
+          wordmark.style.willChange = moving;
+          copy.style.willChange = moving;
+          mono.style.willChange = moving;
+          sweep.style.willChange = self.isActive ? "transform" : "auto";
+        },
       },
       onUpdate: () => {
         applyScene(playhead.p);
@@ -410,6 +498,7 @@ export function initHero(root: HTMLElement): void {
       },
     });
     applyScene(0);
+    startMelt();
   }
 
   function mountVideo(next: Kind): void {
@@ -454,7 +543,12 @@ export function initHero(root: HTMLElement): void {
     copy.style.pointerEvents = "";
     button?.removeAttribute("tabindex");
     chars.forEach((span) => gsap.set(span, { opacity: 0 }));
+    wordmark.style.willChange = "auto";
+    copy.style.willChange = "auto";
+    mono.style.willChange = "auto";
+    sweep.style.willChange = "auto";
     parkSweep();
+    parkMelt();
   }
 
   function boot(): void {

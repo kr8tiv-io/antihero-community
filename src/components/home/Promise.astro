@@ -25,7 +25,7 @@ const widths = [640, 1280, 1920, 2560].filter((size) => size <= promise.width);
 ---
 
 <section class="promise" data-promise aria-labelledby="promise-title">
-	<div class="promise-stage">
+	<div class="promise-stage" data-promise-stage>
 		<div class="promise-photo" data-promise-photo aria-hidden="true">
 			<Picture
 				src={promise}
@@ -44,7 +44,7 @@ const widths = [640, 1280, 1920, 2560].filter((size) => size <= promise.width);
 				<h2 id="promise-title" class="promise-title label-stack">
 					{
 						words.map((word) => (
-							<span class="promise-word" data-promise-word data-rot={word.rot}>
+							<span class="promise-word" data-promise-word data-rot={word.rot} style={`--rot: ${word.rot}deg`}>
 								<span class:list={["label-box", { "label-box--red": word.red }]}>{word.text}</span>
 							</span>
 						))
@@ -69,19 +69,29 @@ const widths = [640, 1280, 1920, 2560].filter((size) => size <= promise.width);
 <style>
 	.promise {
 		position: relative;
+		z-index: 1;
+		height: 210dvh;
+		margin-top: calc(var(--hero-overlap, 58vh) * -1);
 		background: var(--color-anti);
 	}
 
 	.promise-stage {
-		position: relative;
-		min-height: 100vh;
-		min-height: 100dvh;
+		position: sticky;
+		top: 0;
+		height: 100vh;
+		height: 100dvh;
+		min-height: 0;
 		overflow: hidden;
 	}
 
 	.promise-photo {
 		position: absolute;
-		inset: 0;
+		top: -14%;
+		bottom: auto;
+		left: 0;
+		width: 100%;
+		height: 128%;
+		transform-origin: center center;
 	}
 
 	.promise-photo :global(picture),
@@ -90,7 +100,7 @@ const widths = [640, 1280, 1920, 2560].filter((size) => size <= promise.width);
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
-		object-position: 70% 60%;
+		object-position: 70% 54%;
 	}
 
 	.promise-shade {
@@ -110,8 +120,7 @@ const widths = [640, 1280, 1920, 2560].filter((size) => size <= promise.width);
 		flex-direction: column;
 		justify-content: flex-end;
 		gap: var(--space-24);
-		min-height: 100vh;
-		min-height: 100dvh;
+		min-height: 100%;
 		padding:
 			calc(var(--header-h) + var(--space-32))
 			var(--space-16)
@@ -132,6 +141,8 @@ const widths = [640, 1280, 1920, 2560].filter((size) => size <= promise.width);
 	.promise-word {
 		display: block;
 		width: fit-content;
+		transform: rotate(var(--rot, 0deg));
+		transform-origin: left center;
 	}
 
 	.promise-title .label-box--red:hover,
@@ -178,8 +189,9 @@ const widths = [640, 1280, 1920, 2560].filter((size) => size <= promise.width);
 
 		.promise-photo {
 			top: -42%;
-			left: -6%;
-			width: 112%;
+			bottom: auto;
+			left: 0;
+			width: 100%;
 			height: 184%;
 		}
 
@@ -230,19 +242,13 @@ const widths = [640, 1280, 1920, 2560].filter((size) => size <= promise.width);
 		}
 	}
 
-	@media (min-width: 768px) and (prefers-reduced-motion: no-preference) {
-		.promise-photo,
-		.promise-word {
-			will-change: transform;
-		}
-	}
-
 	@media (prefers-reduced-motion: reduce) {
 		.promise {
 			height: auto;
 		}
 
-		.promise-stage {
+		.promise-stage,
+		.promise-copy {
 			position: relative;
 			height: auto;
 			min-height: 100vh;
@@ -251,14 +257,10 @@ const widths = [640, 1280, 1920, 2560].filter((size) => size <= promise.width);
 
 		.promise-photo {
 			top: 0;
+			bottom: auto;
 			left: 0;
 			width: 100%;
 			height: 100%;
-		}
-
-		.promise-photo,
-		.promise-word {
-			will-change: auto;
 		}
 	}
 </style>

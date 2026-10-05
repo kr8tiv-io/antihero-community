@@ -12,6 +12,7 @@ const monoLine = "No jargon. No catch. No garbage.";
 
 <section class="hero" data-hero aria-labelledby="hero-title">
 	<div class="hero-stage" data-hero-stage>
+		<div class="hero-melt" data-hero-melt>
 		<div class="hero-media">
 			<picture class="hero-still">
 				<source
@@ -81,6 +82,7 @@ const monoLine = "No jargon. No catch. No garbage.";
 			<span class="label">Scroll</span>
 			<span class="hero-scroll-line"></span>
 		</div>
+		</div>
 	</div>
 </section>
 
@@ -93,8 +95,10 @@ const monoLine = "No jargon. No catch. No garbage.";
 
 <style>
 	.hero {
+		position: relative;
+		z-index: 2;
 		height: 260vh;
-		background: var(--color-anti);
+		background: transparent;
 	}
 
 	.hero-stage {
@@ -103,6 +107,22 @@ const monoLine = "No jargon. No catch. No garbage.";
 		height: 100vh;
 		height: 100dvh;
 		overflow: hidden;
+		background: transparent;
+	}
+
+	.hero-melt {
+		position: absolute;
+		inset: 0;
+		background: var(--color-anti);
+		--melt: 0;
+		--hold: calc((1 - var(--melt)) * 100%);
+		/* White stops so the mask reads in both alpha and luminance modes. */
+		-webkit-mask-image: linear-gradient(to bottom, #fff var(--hold), transparent 100%);
+		mask-image: linear-gradient(to bottom, #fff var(--hold), transparent 100%);
+		-webkit-mask-repeat: no-repeat;
+		mask-repeat: no-repeat;
+		-webkit-mask-size: 100% 100%;
+		mask-size: 100% 100%;
 	}
 
 	.hero-media,
@@ -154,23 +174,28 @@ const monoLine = "No jargon. No catch. No garbage.";
 		width: clamp(4px, 0.625vw, 12px);
 		background: var(--color-ignition);
 		pointer-events: none;
-		will-change: transform;
 	}
 
 	.hero-wordmark {
+		--wm-gutter: max(16px, env(safe-area-inset-left, 0px));
+		--wm-gutter-end: max(16px, env(safe-area-inset-right, 0px));
 		position: absolute;
 		z-index: 1;
 		top: 16vh;
-		left: -6vw;
-		width: min(138vw, 44rem);
+		left: var(--wm-gutter);
+		width: clamp(
+			8rem,
+			calc(100vw - var(--wm-gutter) - var(--wm-gutter-end)),
+			min(68rem, calc(100% - var(--wm-gutter) - var(--wm-gutter-end)))
+		);
 		pointer-events: none;
-		will-change: transform;
 	}
 
 	.hero-wordmark img {
 		display: block;
 		width: 100%;
 		height: auto;
+		aspect-ratio: 1456.1 / 435.7;
 	}
 
 	.hero-copy {
@@ -286,20 +311,16 @@ const monoLine = "No jargon. No catch. No garbage.";
 		display: none;
 	}
 
-	.hero--still .hero-wordmark,
-	.hero--still .hero-sweep {
-		will-change: auto;
-	}
-
 	@media (min-width: 768px) {
 		.hero {
 			height: 400vh;
 		}
 
 		.hero-wordmark {
+			/* 40px leaves the pointer drift (±24px) inside the stage. The 68rem cap keeps the desktop size. */
+			--wm-gutter: max(40px, env(safe-area-inset-left, 0px));
+			--wm-gutter-end: max(40px, env(safe-area-inset-right, 0px));
 			top: 12vh;
-			left: -2vw;
-			width: min(78vw, 68rem);
 		}
 
 		.hero-copy {
@@ -367,9 +388,9 @@ const monoLine = "No jargon. No catch. No garbage.";
 			display: none;
 		}
 
-		.hero-wordmark,
-		.hero-sweep {
-			will-change: auto;
+		.hero-melt {
+			--melt: var(--hero-melt, 0.07);
+			filter: none;
 		}
 	}
 

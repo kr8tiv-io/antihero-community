@@ -244,4 +244,13 @@ export const credits: Credit[] = [
       "public/fonts/OFL-JetBrainsMono.txt",
     ],
   },
+  {
+    name: "Apple product page dissolve",
+    author: "Apple",
+    license: "Inspiration only. No code, footage, or assets copied.",
+    link: "https://www.apple.com",
+    usedFor:
+      "The idea of a tall scroll-scrubbed mask and a gentle blur so one full-viewport scene melts into the next. The mask, the blur ramp, and the promise parallax are original.",
+    category: "Techniques and inspiration",
+  },
 ];

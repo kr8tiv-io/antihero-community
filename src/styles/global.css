@@ -165,6 +165,11 @@
 
     --header-h: 56px;
 
+    /* Shared by the home hero mask and the promise overlap. vh matches the hero's 260vh / 400vh.
+       Phone: the mask opens across the last 42vh of the film, onto a pinned promise scene. */
+    --hero-overlap: 58vh;
+    --hero-melt: 0.5;
+
     --space-4: 4px;
     --space-8: 8px;
     --space-12: 12px;
@@ -344,8 +349,20 @@
   }
 
   @media (min-width: 768px) {
+    :root {
+      --hero-overlap: 56vh;
+      --hero-melt: 0.48;
+    }
+
     .page-intro {
       padding: calc(var(--header-h) + var(--space-96)) 8vw var(--space-192) 14vw;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    :root {
+      --hero-overlap: 0px;
+      --hero-melt: 0.06;
     }
   }
 }

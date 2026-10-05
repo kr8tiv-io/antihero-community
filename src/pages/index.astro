@@ -22,9 +22,19 @@ const jsonLd = JSON.stringify({
 	description="AI for people with real jobs. No jargon, no catch."
 	jsonLd={jsonLd}
 >
-	<Hero slot="main" />
-	<Promise slot="main" />
+	<div class="home-melt" slot="main">
+		<Hero />
+		<Promise />
+	</div>
 	<LibraryDoors slot="main" />
 	<LatestDrop slot="main" />
 	<JoinBand slot="main" variant="home" />
 </BaseLayout>
+
+<style>
+	/* Keeps the hero-over-promise stack from painting on top of the rest of the page. */
+	.home-melt {
+		position: relative;
+		isolation: isolate;
+	}
+</style>
