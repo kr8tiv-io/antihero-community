@@ -1,5 +1,5 @@
 # Apache config for the static dist/. Astro preview ignores this file.
-# TODO: confirm Matt wants the bare domain. These rules send www to the bare host.
+# Bare host is antihero.community. These rules send www to that host and force HTTPS.
 
 Options -Indexes
 

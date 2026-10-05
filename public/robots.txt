@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://antiheroai.com/sitemap-index.xml
+Sitemap: https://antihero.community/sitemap-index.xml

@@ -1,5 +1,5 @@
 /**
- * TODO: confirm the real domain.
- * This is the only site origin the project uses. astro.config.mjs imports it.
+ * The only site origin. astro.config.mjs, canonical URLs, Open Graph,
+ * the sitemap, RSS, and JSON-LD all read this.
  */
-export const SITE_URL = "https://antiheroai.com";
+export const SITE_URL = "https://antihero.community";

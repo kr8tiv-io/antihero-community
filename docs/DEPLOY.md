@@ -8,7 +8,7 @@ You upload the contents of `dist/`. That folder is a finished static site: each 
 
 Two values are baked into the HTML at build time. Change them, then build again. Editing them on the server later does nothing.
 
-1. Domain. Open `src/data/site.ts` and set `SITE_URL` to the real origin, including `https://`. That constant is the only copy. `astro.config.mjs` imports it. The current value is `https://antiheroai.com`. Confirm that is the domain you actually own.
+1. Domain. `SITE_URL` in `src/data/site.ts` is `https://antihero.community`. That constant is the only copy. `astro.config.mjs` imports it. Canonical URLs, Open Graph, the sitemap, RSS, and JSON-LD follow it. Change it only if the live host changes, then build again.
 2. Mailchimp. In Mailchimp, open the embedded form for the audience. Copy the form `action` URL. It starts with `https://` and contains `list-manage.com`. Put it in a file named `.env` in the project folder:
 
 ```
@@ -19,7 +19,7 @@ Copy `.env.example` to `.env` first if you do not have that file yet. `.env` sta
 
 In the same embed code, find the hidden input whose name looks like `b_0123abc_4567def`. Open `src/components/EmailForm.astro` and replace `b_TODO_TODO` with that exact name. Until you do, the email field on the site stays closed and the group link stands in for it.
 
-`public/.htaccess` sends `www` to the bare domain (so `www.antiheroai.com` becomes `antiheroai.com`) and forces HTTPS. Confirm that is the host you want. If you want `www` to be the real site, say so before upload and the two rewrite rules get flipped.
+`public/.htaccess` sends `www` to the bare domain (so `www.antihero.community` becomes `antihero.community`) and forces HTTPS. If you want `www` to be the real site, say so before upload and the two rewrite rules get flipped.
 
 ## Build
 

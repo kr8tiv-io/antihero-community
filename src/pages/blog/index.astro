@@ -33,6 +33,7 @@ const notes = posts.map((post) => {
 <BaseLayout
 	title="Blog"
 	description="Short posts about what worked, what broke, and what I'd do differently."
+	image="/media/door-blog-poster.jpg"
 >
 	<div slot="main" class="notes">
 		<header class="notes-hero" data-reveal="stagger">
@@ -201,7 +202,7 @@ const notes = posts.map((post) => {
 
 	.notes-empty {
 		margin: 0;
-		padding: var(--space-32) var(--space-16) var(--space-128);
+		padding: var(--space-32) var(--space-16) var(--space-64);
 		border-top: 1px solid var(--color-graphite);
 		color: var(--color-bone);
 	}

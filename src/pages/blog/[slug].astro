@@ -49,7 +49,7 @@ function readingMinutes(body: string | undefined): number {
 const date = stamp(post.data.date);
 const minutes = readingMinutes(post.body);
 const canonical = new URL(Astro.url.pathname, SITE_URL).href;
-const imagePath = post.data.ogImage ?? "/og/og.jpg";
+const imagePath = post.data.ogImage ?? "/media/promise-loop-poster.jpg";
 const imageUrl = new URL(imagePath, SITE_URL).href;
 
 const guideId = refId(post.data.relatedGuide);

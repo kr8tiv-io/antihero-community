@@ -4,7 +4,7 @@ import BaseLayout from "../layouts/BaseLayout.astro";
 const sentence = "This page went to be its own hero somewhere else.";
 ---
 
-<BaseLayout title="Missing" description={sentence}>
+<BaseLayout title="Missing" description={sentence} image="/media/hero-desktop-poster.jpg">
 	<meta slot="head" name="robots" content="noindex" />
 	<article slot="main" class="missing">
 		<p class="missing-num" data-reveal="stamp" aria-hidden="true">404</p>
@@ -88,7 +88,7 @@ const sentence = "This page went to be its own hero somewhere else.";
 		}
 
 		.missing-num {
-			margin-left: -0.05em;
+			margin-left: 0;
 		}
 
 		.missing-copy {

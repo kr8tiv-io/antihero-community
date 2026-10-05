@@ -74,7 +74,7 @@ npm run qa        # build, then run the Playwright test suite
 Optional environment variables (copy `.env.example` to `.env`):
 
 - `MAILCHIMP_FORM_ACTION` is the embedded Mailchimp form action URL.
-- `SITE_URL` is a placeholder. The build reads the site origin from `src/data/site.ts`.
+- The build reads the site origin from `SITE_URL` in `src/data/site.ts`. It is `https://antihero.community`.
 
 ## Project structure
 

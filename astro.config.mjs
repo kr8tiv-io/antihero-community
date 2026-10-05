@@ -7,7 +7,7 @@ import { SITE_URL } from './src/data/site.ts';
 
 // https://astro.build/config
 export default defineConfig({
-  // TODO: confirm the real domain. SITE_URL in src/data/site.ts is the only copy.
+  // SITE_URL in src/data/site.ts is the only copy.
   site: SITE_URL,
   output: 'static',
   trailingSlash: 'ignore',
