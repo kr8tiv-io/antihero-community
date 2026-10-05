@@ -240,6 +240,27 @@ export const credits: Credit[] = [
     ],
   },
   {
+    name: "Promise ambient loop",
+    author: "Derived with ffmpeg from the AntiHero promise still",
+    license: "Derived from promise.jpg. No new generated frames.",
+    link: "https://ffmpeg.org",
+    usedFor:
+      "8 second loop behind the home promise line. Slow push-in, a gentle drift, and a red-haze shimmer. The last 1.25 seconds fade back to the first frame so the loop point does not jump. Laptop 1920x1080 and phone 1080x1350. Posters are the first frame.",
+    category: "Images and video",
+    files: [
+      "public/media/promise-loop.mp4",
+      "public/media/promise-loop.webm",
+      "public/media/promise-loop-poster.avif",
+      "public/media/promise-loop-poster.jpg",
+      "public/media/promise-loop-poster.webp",
+      "public/media/promise-loop-mobile.mp4",
+      "public/media/promise-loop-mobile.webm",
+      "public/media/promise-loop-mobile-poster.avif",
+      "public/media/promise-loop-mobile-poster.jpg",
+      "public/media/promise-loop-mobile-poster.webp",
+    ],
+  },
+  {
     name: "JetBrains Mono",
     author: "JetBrains",
     license: "SIL Open Font License 1.1",

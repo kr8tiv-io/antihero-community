@@ -120,6 +120,13 @@ function onSwap(event: Event): void {
 	gsap.killTweensOf("[data-join-glow]");
 	document.querySelectorAll("video").forEach((video) => {
 		video.pause();
+		video.querySelectorAll("source").forEach((source) => source.remove());
+		video.removeAttribute("src");
+		try {
+			video.load();
+		} catch {
+			// The old document is already leaving.
+		}
 	});
 	destroySmoothScroll();
 	for (const trigger of ScrollTrigger.getAll()) trigger.kill();

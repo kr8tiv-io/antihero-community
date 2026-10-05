@@ -27,22 +27,21 @@ export function bootGuideCover(): void {
 		if (reduced) return;
 
 		const phone = phoneQuery.matches;
-		const scale = phone ? 1.04 : 1.12;
-		const travel = phone ? 10 : 36;
+		const travel = phone ? 8 : 28;
 
 		ctx = gsap.context(() => {
 			gsap.fromTo(
 				drift,
-				{ y: travel / 2, scale, transformOrigin: "50% 42%" },
+				{ y: travel / 2, scale: phone ? 1.05 : 1.15, transformOrigin: "50% 42%" },
 				{
 					y: travel / -2,
-					scale,
+					scale: 1,
 					ease: ease.linear,
 					scrollTrigger: {
 						trigger: frame,
 						start: "top bottom",
 						end: phone ? "center center" : "bottom top",
-						scrub: phone ? 0.4 : 1.2,
+						scrub: true,
 					},
 				},
 			);

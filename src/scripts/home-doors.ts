@@ -1,4 +1,4 @@
-import { duration, ease, gsap, ScrollTrigger, onReducedMotionChange, prefersReducedMotion } from "./motion";
+import { duration, ease, gsap, onReducedMotionChange, prefersReducedMotion } from "./motion";
 
 export function bootDoors(): void {
 	const root = document.querySelector<HTMLElement>("[data-doors]");
@@ -9,14 +9,12 @@ export function bootDoors(): void {
 	const faces = [...root.querySelectorAll<HTMLElement>("[data-door-face]")];
 	const hoverQuery = window.matchMedia("(min-width: 768px) and (hover: hover) and (pointer: fine)");
 	let ctx: gsap.Context | undefined;
-	let enterTween: gsap.core.Tween | undefined;
 	const unlisten: Array<() => void> = [];
 
 	function clearMotion(): void {
 		unlisten.splice(0).forEach((stop) => stop());
 		ctx?.revert();
 		ctx = undefined;
-		enterTween = undefined;
 	}
 
 	function bindTilt(door: HTMLElement, face: HTMLElement): void {
@@ -64,26 +62,24 @@ export function bootDoors(): void {
 			return;
 		}
 
-		const rise = hoverQuery.matches ? 56 : 28;
+		const phone = !hoverQuery.matches;
 		ctx = gsap.context(() => {
-			gsap.set(doors, { y: rise, opacity: 0 });
-			enterTween = gsap.to(doors, {
-				y: 0,
-				opacity: 1,
-				duration: hoverQuery.matches ? duration.base : duration.settle,
-				stagger: 0.1,
-				ease: ease.out,
-				paused: true,
-				immediateRender: false,
-			});
-			const trigger = ScrollTrigger.create({
-				trigger: root,
-				start: "top 82%",
-				onEnter: () => enterTween?.play(),
-				onEnterBack: () => enterTween?.play(),
-				onLeaveBack: () => enterTween?.reverse(),
-			});
-			if (trigger.progress > 0) enterTween?.play();
+			gsap.fromTo(
+				doors,
+				{ y: phone ? 14 : 36, opacity: 0 },
+				{
+					y: 0,
+					opacity: 1,
+					stagger: phone ? 0.03 : 0.05,
+					ease: ease.linear,
+					scrollTrigger: {
+						trigger: root,
+						start: "top 92%",
+						end: phone ? "top 70%" : "top 48%",
+						scrub: true,
+					},
+				},
+			);
 		}, root);
 
 		if (hoverQuery.matches) {
@@ -92,12 +88,6 @@ export function bootDoors(): void {
 				if (face) bindTilt(door, face);
 			});
 		}
-
-		doors.forEach((door) => {
-			const onFocus = () => enterTween?.play();
-			door.addEventListener("focus", onFocus);
-			unlisten.push(() => door.removeEventListener("focus", onFocus));
-		});
 	}
 
 	const rebuild = () => setup(prefersReducedMotion());

@@ -1,4 +1,4 @@
-import { duration, ease, gsap, ScrollTrigger, onReducedMotionChange, prefersReducedMotion } from "./motion";
+import { ease, gsap, onReducedMotionChange, prefersReducedMotion } from "./motion";
 
 export function bootDrop(): void {
 	
@@ -11,14 +11,10 @@ export function bootDrop(): void {
 		const bits = [...root.querySelectorAll<HTMLElement>("[data-drop-in]")];
 		const phoneQuery = window.matchMedia("(max-width: 767px)");
 		let ctx: gsap.Context | undefined;
-		let tween: gsap.core.Timeline | undefined;
-		const unlisten: Array<() => void> = [];
 
 		function clearMotion(): void {
-			unlisten.splice(0).forEach((stop) => stop());
 			ctx?.revert();
 			ctx = undefined;
-			tween = undefined;
 		}
 
 		function setup(reduced: boolean): void {
@@ -32,45 +28,38 @@ export function bootDrop(): void {
 
 			const phone = phoneQuery.matches;
 			ctx = gsap.context(() => {
-				if (media && !phone) {
-					gsap.set(media, { scale: 1.06, transformOrigin: "50% 42%" });
-				} else if (media) {
-					gsap.set(media, { opacity: 0 });
-				}
-				gsap.set(bits, { y: phone ? 12 : 24, opacity: 0 });
-
-				tween = gsap.timeline({ paused: true });
-				if (media && !phone) {
-					tween.to(media, { scale: 1, duration: duration.cover, ease: ease.out }, 0);
-				} else if (media) {
-					tween.to(media, { opacity: 1, duration: duration.fast, ease: ease.out }, 0);
-				}
-				tween.to(
-					bits,
-					{
-						y: 0,
-						opacity: 1,
-						duration: phone ? duration.fast : duration.base,
-						stagger: 0.1,
-						ease: ease.out,
-						immediateRender: false,
-					},
-					0.05,
-				);
-
-				const trigger = ScrollTrigger.create({
+				const range = {
 					trigger: root,
-					start: "top 82%",
-					onEnter: () => tween?.play(),
-					onEnterBack: () => tween?.play(),
-					onLeaveBack: () => tween?.reverse(),
-				});
-				if (trigger.progress > 0) tween.play();
+					start: "top 94%",
+					end: phone ? "top 72%" : "top 52%",
+					scrub: true,
+				};
+				if (media) {
+					gsap.fromTo(
+						media,
+						{ scale: phone ? 1.04 : 1.12, y: phone ? 6 : 16, transformOrigin: "50% 42%" },
+						{ scale: 1, y: 0, ease: ease.linear, scrollTrigger: range },
+					);
+				}
+				if (bits.length > 0) {
+					gsap.fromTo(
+						bits,
+						{ y: phone ? 8 : 16, opacity: 0 },
+						{
+							y: 0,
+							opacity: 1,
+							stagger: 0.035,
+							ease: ease.linear,
+							scrollTrigger: {
+								trigger: root,
+								start: "top 88%",
+								end: phone ? "top 66%" : "top 50%",
+								scrub: true,
+							},
+						},
+					);
+				}
 			}, root);
-
-			const onFocus = () => tween?.play();
-			root.addEventListener("focusin", onFocus);
-			unlisten.push(() => root.removeEventListener("focusin", onFocus));
 		}
 
 		const rebuild = () => setup(prefersReducedMotion());

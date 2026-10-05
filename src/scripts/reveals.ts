@@ -167,6 +167,21 @@ function inScope(node: HTMLElement, scope: HTMLElement | null): boolean {
 	return node.closest<HTMLElement>("[data-reveal='stagger']") === scope;
 }
 
+const STORY_SKIP = "[data-guide-card], [data-video-card], [data-prompt-card], .note, .post-ref, .guide-replay";
+const CLIP_OWNED = "[data-guide-cover], [data-about-photo]";
+
+/** Page and section headlines. Card titles stay on the triggered reveal. */
+function storyHeading(el: HTMLElement): boolean {
+	return el.matches("h1[data-reveal-heading], h2[data-reveal-heading]") && !el.closest(STORY_SKIP);
+}
+
+/** Hero media that should scale into place. Covers with their own scrub stay out. */
+function storyClip(el: HTMLElement): boolean {
+	if (!el.matches("[data-reveal='clip']")) return false;
+	if (el.closest(`${STORY_SKIP}, ${CLIP_OWNED}`)) return false;
+	return true;
+}
+
 function shouldFade(el: HTMLElement): boolean {
 	if (el.matches("[data-reveal-heading], [data-reveal='clip'], [data-reveal='stamp'], [data-reveal='shift'], [data-reveal='rule']")) {
 		return false;
@@ -218,6 +233,7 @@ function setup(root: ParentNode): () => void {
 
 	batchStandalone(root, "[data-reveal-heading]", owned, touched, standalones);
 	batchStandalone(root, "[data-reveal='fade-up']", owned, touched, standalones);
+	scrubStories(root, owned);
 	batchStandalone(root, "[data-reveal='clip']", owned, touched, standalones);
 	batchStandalone(root, "[data-reveal='stamp']", owned, touched, standalones);
 	batchStandalone(root, "[data-reveal='shift']", owned, touched, standalones);
@@ -271,6 +287,7 @@ function prepare(root: ParentNode, touched: Set<HTMLElement>): void {
 		touched.add(text);
 	}
 	for (const clip of root.querySelectorAll<HTMLElement>("[data-reveal='clip']")) {
+		if (storyClip(clip) || clip.closest(CLIP_OWNED)) continue;
 		gsap.set(clip, {
 			clipPath: `inset(${t.inset}% ${t.inset}% ${t.inset}% ${t.inset}%)`,
 			scale: t.scale,
@@ -330,6 +347,8 @@ function batchStandalone(
 	const els = [...root.querySelectorAll<HTMLElement>(selector)].filter((el) => {
 		if (el.closest("[data-reveal='stagger']")) return false;
 		if (standalones.includes(el)) return false;
+		if (selector === "[data-reveal-heading]" && storyHeading(el)) return false;
+		if (selector === "[data-reveal='clip']" && (storyClip(el) || Boolean(el.closest(CLIP_OWNED)))) return false;
 		return true;
 	});
 	if (els.length === 0) return;
@@ -347,8 +366,90 @@ function batchStandalone(
 	owned.push(...batch);
 }
 
+function scrubStories(root: ParentNode, owned: ScrollTrigger[]): void {
+	const phone = isMobile();
+	for (const heading of root.querySelectorAll<HTMLElement>("h1[data-reveal-heading], h2[data-reveal-heading]")) {
+		if (!storyHeading(heading)) continue;
+		scrubHeading(heading, owned, phone);
+	}
+	for (const clip of root.querySelectorAll<HTMLElement>("[data-reveal='clip']")) {
+		if (!storyClip(clip)) continue;
+		scrubClip(clip, owned, phone);
+	}
+}
+
+/** Keep the build, and finish it before the page runs out of scroll. */
+function storyEnd(el: HTMLElement, desired: number): () => string {
+	return () => {
+		const view = window.innerHeight || 1;
+		const visibleTop = el.getBoundingClientRect().top;
+		// Already on screen at rest: the line has landed. No empty box at the fold.
+		if (window.scrollY < 16 && visibleTop < view && visibleTop > -view * 0.4) {
+			const ratio = Math.min(0.95, Math.max(0.2, visibleTop / view));
+			return `top ${Math.round(ratio * 100)}%`;
+		}
+		const max = Math.max(0, document.documentElement.scrollHeight - view);
+		const top = visibleTop + window.scrollY;
+		const rest = (top - max) / view;
+		const ratio = Math.min(0.93, Math.max(desired, rest + 0.05));
+		return `top ${Math.round(ratio * 100)}%`;
+	};
+}
+
+function scrubHeading(heading: HTMLElement, owned: ScrollTrigger[], phone: boolean): void {
+	const lines = [...heading.querySelectorAll<HTMLElement>(".reveal-heading__line")];
+	const texts = [...heading.querySelectorAll<HTMLElement>(".reveal-heading__text")];
+	const big = heading.tagName === "H1";
+	const desired = big ? (phone ? 0.76 : 0.6) : phone ? 0.86 : 0.78;
+	const tl = gsap.timeline({
+		defaults: { ease: ease.linear },
+		scrollTrigger: {
+			trigger: heading,
+			start: "top 96%",
+			end: storyEnd(heading, desired),
+			scrub: true,
+		},
+	});
+	if (tl.scrollTrigger) owned.push(tl.scrollTrigger);
+	lines.forEach((line, index) => {
+		tl.fromTo(line, { scaleX: 0, transformOrigin: "left center" }, { scaleX: 1, duration: 0.55 }, index * 0.14);
+	});
+	texts.forEach((text, index) => {
+		tl.fromTo(text, { yPercent: 105 }, { yPercent: 0, duration: 0.55 }, index * 0.14);
+	});
+}
+
+function scrubClip(el: HTMLElement, owned: ScrollTrigger[], phone: boolean): void {
+	const inset = phone ? 8 : 14;
+	const tl = gsap.timeline({
+		defaults: { ease: ease.linear },
+		scrollTrigger: {
+			trigger: el,
+			start: "top 98%",
+			end: phone ? "center 72%" : "center 52%",
+			scrub: true,
+		},
+	});
+	if (tl.scrollTrigger) owned.push(tl.scrollTrigger);
+	tl.fromTo(
+		el,
+		{
+			clipPath: `inset(${inset}% ${inset}% ${inset}% ${inset}%)`,
+			scale: phone ? 1.05 : 1.12,
+			y: phone ? 8 : 22,
+			transformOrigin: "center center",
+		},
+		{
+			clipPath: "inset(0% 0% 0% 0%)",
+			scale: 1,
+			y: phone ? -4 : -14,
+		},
+	);
+}
+
 function playNode(el: HTMLElement, delay: number, touched: Set<HTMLElement>): void {
 	if (played(el) || !canPlay(el)) return;
+	if (storyHeading(el) || storyClip(el)) return;
 	el.dataset.revealPlayed = "1";
 
 	const t = tune();
@@ -359,7 +460,7 @@ function playNode(el: HTMLElement, delay: number, touched: Set<HTMLElement>): vo
 		el.matches("[data-reveal-heading]")
 			? [el]
 			: [...el.querySelectorAll<HTMLElement>("[data-reveal-heading]")]
-	).filter((node) => inScope(node, scope));
+	).filter((node) => inScope(node, scope) && !storyHeading(node));
 
 	headings.forEach((heading, headingIndex) => {
 		const lines = [...heading.querySelectorAll<HTMLElement>(".reveal-heading__line")];
@@ -385,7 +486,7 @@ function playNode(el: HTMLElement, delay: number, touched: Set<HTMLElement>): vo
 		el.matches("[data-reveal='clip']")
 			? [el]
 			: [...el.querySelectorAll<HTMLElement>("[data-reveal='clip']")]
-	).filter((node) => inScope(node, scope));
+	).filter((node) => inScope(node, scope) && !storyClip(node) && !node.closest(CLIP_OWNED));
 
 	for (const clip of clips) {
 		tl.to(

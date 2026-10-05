@@ -46,9 +46,14 @@ export function bootAboutParallax(): void {
 		ctx = gsap.context(() => {
 			gsap.fromTo(
 				photo,
-				{ y: () => travel(phone ? 0.03 : 0.05) },
 				{
-					y: () => travel(phone ? -0.06 : -0.12),
+					y: () => travel(phone ? 0.02 : 0.05),
+					scale: phone ? 1.04 : 1.12,
+					transformOrigin: "center center",
+				},
+				{
+					y: () => travel(phone ? -0.04 : -0.12),
+					scale: 1,
 					ease: ease.linear,
 					scrollTrigger: layer(),
 				},

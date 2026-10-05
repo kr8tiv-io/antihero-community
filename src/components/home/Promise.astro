@@ -1,10 +1,8 @@
 ---
 /**
  * Home promise. Sits after the hero. Does not touch the hero film.
- * The photo is imported from src so Picture can emit AVIF and WebP.
+ * The loop is an ffmpeg derivation of the promise still. Posters are frame 0.
  */
-import { Picture } from "astro:assets";
-import promise from "../../assets/media/promise.jpg";
 
 const words: { text: string; rot: number; red?: boolean }[] = [
 	{ text: "No", rot: -3 },
@@ -20,26 +18,46 @@ const lines = [
 	"Prompts tested on a live audience.",
 	"Replays of every live.",
 ];
-
-const widths = [640, 1280, 1920, 2560].filter((size) => size <= promise.width);
 ---
 
 <section class="promise" data-promise aria-labelledby="promise-title">
 	<div class="promise-stage" data-promise-stage>
-		<div class="promise-photo" data-promise-photo aria-hidden="true">
-			<Picture
-				src={promise}
-				formats={["avif", "webp"]}
-				alt=""
-				widths={widths}
-				sizes="100vw"
-				loading="lazy"
-				decoding="async"
-				pictureAttributes={{ class: "promise-picture" }}
-			/>
+		<div class="promise-photo" aria-hidden="true">
+			<div class="promise-film" data-promise-film>
+				<picture class="promise-still">
+					<source
+						media="(max-width: 767px)"
+						srcset="/media/promise-loop-mobile-poster.avif"
+						type="image/avif"
+					/>
+					<source
+						media="(max-width: 767px)"
+						srcset="/media/promise-loop-mobile-poster.webp"
+						type="image/webp"
+					/>
+					<source srcset="/media/promise-loop-poster.avif" type="image/avif" />
+					<source srcset="/media/promise-loop-poster.webp" type="image/webp" />
+					<img
+						src="/media/promise-loop-poster.jpg"
+						alt=""
+						width="1920"
+						height="1080"
+						decoding="async"
+					/>
+				</picture>
+				<video
+					class="promise-video"
+					data-promise-video
+					muted
+					loop
+					playsinline
+					preload="none"
+					poster="/media/promise-loop-poster.jpg"
+				></video>
+			</div>
 		</div>
-		<div class="promise-shade" aria-hidden="true"></div>
-		<div class="promise-copy">
+		<div class="promise-shade" data-promise-shade aria-hidden="true"></div>
+		<div class="promise-copy" data-promise-copy>
 			<div class="promise-lead">
 				<h2 id="promise-title" class="promise-title label-stack">
 					{
@@ -72,6 +90,7 @@ const widths = [640, 1280, 1920, 2560].filter((size) => size <= promise.width);
 		z-index: 1;
 		height: 210dvh;
 		margin-top: calc(var(--hero-overlap, 58vh) * -1);
+		overflow-x: clip;
 		background: var(--color-anti);
 	}
 
@@ -86,21 +105,57 @@ const widths = [640, 1280, 1920, 2560].filter((size) => size <= promise.width);
 
 	.promise-photo {
 		position: absolute;
-		top: -14%;
-		bottom: auto;
-		left: 0;
-		width: 100%;
-		height: 128%;
+		inset: 0;
+		overflow: hidden;
+	}
+
+	.promise-film {
+		position: absolute;
+		top: auto;
+		right: auto;
+		bottom: 0;
+		left: -8%;
+		width: 116%;
+		height: auto;
+		aspect-ratio: 1080 / 1350;
 		transform-origin: center center;
 	}
 
-	.promise-photo :global(picture),
-	.promise-photo :global(img) {
+	/* Tall phones: the 4:5 frame is shorter than the stage. Cover it, and
+	   keep the left of the frame so the spheres stay with the headline. */
+	@media (max-width: 767px) and (min-height: 760px) {
+		.promise-film {
+			inset: 0;
+			width: 100%;
+			height: 100%;
+			aspect-ratio: auto;
+		}
+
+		.promise-still,
+		.promise-video,
+		.promise-still img {
+			object-position: 8% 70%;
+		}
+	}
+
+	.promise-still,
+	.promise-video,
+	.promise-still img {
+		position: absolute;
+		inset: 0;
 		display: block;
 		width: 100%;
 		height: 100%;
 		object-fit: cover;
-		object-position: 70% 54%;
+		object-position: center center;
+	}
+
+	.promise-video {
+		opacity: 0;
+	}
+
+	.promise-video.is-playing {
+		opacity: 1;
 	}
 
 	.promise-shade {
@@ -189,14 +244,18 @@ const widths = [640, 1280, 1920, 2560].filter((size) => size <= promise.width);
 
 		.promise-photo {
 			top: -42%;
+			right: auto;
 			bottom: auto;
 			left: 0;
 			width: 100%;
 			height: 184%;
 		}
 
-		.promise-photo :global(img) {
-			object-position: center center;
+		.promise-film {
+			inset: 0;
+			width: 100%;
+			height: 100%;
+			aspect-ratio: auto;
 		}
 
 		.promise-shade {
@@ -255,12 +314,19 @@ const widths = [640, 1280, 1920, 2560].filter((size) => size <= promise.width);
 			min-height: 100dvh;
 		}
 
-		.promise-photo {
+		.promise-photo,
+		.promise-film {
 			top: 0;
-			bottom: auto;
+			right: 0;
+			bottom: 0;
 			left: 0;
 			width: 100%;
 			height: 100%;
+			aspect-ratio: auto;
+		}
+
+		.promise-video {
+			display: none;
 		}
 	}
 </style>
