@@ -100,7 +100,7 @@ const rules = [
 
 		<section class="join-cost" data-reveal="stagger" aria-labelledby="join-cost-title">
 			<RevealHeading as="h2" id="join-cost-title" text="What it costs" />
-			<p class="join-cost__box label-box label-box--white" data-reveal="fade-up">
+			<p class="join-cost__box label-box label-box--white" data-reveal="stamp">
 				Nothing. No catch. Just show up and build.
 			</p>
 		</section>
@@ -287,6 +287,7 @@ const rules = [
 	.join-cost {
 		padding-top: var(--space-96);
 		padding-bottom: var(--space-48);
+		overflow-x: clip;
 	}
 
 	.join-cost__box {

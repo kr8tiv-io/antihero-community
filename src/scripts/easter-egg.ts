@@ -5,7 +5,7 @@
  */
 
 import { isCurrentPath } from "../data/nav";
-import { gsap, isMobile, prefersReducedMotion } from "./motion";
+import { duration, ease, gsap, isMobile, prefersReducedMotion } from "./motion";
 
 const KEY = "ah-egg-hero";
 const FIRST =
@@ -175,8 +175,8 @@ function fire(): void {
 		{
 			xPercent: 0,
 			opacity: 1,
-			duration: mobile ? 0.28 : 0.45,
-			ease: mobile ? "power3.out" : "back.out(1.4)",
+			duration: mobile ? duration.ui : duration.fast,
+			ease: mobile ? ease.out : ease.playful,
 			overwrite: true,
 			onComplete: hold,
 		},
@@ -195,8 +195,8 @@ function hide(): void {
 	tween = gsap.to(box, {
 		xPercent: -120,
 		opacity: 0,
-		duration: isMobile() ? 0.22 : 0.35,
-		ease: "power3.in",
+		duration: isMobile() ? duration.ui : duration.fast,
+		ease: ease.in,
 		overwrite: true,
 	});
 }

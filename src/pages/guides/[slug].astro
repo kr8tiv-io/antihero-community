@@ -275,7 +275,7 @@ const jsonLd = JSON.stringify({
 					<ol class="guide-prompt-list">
 						{related.map((prompt) => (
 							<li>
-								<a class="guide-prompt" href={`/prompts#${encodeURIComponent(prompt.id)}`}>
+								<a class="guide-prompt" data-nudge href={`/prompts#${encodeURIComponent(prompt.id)}`}>
 									<h3>{prompt.data.title}</h3>
 									<p>{prompt.data.useItFor}</p>
 								</a>
@@ -289,7 +289,7 @@ const jsonLd = JSON.stringify({
 		<nav class="guide-nav" data-reveal="stagger" aria-label="Other guides">
 			{
 				older && (
-					<a class="guide-nav__prev" href={`/guides/${older.data.slug}`}>
+					<a class="guide-nav__prev" href={`/guides/${older.data.slug}`} data-reveal="shift">
 						<span class="guide-nav__kicker caption">Previous</span>
 						<span class="guide-nav__title">{older.data.title}</span>
 					</a>
@@ -297,7 +297,7 @@ const jsonLd = JSON.stringify({
 			}
 			{
 				newer && (
-					<a class="guide-nav__next" href={`/guides/${newer.data.slug}`}>
+					<a class="guide-nav__next" href={`/guides/${newer.data.slug}`} data-reveal="shift" data-shift="out">
 						<span class="guide-nav__kicker caption">Next</span>
 						<span class="guide-nav__title">{newer.data.title}</span>
 					</a>
@@ -624,6 +624,7 @@ const jsonLd = JSON.stringify({
 		gap: var(--space-32);
 		padding: var(--space-48) var(--space-16) var(--space-96);
 		border-top: 1px solid var(--color-graphite);
+		overflow-x: clip;
 	}
 
 	.guide-nav a {
@@ -721,23 +722,5 @@ const jsonLd = JSON.stringify({
 		}
 	}
 
-	@media (hover: hover) and (pointer: fine) {
-		.guide-prompt {
-			transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
-		}
 
-		.guide-prompt:hover {
-			transform: translateX(8px);
-		}
-	}
-
-	@media (prefers-reduced-motion: reduce) {
-		.guide-prompt {
-			transition: none;
-		}
-
-		.guide-prompt:hover {
-			transform: none;
-		}
-	}
 </style>

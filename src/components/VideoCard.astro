@@ -60,7 +60,7 @@ const soon = mode === "placeholder";
 					data-cursor="Play"
 				>
 					<span class="video-card__media" data-video-media>
-						<span class="video-card__zoom">
+						<span class="video-card__zoom" data-zoom>
 							{
 								loop ? (
 									<HoverVideo
@@ -85,7 +85,7 @@ const soon = mode === "placeholder";
 							}
 						</span>
 					</span>
-					<span class="label-box label-box--red video-card__play">
+					<span class="label-box label-box--red video-card__play" data-nudge>
 						<span class="swap-label">
 							<span class="swap-label__line">Replay coming soon</span>
 							<span class="swap-label__line" aria-hidden="true">Replay coming soon</span>
@@ -105,7 +105,7 @@ const soon = mode === "placeholder";
 					data-video-poster={poster ?? undefined}
 				>
 					<span class="video-card__media" data-video-media>
-						<span class="video-card__zoom">
+						<span class="video-card__zoom" data-zoom>
 							{
 								loop ? (
 									<HoverVideo
@@ -132,7 +132,7 @@ const soon = mode === "placeholder";
 							}
 						</span>
 					</span>
-					<span class="label-box label-box--red video-card__play">
+					<span class="label-box label-box--red video-card__play" data-nudge>
 						<span class="swap-label">
 							<span class="swap-label__line">Play</span>
 							<span class="swap-label__line" aria-hidden="true">Play</span>
@@ -203,7 +203,6 @@ const soon = mode === "placeholder";
 	.video-card__zoom {
 		display: block;
 		height: 100%;
-		transform: scale(1);
 	}
 
 	.video-card__zoom :global(.video-card__film) {
@@ -288,21 +287,5 @@ const soon = mode === "placeholder";
 		outline-offset: 3px;
 	}
 
-	@media (hover: hover) and (pointer: fine) {
-		.video-card__zoom {
-			transition: transform 0.6s cubic-bezier(0.45, 0, 0.2, 1);
-		}
 
-		.video-hit:hover .video-card__zoom,
-		.video-hit:focus-visible .video-card__zoom {
-			transform: scale(1.035);
-		}
-	}
-
-	@media (prefers-reduced-motion: reduce) {
-		.video-card__zoom {
-			transition: none;
-			transform: none;
-		}
-	}
 </style>

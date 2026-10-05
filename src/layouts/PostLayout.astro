@@ -70,15 +70,16 @@ const hasRelated = Boolean(relatedGuide || relatedPrompt);
 		{
 			hasRelated && (
 				<aside class="post-refs" data-reveal="stagger">
+					<span class="post-end" data-reveal="rule" aria-hidden="true"></span>
 					{relatedGuide && (
-						<a class="post-ref" href={relatedGuide.href}>
+						<a class="post-ref" data-nudge="y" href={relatedGuide.href}>
 							<p class="label">Related guide</p>
 							<RevealHeading as="h2" class="post-ref__title" text={relatedGuide.title} wordsPerLine={2} />
 							<p class="post-ref__line">{relatedGuide.line}</p>
 						</a>
 					)}
 					{relatedPrompt && (
-						<a class="post-ref post-ref--prompt" href={relatedPrompt.href}>
+						<a class="post-ref post-ref--prompt" data-nudge="y" href={relatedPrompt.href}>
 							<p class="label">Related prompt</p>
 							<RevealHeading as="h2" class="post-ref__title" text={relatedPrompt.title} wordsPerLine={2} />
 							<p class="post-ref__line">{relatedPrompt.line}</p>
@@ -223,6 +224,15 @@ const hasRelated = Boolean(relatedGuide || relatedPrompt);
 		display: grid;
 		gap: var(--space-16);
 		padding: 0 var(--space-16) var(--space-96);
+		overflow-x: clip;
+	}
+
+	.post-end {
+		display: block;
+		width: min(8rem, 40%);
+		height: 2px;
+		background: var(--color-bone);
+		grid-column: 1 / -1;
 	}
 
 	.post-ref {
@@ -302,13 +312,5 @@ const hasRelated = Boolean(relatedGuide || relatedPrompt);
 		}
 	}
 
-	@media (min-width: 768px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
-		.post-ref {
-			transition: opacity 0.3s linear;
-		}
 
-		.post-ref:hover {
-			opacity: 0.72;
-		}
-	}
 </style>

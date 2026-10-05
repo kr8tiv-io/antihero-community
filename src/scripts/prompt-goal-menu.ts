@@ -4,7 +4,7 @@
  * Phones and reduced motion never get the wipe or the stagger.
  */
 
-import { ease, gsap, isMobile, onReducedMotionChange, prefersReducedMotion, ScrollTrigger } from "./motion";
+import { duration, ease, gsap, isMobile, onReducedMotionChange, prefersReducedMotion, ScrollTrigger } from "./motion";
 import { getLenis } from "./smooth-scroll";
 
 const DESK_CLIP = "inset(0% 0% 100% 0%)";
@@ -76,7 +76,7 @@ export function bootPromptGoals(): void {
 	const hideBar = (): void => {
 		gsap.to(bar, {
 			scaleX: 0,
-			duration: prefersReducedMotion() ? 0 : 0.25,
+			duration: prefersReducedMotion() ? 0 : duration.ui,
 			ease: ease.out,
 			overwrite: "auto",
 		});
@@ -97,7 +97,7 @@ export function bootPromptGoals(): void {
 		});
 		gsap.to(bar, {
 			scaleX: 1,
-			duration: prefersReducedMotion() ? 0 : 0.35,
+			duration: prefersReducedMotion() ? 0 : duration.fast,
 			ease: ease.out,
 			overwrite: "auto",
 		});
@@ -143,7 +143,7 @@ export function bootPromptGoals(): void {
 			gsap.to(sticky, {
 				autoAlpha: 0,
 				y: isMobile() ? 12 : -8,
-				duration: 0.25,
+				duration: duration.ui,
 				ease: ease.out,
 				overwrite: "auto",
 				onComplete: hide,
@@ -158,7 +158,7 @@ export function bootPromptGoals(): void {
 		gsap.fromTo(
 			sticky,
 			{ autoAlpha: 0, y: isMobile() ? 12 : -8 },
-			{ autoAlpha: 1, y: 0, duration: 0.35, ease: ease.out, overwrite: "auto" },
+			{ autoAlpha: 1, y: 0, duration: duration.fast, ease: ease.out, overwrite: "auto" },
 		);
 	};
 
@@ -276,7 +276,7 @@ export function bootPromptGoals(): void {
 					current?.focus({ preventScroll: true });
 				},
 			});
-			timeline.fromTo(dialog, { autoAlpha: 0 }, { autoAlpha: 1, duration: 0.2, ease: "none" });
+			timeline.fromTo(dialog, { autoAlpha: 0 }, { autoAlpha: 1, duration: duration.press, ease: ease.linear });
 			current?.focus({ preventScroll: true });
 			return;
 		}
@@ -295,10 +295,10 @@ export function bootPromptGoals(): void {
 				settleLines();
 			},
 		});
-		timeline.to(sheet, { clipPath: OPEN_CLIP, duration: isMobile() ? 0.5 : 0.62, ease: ease.out }, 0);
+		timeline.to(sheet, { clipPath: OPEN_CLIP, duration: isMobile() ? duration.fast : duration.settle, ease: ease.out }, 0);
 		timeline.to(
 			lines,
-			{ yPercent: 0, opacity: 1, duration: isMobile() ? 0.4 : 0.5, stagger, ease: ease.out },
+			{ yPercent: 0, opacity: 1, duration: isMobile() ? duration.fast : duration.settle, stagger, ease: ease.out },
 			isMobile() ? 0.08 : 0.16,
 		);
 		current?.focus({ preventScroll: true });
@@ -326,7 +326,7 @@ export function bootPromptGoals(): void {
 
 		if (reduced) {
 			timeline = gsap.timeline({ onComplete: finish });
-			timeline.to(dialog, { autoAlpha: 0, duration: 0.2, ease: "none" });
+			timeline.to(dialog, { autoAlpha: 0, duration: duration.press, ease: ease.linear });
 			return;
 		}
 
@@ -337,13 +337,13 @@ export function bootPromptGoals(): void {
 			{
 				yPercent: 110,
 				opacity: 0,
-				duration: isMobile() ? 0.28 : 0.32,
+				duration: isMobile() ? duration.ui : duration.fast,
 				stagger: { each: isMobile() ? 0.02 : 0.04, from: "end" },
-				ease: "power2.in",
+				ease: ease.inSoft,
 			},
 			0,
 		);
-		timeline.to(sheet, { clipPath: clipFrom, duration: isMobile() ? 0.38 : 0.45, ease: "power3.in" }, 0.08);
+		timeline.to(sheet, { clipPath: clipFrom, duration: isMobile() ? duration.fast : duration.settle, ease: ease.in }, 0.08);
 	};
 
 	const moveGoal = (direction: number): void => {

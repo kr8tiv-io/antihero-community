@@ -1,4 +1,4 @@
-import { gsap, ScrollTrigger, onReducedMotionChange, prefersReducedMotion } from "./motion";
+import { duration, ease, gsap, ScrollTrigger, onReducedMotionChange, prefersReducedMotion } from "./motion";
 
 export function bootDrop(): void {
 	
@@ -41,18 +41,18 @@ export function bootDrop(): void {
 
 				tween = gsap.timeline({ paused: true });
 				if (media && !phone) {
-					tween.to(media, { scale: 1, duration: 1.05, ease: "power3.out" }, 0);
+					tween.to(media, { scale: 1, duration: duration.cover, ease: ease.out }, 0);
 				} else if (media) {
-					tween.to(media, { opacity: 1, duration: 0.5, ease: "power3.out" }, 0);
+					tween.to(media, { opacity: 1, duration: duration.fast, ease: ease.out }, 0);
 				}
 				tween.to(
 					bits,
 					{
 						y: 0,
 						opacity: 1,
-						duration: phone ? 0.5 : 0.8,
+						duration: phone ? duration.fast : duration.base,
 						stagger: 0.1,
-						ease: "power3.out",
+						ease: ease.out,
 						immediateRender: false,
 					},
 					0.05,

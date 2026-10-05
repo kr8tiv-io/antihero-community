@@ -1,4 +1,4 @@
-import { gsap, ScrollTrigger, onReducedMotionChange, prefersReducedMotion } from "./motion";
+import { duration, ease, gsap, ScrollTrigger, onReducedMotionChange, prefersReducedMotion } from "./motion";
 
 export function bootDoors(): void {
 	const root = document.querySelector<HTMLElement>("[data-doors]");
@@ -20,9 +20,9 @@ export function bootDoors(): void {
 	}
 
 	function bindTilt(door: HTMLElement, face: HTMLElement): void {
-		const rotX = gsap.quickTo(face, "rotationX", { duration: 0.6, ease: "power3.out" });
-		const rotY = gsap.quickTo(face, "rotationY", { duration: 0.6, ease: "power3.out" });
-		const lift = gsap.quickTo(face, "y", { duration: 0.45, ease: "power3.out" });
+		const rotX = gsap.quickTo(face, "rotationX", { duration: duration.settle, ease: ease.out });
+		const rotY = gsap.quickTo(face, "rotationY", { duration: duration.settle, ease: ease.out });
+		const lift = gsap.quickTo(face, "y", { duration: duration.fast, ease: ease.out });
 
 		const rest = () => {
 			rotX(0);
@@ -70,9 +70,9 @@ export function bootDoors(): void {
 			enterTween = gsap.to(doors, {
 				y: 0,
 				opacity: 1,
-				duration: hoverQuery.matches ? 0.8 : 0.55,
+				duration: hoverQuery.matches ? duration.base : duration.settle,
 				stagger: 0.1,
-				ease: "power3.out",
+				ease: ease.out,
 				paused: true,
 				immediateRender: false,
 			});

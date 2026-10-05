@@ -1,4 +1,4 @@
-import { gsap, ScrollTrigger, onReducedMotionChange, prefersReducedMotion } from "./motion";
+import { ease, gsap, ScrollTrigger, onReducedMotionChange, prefersReducedMotion } from "./motion";
 
 /**
  * About hero parallax. Transform only.
@@ -49,7 +49,7 @@ export function bootAboutParallax(): void {
 				{ y: () => travel(phone ? 0.03 : 0.05) },
 				{
 					y: () => travel(phone ? -0.06 : -0.12),
-					ease: "none",
+					ease: ease.linear,
 					scrollTrigger: layer(),
 				},
 			);
@@ -61,7 +61,7 @@ export function bootAboutParallax(): void {
 				{ y: () => travel(0.1) },
 				{
 					y: () => travel(-0.22),
-					ease: "none",
+					ease: ease.linear,
 					scrollTrigger: layer(),
 				},
 			);
@@ -71,7 +71,7 @@ export function bootAboutParallax(): void {
 				{ y: () => travel(0.015) },
 				{
 					y: () => travel(-0.04),
-					ease: "none",
+					ease: ease.linear,
 					scrollTrigger: layer(),
 				},
 			);

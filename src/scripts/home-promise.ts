@@ -1,4 +1,4 @@
-import { gsap, onReducedMotionChange, prefersReducedMotion } from "./motion";
+import { duration, ease, gsap, onReducedMotionChange, prefersReducedMotion } from "./motion";
 
 export function bootPromise(): void {
 	const root = document.querySelector<HTMLElement>("[data-promise]");
@@ -56,7 +56,7 @@ export function bootPromise(): void {
 			gsap.set(lines, { y: 12, opacity: 0 });
 
 			const flight = gsap.timeline({
-				defaults: { ease: "none" },
+				defaults: { ease: ease.linear },
 				scrollTrigger: {
 					trigger: root,
 					start: "top bottom",
@@ -90,15 +90,15 @@ export function bootPromise(): void {
 				y: 0,
 				opacity: 1,
 				rotation: tilt,
-				duration: 0.8,
+				duration: duration.base,
 				stagger: 0.12,
-				ease: "expo.out",
+				ease: ease.expo,
 				immediateRender: false,
 			});
 			const afterWords = 0.12 * Math.max(0, words.length - 1) + 0.48;
 			reveal.to(
 				sub,
-				{ y: 0, opacity: 1, duration: 0.7, ease: "expo.out", immediateRender: false },
+				{ y: 0, opacity: 1, duration: 0.7, ease: ease.expo, immediateRender: false },
 				afterWords,
 			);
 			reveal.to(
@@ -108,7 +108,7 @@ export function bootPromise(): void {
 					opacity: 1,
 					duration: 0.55,
 					stagger: 0.09,
-					ease: "expo.out",
+					ease: ease.expo,
 					immediateRender: false,
 				},
 				afterWords + 0.4,

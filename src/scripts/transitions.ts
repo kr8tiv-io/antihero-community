@@ -1,7 +1,8 @@
 import { isCurrentPath } from "../data/nav";
 import { bootCursor, releaseCursorMotion } from "./cursor";
 import { bootEasterEgg } from "./easter-egg";
-import { gsap, isMobile, onReducedMotionChange, prefersReducedMotion, ScrollTrigger } from "./motion";
+import { duration, ease, gsap, isMobile, onReducedMotionChange, prefersReducedMotion, ScrollTrigger } from "./motion";
+import { bootPointer, releasePointer } from "./pointer";
 import { bootReveals, releaseReveals } from "./reveals";
 import { destroySmoothScroll, initSmoothScroll } from "./smooth-scroll";
 import { bootStarfield, releaseStarfield } from "./starfield";
@@ -114,6 +115,7 @@ function onSwap(event: Event): void {
 	releaseVideos?.();
 	releaseHover?.();
 	releaseHover = null;
+	releasePointer();
 	releaseReveals();
 	gsap.killTweensOf("[data-join-glow]");
 	document.querySelectorAll("video").forEach((video) => {
@@ -126,6 +128,7 @@ function onSwap(event: Event): void {
 function onPage(): void {
 	initSmoothScroll();
 	bootReveals();
+	bootPointer();
 	bootCursor();
 	bootEasterEgg();
 	bootStarfield();
@@ -287,8 +290,8 @@ function bootJoinBands(): void {
 				{
 					scale: peak,
 					opacity: 0.72,
-					duration: 2,
-					ease: "sine.inOut",
+					duration: duration.dwell,
+					ease: ease.sine,
 					yoyo: true,
 					repeat: -1,
 				},

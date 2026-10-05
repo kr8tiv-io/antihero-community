@@ -7,12 +7,12 @@ const sentence = "This page went to be its own hero somewhere else.";
 <BaseLayout title="Missing" description={sentence}>
 	<meta slot="head" name="robots" content="noindex" />
 	<article slot="main" class="missing">
-		<p class="missing-num" aria-hidden="true">404</p>
+		<p class="missing-num" data-reveal="stamp" aria-hidden="true">404</p>
 		<div class="missing-copy">
 			<h1 class="missing-title" data-reveal="fade-up">{sentence}</h1>
-			<nav class="missing-links" aria-label="Leave this page">
-				<a class="missing-home" href="/" data-nav data-label="Home">Home</a>
-				<a href="/guides" data-nav data-label="Guides">Guides</a>
+			<nav class="missing-links" data-reveal="stagger" aria-label="Leave this page">
+				<a class="missing-home" href="/" data-nav data-label="Home" data-reveal="shift">Home</a>
+				<a href="/guides" data-nav data-label="Guides" data-reveal="shift" data-shift="out">Guides</a>
 			</nav>
 		</div>
 	</article>

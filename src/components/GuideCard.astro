@@ -31,7 +31,7 @@ const categoryId = category.toLowerCase();
 >
 	<a class="guide-card__link" href={href} data-hover-card data-label={title} data-cursor="Read">
 		<div class="guide-card__cover">
-			<div class="guide-card__zoom">
+			<div class="guide-card__zoom" data-zoom>
 				{
 					loop ? (
 						<HoverVideo
@@ -97,8 +97,6 @@ const categoryId = category.toLowerCase();
 
 	.guide-card__zoom {
 		height: 100%;
-		transform: scale(1);
-		transition: transform 0.6s cubic-bezier(0.45, 0, 0.2, 1);
 	}
 
 	.guide-card__zoom :global(.guide-card__film) {
@@ -186,15 +184,5 @@ const categoryId = category.toLowerCase();
 		}
 	}
 
-	@media (hover: hover) and (pointer: fine) {
-		.guide-card__link:hover .guide-card__zoom {
-			transform: scale(1.04);
-		}
-	}
 
-	@media (prefers-reduced-motion: reduce) {
-		.guide-card__zoom {
-			transition: none;
-		}
-	}
 </style>

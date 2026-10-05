@@ -9,6 +9,7 @@ const kr8tivUrl = "https://kr8tiv.io";
 ---
 
 <footer class="site-footer" transition:persist="site-footer">
+  <div class="site-footer__rule" data-reveal="rule" aria-hidden="true"></div>
   <div class="site-footer__main">
     <div class="site-footer__brand">
       <a class="site-footer__mark" href="/" data-nav data-label="Home" aria-label="AntiHero AI, home">
@@ -66,6 +67,15 @@ const kr8tivUrl = "https://kr8tiv.io";
     background: var(--color-anti);
     padding: var(--space-64) var(--space-16) calc(var(--space-32) + env(safe-area-inset-bottom));
     border-top: 1px solid var(--color-graphite);
+    overflow-x: clip;
+  }
+
+  .site-footer__rule {
+    display: block;
+    width: min(9rem, 42%);
+    height: 2px;
+    margin-bottom: var(--space-32);
+    background: var(--color-ignition);
   }
 
   .site-footer__main {

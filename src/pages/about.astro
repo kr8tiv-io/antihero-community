@@ -69,7 +69,7 @@ const lines = [
 		</section>
 
 		<section class="about-founder" data-reveal="stagger" aria-label="A note from Matt">
-			<div class="about-portrait" data-reveal="fade-up">
+			<div class="about-portrait" data-reveal="clip">
 				<picture><source srcset="/founders/matt.webp" type="image/webp" /><img src="/founders/matt.jpg" alt="Matt Haynes walking his French bulldog along a beach at sunset, the dog carrying a stick." width="600" height="800" loading="lazy" decoding="async" /></picture>
 			</div>
 			<div class="about-note" data-reveal="fade-up">
@@ -228,6 +228,7 @@ const lines = [
 		display: grid;
 		gap: var(--space-32);
 		padding: var(--space-96) var(--space-16) var(--space-128);
+		overflow-x: clip;
 	}
 
 	.about-portrait {

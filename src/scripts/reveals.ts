@@ -1,4 +1,5 @@
 import {
+	duration,
 	gsap,
 	ScrollTrigger,
 	ease,
@@ -24,6 +25,8 @@ const CLEAR = "transform,opacity,visibility,clipPath";
 
 type Tuner = {
 	y: number;
+	shift: number;
+	stamp: number;
 	inset: number;
 	scale: number;
 	box: number;
@@ -67,13 +70,15 @@ function tune(): Tuner {
 	const scale = phone ? 0.72 : 1;
 	return {
 		y: phone ? 12 : 24,
+		shift: phone ? 10 : 22,
+		stamp: phone ? 1.03 : 1.045,
 		inset: phone ? 14 : 22,
 		scale: phone ? 1.04 : 1.1,
-		box: 0.55 * scale,
-		text: 0.5 * scale,
-		fade: 0.7 * scale,
-		clip: 0.8 * scale,
-		count: phone ? 0.28 : 0.45,
+		box: duration.settle * scale,
+		text: duration.settle * scale,
+		fade: duration.base * scale,
+		clip: duration.base * scale,
+		count: phone ? duration.ui : duration.fast,
 		lead: phone ? 0.1 : 0.16,
 	};
 }
@@ -145,8 +150,8 @@ function unwrap(el: HTMLElement): HTMLElement[] {
 function canPlay(el: HTMLElement): boolean {
 	if (el.classList.contains("is-gone")) return false;
 	if (el.closest("[hidden], .is-gone")) return false;
-	const rect = el.getBoundingClientRect();
-	return rect.width > 0 && rect.height > 0;
+	// offsetWidth ignores transform, so a rule at scaleX 0 can still play.
+	return el.offsetWidth > 0 && el.offsetHeight > 0;
 }
 
 function inView(el: HTMLElement): boolean {
@@ -163,7 +168,9 @@ function inScope(node: HTMLElement, scope: HTMLElement | null): boolean {
 }
 
 function shouldFade(el: HTMLElement): boolean {
-	if (el.matches("[data-reveal-heading], [data-reveal='clip']")) return false;
+	if (el.matches("[data-reveal-heading], [data-reveal='clip'], [data-reveal='stamp'], [data-reveal='shift'], [data-reveal='rule']")) {
+		return false;
+	}
 	if (el.matches("[data-guide-card], [data-prompt-card], [data-video-card]")) return false;
 	if (el.querySelector("[data-reveal-heading]")) return el.matches("[data-reveal='fade-up']");
 	return true;
@@ -212,6 +219,9 @@ function setup(root: ParentNode): () => void {
 	batchStandalone(root, "[data-reveal-heading]", owned, touched, standalones);
 	batchStandalone(root, "[data-reveal='fade-up']", owned, touched, standalones);
 	batchStandalone(root, "[data-reveal='clip']", owned, touched, standalones);
+	batchStandalone(root, "[data-reveal='stamp']", owned, touched, standalones);
+	batchStandalone(root, "[data-reveal='shift']", owned, touched, standalones);
+	batchStandalone(root, "[data-reveal='rule']", owned, touched, standalones);
 	batchStandalone(root, "[data-reveal-count]", owned, touched, standalones);
 
 	const onRefresh = (): void => {
@@ -267,6 +277,19 @@ function prepare(root: ParentNode, touched: Set<HTMLElement>): void {
 			transformOrigin: "center center",
 		});
 		touched.add(clip);
+	}
+	for (const stamp of root.querySelectorAll<HTMLElement>("[data-reveal='stamp']")) {
+		gsap.set(stamp, { scale: t.stamp, opacity: 0, transformOrigin: "left bottom" });
+		touched.add(stamp);
+	}
+	for (const shift of root.querySelectorAll<HTMLElement>("[data-reveal='shift']")) {
+		const dir = shift.dataset.shift === "out" ? 1 : -1;
+		gsap.set(shift, { x: dir * t.shift, opacity: 0 });
+		touched.add(shift);
+	}
+	for (const rule of root.querySelectorAll<HTMLElement>("[data-reveal='rule']")) {
+		gsap.set(rule, { scaleX: 0, transformOrigin: "left center" });
+		touched.add(rule);
 	}
 
 	const fade = new Set<HTMLElement>();
@@ -373,6 +396,47 @@ function playNode(el: HTMLElement, delay: number, touched: Set<HTMLElement>): vo
 				duration: t.clip,
 				ease: ease.out,
 				onComplete: () => gsap.set(clip, { clearProps: "transform,clipPath" }),
+			},
+			0,
+		);
+	}
+
+	if (el.matches("[data-reveal='stamp']")) {
+		tl.to(
+			el,
+			{
+				scale: 1,
+				opacity: 1,
+				duration: t.clip,
+				ease: ease.out,
+				onComplete: () => gsap.set(el, { clearProps: "transform,opacity" }),
+			},
+			0,
+		);
+	}
+
+	if (el.matches("[data-reveal='shift']")) {
+		tl.to(
+			el,
+			{
+				x: 0,
+				opacity: 1,
+				duration: t.fade,
+				ease: ease.out,
+				onComplete: () => gsap.set(el, { clearProps: "transform,opacity" }),
+			},
+			0,
+		);
+	}
+
+	if (el.matches("[data-reveal='rule']")) {
+		tl.to(
+			el,
+			{
+				scaleX: 1,
+				duration: t.box,
+				ease: ease.out,
+				onComplete: () => gsap.set(el, { clearProps: "transform" }),
 			},
 			0,
 		);

@@ -104,7 +104,7 @@ const date = guide ? dropDate(guide.data.date) : null;
 					>
 						<span class="drop-cover-frame">
 							<span class="drop-cover-media" data-drop-media>
-								<span class="drop-cover-zoom">
+								<span class="drop-cover-zoom" data-zoom>
 									{coverLoop ? (
 										<HoverVideo
 											stem={coverLoop}
@@ -147,7 +147,7 @@ const date = guide ? dropDate(guide.data.date) : null;
 							</a>
 							<a class="drop-pdf label" href={guide.data.pdf} download>
 								Download the PDF
-								<svg viewBox="0 0 32 16" aria-hidden="true" focusable="false">
+								<svg data-nudge viewBox="0 0 32 16" aria-hidden="true" focusable="false">
 									<path d="M0 8h26M18 2l8 6-8 6" />
 								</svg>
 							</a>
@@ -164,12 +164,14 @@ const date = guide ? dropDate(guide.data.date) : null;
 							aria-label={`${replay.data.title}. Replay coming soon.`}
 						>
 							<span class="drop-play-frame">
-								<HoverVideo
-									stem={replayLoop}
-									poster={`${replayLoop}-poster.jpg`}
-									aspect="16:9"
-									class="drop-film"
-								/>
+								<span class="drop-play-zoom" data-zoom>
+									<HoverVideo
+										stem={replayLoop}
+										poster={`${replayLoop}-poster.jpg`}
+										aspect="16:9"
+										class="drop-film"
+									/>
+								</span>
 							</span>
 							<span class="drop-soon">Replay coming soon. The guide's already here.</span>
 						</a>
@@ -182,18 +184,20 @@ const date = guide ? dropDate(guide.data.date) : null;
 							rel={player.external ? "noopener noreferrer" : undefined}
 						>
 							<span class="drop-play-frame">
-								<Raster
-									src={player.poster}
-									alt={`Still from ${player.title}.`}
-									sizes="(min-width: 768px) 28vw, 80vw"
-									widths={[480, 800, 1280]}
-									fallbackWidth={1280}
-									fallbackHeight={720}
-								/>
+								<span class="drop-play-zoom" data-zoom>
+									<Raster
+										src={player.poster}
+										alt={`Still from ${player.title}.`}
+										sizes="(min-width: 768px) 28vw, 80vw"
+										widths={[480, 800, 1280]}
+										fallbackWidth={1280}
+										fallbackHeight={720}
+									/>
+								</span>
 							</span>
 							<span class="drop-play-label label">
 								Play
-								<svg viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+								<svg data-nudge viewBox="0 0 16 16" aria-hidden="true" focusable="false">
 									<path d="M4 2.5v11L13.5 8 4 2.5z" />
 								</svg>
 							</span>
@@ -213,7 +217,7 @@ const date = guide ? dropDate(guide.data.date) : null;
 					<ul class="drop-also-list">
 						{alsoNew.map((prompt) => (
 							<li>
-								<a href={`/prompts#${encodeURIComponent(prompt.id)}`}>{prompt.data.title}</a>
+								<a data-nudge href={`/prompts#${encodeURIComponent(prompt.id)}`}>{prompt.data.title}</a>
 							</li>
 						))}
 					</ul>
@@ -473,6 +477,11 @@ const date = guide ? dropDate(guide.data.date) : null;
 		background: var(--color-carbon);
 	}
 
+	.drop-play-zoom {
+		display: block;
+		height: 100%;
+	}
+
 	.drop-play .drop-soon {
 		display: block;
 		margin-top: var(--space-12);
@@ -656,55 +665,9 @@ const date = guide ? dropDate(guide.data.date) : null;
 	}
 
 	@media (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
-		.drop-cover-zoom,
-		.drop-play-frame :global(.drop-film),
-		.drop-play-frame :global(img),
-		.drop-pdf svg,
-		.drop-play-label svg,
-		.drop-also-list a {
-			transition: transform 0.7s cubic-bezier(0.22, 1, 0.36, 1);
-		}
-
-		.drop-read {
-			transition: background-color 0.3s linear;
-		}
-
-		.drop-cover:hover .drop-cover-zoom,
-		.drop-cover:focus-visible .drop-cover-zoom,
-		.drop-play:hover .drop-play-frame :global(.drop-film),
-		.drop-play:focus-visible .drop-play-frame :global(.drop-film) {
-			transform: scale(1.04);
-		}
-
 		.drop-read:hover,
 		.drop-read:focus-visible {
 			background: var(--color-bone);
-		}
-
-		.drop-pdf:hover svg,
-		.drop-pdf:focus-visible svg,
-		.drop-play:hover .drop-play-label svg,
-		.drop-play:focus-visible .drop-play-label svg,
-		.drop-also-list a:hover,
-		.drop-also-list a:focus-visible {
-			transform: translateX(6px);
-		}
-	}
-
-	@media (min-width: 768px) and (hover: hover) and (pointer: fine) and (prefers-reduced-motion: no-preference) {
-		.drop-cover-zoom {
-			will-change: transform;
-		}
-	}
-
-	@media (prefers-reduced-motion: reduce) {
-		.drop-cover-zoom,
-		.drop-play-frame :global(.drop-film),
-		.drop-pdf svg,
-		.drop-play-label svg,
-		.drop-also-list a,
-		.drop-read {
-			transition: none;
 		}
 	}
 </style>

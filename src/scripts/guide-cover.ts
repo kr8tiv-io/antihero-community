@@ -1,4 +1,4 @@
-import { gsap, ScrollTrigger, onReducedMotionChange, prefersReducedMotion } from "./motion";
+import { ease, gsap, ScrollTrigger, onReducedMotionChange, prefersReducedMotion } from "./motion";
 
 /**
  * Slow cover drift. Transform only. Phone travels less.
@@ -37,7 +37,7 @@ export function bootGuideCover(): void {
 				{
 					y: travel / -2,
 					scale,
-					ease: "none",
+					ease: ease.linear,
 					scrollTrigger: {
 						trigger: frame,
 						start: "top bottom",

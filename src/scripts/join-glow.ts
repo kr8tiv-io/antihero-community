@@ -1,4 +1,4 @@
-import { gsap, onReducedMotionChange, prefersReducedMotion } from "./motion";
+import { duration, ease, gsap, onReducedMotionChange, prefersReducedMotion } from "./motion";
 
 /**
  * Soft pulse behind the join button. Scale and opacity only.
@@ -31,8 +31,8 @@ export function bootJoinGlow(): void {
 			{
 				scale: peak,
 				opacity: 0.62,
-				duration: 2.2,
-				ease: "sine.inOut",
+				duration: duration.dwell,
+				ease: ease.sine,
 				yoyo: true,
 				repeat: -1,
 			},

@@ -1,4 +1,4 @@
-import { gsap, onReducedMotionChange, prefersReducedMotion } from "./motion";
+import { duration, ease, gsap, onReducedMotionChange, prefersReducedMotion } from "./motion";
 
 type FlipPlugin = typeof import("gsap/Flip").Flip;
 
@@ -118,20 +118,20 @@ export function bootFilterShelf(options: FilterShelfOptions): void {
 			running = flip.from(state, {
 			absolute: true,
 			stagger: 0.03,
-			duration: 0.6,
-			ease: "power2.inOut",
+			duration: duration.settle,
+			ease: ease.inOut,
 			onEnter: (els) =>
 				gsap.fromTo(
 					els,
 					{ opacity: 0, scale: 0.9 },
-					{ opacity: 1, scale: 1, duration: 0.6, ease: "power2.inOut", stagger: 0.03 },
+					{ opacity: 1, scale: 1, duration: duration.settle, ease: ease.inOut, stagger: 0.03 },
 				),
 			onLeave: (els) =>
 				gsap.to(els, {
 					opacity: 0,
 					scale: 0.9,
-					duration: 0.6,
-					ease: "power2.inOut",
+					duration: duration.settle,
+					ease: ease.inOut,
 					stagger: 0.03,
 				}),
 			onComplete: () => {

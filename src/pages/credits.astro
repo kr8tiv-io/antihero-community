@@ -15,21 +15,26 @@ const intro = "AntiHero stands on the generosity of open-source makers. Thank yo
 <BaseLayout title="Credits" description={intro}>
 	<article slot="main" class="credits">
 		<header class="credits-hero">
-			<h1 class="credits-title">
+			<h1 class="credits-title" data-reveal="stamp">
 				<span class="label-box label-box--red">Credits</span>
 			</h1>
 			<p class="credits-lead" data-reveal="fade-up">{intro}</p>
 		</header>
 
 		{
-			groups.map((group) => (
+			groups.map((group, groupIndex) => (
 				<section class="credits-group" aria-labelledby={`credits-${group.category.replaceAll(" ", "-")}`}>
-					<h2 id={`credits-${group.category.replaceAll(" ", "-")}`} class="credits-cat label" data-reveal="fade-up">
+					<h2 id={`credits-${group.category.replaceAll(" ", "-")}`} class="credits-cat label">
+						<span class="credits-rule" data-reveal="rule" aria-hidden="true"></span>
 						{group.category}
 					</h2>
 					<ul class="credits-list">
 						{group.items.map((item) => (
-							<li class="credits-row" data-reveal="fade-up">
+							<li
+								class="credits-row"
+								data-reveal="shift"
+								data-shift={groupIndex % 2 === 1 ? "out" : undefined}
+							>
 								<a class="credits-name" href={item.link} target="_blank" rel="noopener noreferrer">
 									{item.name}
 									<span class="visually-hidden"> (opens in a new tab)</span>
@@ -56,6 +61,7 @@ const intro = "AntiHero stands on the generosity of open-source makers. Thank yo
 <style>
 	.credits {
 		padding: calc(var(--header-h) + var(--space-48)) var(--space-16) var(--space-128);
+		overflow-x: clip;
 	}
 
 	.credits-hero {
@@ -87,8 +93,19 @@ const intro = "AntiHero stands on the generosity of open-source makers. Thank yo
 	}
 
 	.credits-cat {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: 0.55rem;
 		margin: 0;
 		color: var(--color-hero);
+	}
+
+	.credits-rule {
+		display: block;
+		width: 2.75rem;
+		height: 2px;
+		background: var(--color-bone);
 	}
 
 	.credits-list {
