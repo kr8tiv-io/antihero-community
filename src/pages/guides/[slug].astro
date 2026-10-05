@@ -95,10 +95,8 @@ function sourceGuideId(source: unknown): string | null {
 	return null;
 }
 
-function replayHref(id: string, youtubeId?: string, videoUrl?: string): string {
-	if (youtubeId) return `https://www.youtube.com/watch?v=${encodeURIComponent(youtubeId)}`;
-	if (videoUrl) return videoUrl;
-	return `/videos#${encodeURIComponent(id)}`;
+function replayHref(id: string): string {
+	return `/videos/${encodeURIComponent(id)}`;
 }
 
 const boxes = titleBoxes(guide.data.title);
@@ -112,19 +110,19 @@ const pdfName = guide.data.pdf.split("/").pop() ?? "guide.pdf";
 const replay = guide.data.replay ? await getEntry(guide.data.replay) : undefined;
 const replayLink = replay
 	? {
-			href: replayHref(replay.id, replay.data.youtubeId, replay.data.videoUrl),
-			external: Boolean(replay.data.youtubeId || replay.data.videoUrl),
+			href: replayHref(replay.id),
+			external: false,
 			poster: mediaSrc(replay.data.poster),
 			title: replay.data.title,
 			duration: replay.data.duration ?? null,
+			label: replay.data.placeholder ? "Watch on Facebook" : "Watch the replay",
 		}
 	: null;
-/** Reading order. Prompts have no slug, so the hash is the entry id. No shared card yet. */
+/** Reading order. Prompts have no slug, so the hash is the entry id. */
 const prompts = await getCollection("prompts");
 const related = prompts
 	.filter((prompt) => sourceGuideId(prompt.data.source) === guide.id)
-	.sort((a, b) => a.data.order - b.data.order || a.id.localeCompare(b.id))
-	.slice(0, 4);
+	.sort((a, b) => a.data.order - b.data.order || a.id.localeCompare(b.id));
 
 const rendered = guide.body?.trim() ? await render(guide) : null;
 const GuideBody = rendered?.Content;
@@ -257,7 +255,7 @@ const jsonLd = JSON.stringify({
 							<RevealHeading as="h2" class="guide-replay__title" text={replayLink.title} wordsPerLine={2} />
 							{replayLink.duration && <p class="caption mono">{replayLink.duration}</p>}
 							<p class="guide-replay__watch">
-								Watch the replay
+								{replayLink.label}
 								{replayLink.external && <span class="visually-hidden"> (opens in a new tab)</span>}
 							</p>
 						</div>

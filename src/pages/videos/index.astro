@@ -4,7 +4,6 @@ import { join } from "node:path";
 import { getCollection } from "astro:content";
 import RevealHeading from "../../components/RevealHeading.astro";
 import VideoCard from "../../components/VideoCard.astro";
-import { facebookGroupUrl } from "../../data/nav";
 import BaseLayout from "../../layouts/BaseLayout.astro";
 
 const videos = await getCollection("videos");
@@ -41,21 +40,28 @@ function guideLink(source: { id: string } | undefined): { href: string; title: s
 	return { href: `/guides/${guide.data.slug}`, title: guide.data.title };
 }
 
-const YOUTUBE_ID = /^[A-Za-z0-9_-]{6,20}$/;
+type Kind = "live" | "clip" | "promo";
 
-const cards = videos.map((video, index) => {
+function kindOf(video: (typeof videos)[number]): Kind {
+	if (video.data.kind === "live" || video.data.kind === "clip" || video.data.kind === "promo") {
+		return video.data.kind;
+	}
+	if (video.data.videoUrl?.includes("/media/clips/")) {
+		return video.id.startsWith("promo-") ? "promo" : "clip";
+	}
+	return "live";
+}
+
+const cards = videos.map((video) => {
 	const guide = guideLink(video.data.guide);
 	const loopStem = video.data.loop;
 	const loop =
-		loopStem && localMedia(`${loopStem}.mp4`) && localMedia(`${loopStem}-poster.jpg`) ? loopStem : null;
+		loopStem && localMedia(`${loopStem}.mp4`) && localMedia(`${loopStem}.webm`) && localMedia(`${loopStem}-poster.jpg`)
+			? loopStem
+			: null;
 	const poster = mediaSrc(video.data.poster) ?? (loop ? `${loop}-poster.jpg` : null);
-	const youtubeId =
-		video.data.youtubeId && YOUTUBE_ID.test(video.data.youtubeId) ? video.data.youtubeId : null;
-	const fileUrl = mediaSrc(video.data.videoUrl);
-	let mode: "placeholder" | "youtube" | "file" = "placeholder";
-	if (!video.data.placeholder && youtubeId) mode = "youtube";
-	else if (!video.data.placeholder && fileUrl) mode = "file";
 	const date = stamp(video.data.date);
+	const kind = kindOf(video);
 	return {
 		id: video.id,
 		title: video.data.title,
@@ -66,12 +72,44 @@ const cards = videos.map((video, index) => {
 		loop,
 		guideHref: guide?.href ?? null,
 		guideTitle: guide?.title ?? null,
-		mode,
-		youtubeId: mode === "youtube" ? youtubeId : null,
-		videoUrl: mode === "file" ? fileUrl : null,
-		lead: index === 0,
+		kind,
+		placeholder: video.data.placeholder === true || !mediaSrc(video.data.videoUrl),
+		fbUrl: video.data.fbUrl ?? null,
 	};
 });
+
+const lives = cards.filter((card) => card.kind === "live");
+const clips = cards.filter((card) => card.kind === "clip");
+const promos = cards.filter((card) => card.kind === "promo");
+const lead = lives[0];
+const liveRest = lives.slice(1);
+
+const groups = [
+	{
+		id: "live",
+		kicker: "01",
+		title: "Live replays",
+		line: "The full night, from the start.",
+		cards: liveRest,
+		compact: false,
+	},
+	{
+		id: "clips",
+		kicker: "02",
+		title: "Clips",
+		line: "The part worth keeping.",
+		cards: clips,
+		compact: false,
+	},
+	{
+		id: "promos",
+		kicker: "03",
+		title: "Promos",
+		line: "10 seconds, then the live.",
+		cards: promos,
+		compact: true,
+	},
+].filter((group) => group.cards.length > 0);
 ---
 
 <BaseLayout
@@ -89,53 +127,65 @@ const cards = videos.map((video, index) => {
 			</p>
 		</header>
 
-		<div class="video-grid" data-reveal="stagger">
-			{
-				cards.map((card) => (
+		{
+			lead && (
+				<div class="video-lead">
 					<VideoCard
-						id={card.id}
-						title={card.title}
-						dateIso={card.dateIso}
-						dateLabel={card.dateLabel}
-						duration={card.duration}
-						poster={card.poster}
-						loop={card.loop}
-						guideHref={card.guideHref}
-						guideTitle={card.guideTitle}
-						mode={card.mode}
-						youtubeId={card.youtubeId}
-						videoUrl={card.videoUrl}
-						lead={card.lead}
-						groupUrl={facebookGroupUrl}
+						id={lead.id}
+						title={lead.title}
+						dateIso={lead.dateIso}
+						dateLabel={lead.dateLabel}
+						duration={lead.duration}
+						poster={lead.poster}
+						loop={lead.loop}
+						guideHref={lead.guideHref}
+						guideTitle={lead.guideTitle}
+						lead
+						placeholder={lead.placeholder}
+						fbUrl={lead.fbUrl}
 					/>
-				))
-			}
-		</div>
-
-		<dialog class="video-modal" data-video-modal aria-labelledby="video-modal-title">
-			<div class="video-modal__panel">
-				<div class="video-modal__bar">
-					<p id="video-modal-title" class="video-modal__title" data-video-title></p>
-					<button type="button" class="label-box" data-video-close>
-						<span class="swap-label">
-							<span class="swap-label__line">Close</span>
-							<span class="swap-label__line" aria-hidden="true">Close</span>
-						</span>
-					</button>
 				</div>
-				<div class="video-modal__stage" data-video-stage></div>
-			</div>
-		</dialog>
+			)
+		}
+
+		{
+			groups.map((group) => (
+				<section class:list={["video-group", `video-group--${group.id}`]} aria-labelledby={`videos-${group.id}`}>
+					<header class="group-head">
+						<p class="group-kicker mono">{group.kicker}</p>
+						<RevealHeading as="h2" id={`videos-${group.id}`} text={group.title} />
+						<p class="group-line">{group.line}</p>
+					</header>
+					<div class:list={["group-grid", group.compact && "group-grid--compact"]}>
+						{group.cards.map((card) => (
+							<VideoCard
+								id={card.id}
+								title={card.title}
+								dateIso={card.dateIso}
+								dateLabel={card.dateLabel}
+								duration={card.duration}
+								poster={card.poster}
+								loop={card.loop}
+								guideHref={card.guideHref}
+								guideTitle={card.guideTitle}
+								lead={false}
+								compact={group.compact}
+								placeholder={card.placeholder}
+								fbUrl={card.fbUrl}
+							/>
+						))}
+					</div>
+				</section>
+			))
+		}
 	</div>
 </BaseLayout>
 
-<script>
-	import { bootVideoCards } from "../../scripts/video-cards";
-
-	bootVideoCards();
-</script>
-
 <style>
+	.videos {
+		overflow-x: clip;
+	}
+
 	.videos-hero {
 		display: flex;
 		flex-direction: column;
@@ -155,76 +205,47 @@ const cards = videos.map((video, index) => {
 		color: var(--color-bone);
 	}
 
-	.video-grid {
+	.video-lead,
+	.video-group {
+		padding: 0 var(--space-16) var(--space-64);
+	}
+
+	.video-group--promos {
+		padding-bottom: var(--space-96);
+	}
+
+	.group-head {
 		display: flex;
 		flex-direction: column;
-		gap: var(--space-64);
-		padding: 0 var(--space-16) var(--space-96);
+		align-items: flex-start;
+		gap: var(--space-12);
+		max-width: 16ch;
+		margin-bottom: var(--space-32);
 	}
 
-	.video-modal {
-		width: 100%;
-		max-width: none;
-		height: 100%;
-		max-height: none;
+	.group-kicker {
 		margin: 0;
-		padding: var(--space-16);
-		border: 0;
-		background: transparent;
+		color: var(--color-bone);
+		font-size: 0.75rem;
+		letter-spacing: 0.14em;
 	}
 
-	.video-modal::backdrop {
-		background: rgb(10 10 11 / 0.88);
+	.group-head h2 {
+		margin: 0;
+		font-size: clamp(2.4rem, 8vw, 4.5rem);
 	}
 
-	.video-modal__panel {
+	.group-line {
+		margin: 0;
+		max-width: 22ch;
+		color: var(--color-bone);
+	}
+
+	.group-grid {
 		display: flex;
 		flex-direction: column;
-		gap: var(--space-16);
-		width: min(64rem, 100%);
-		margin-top: calc(var(--header-h) + var(--space-16));
-		margin-left: 0;
-	}
-
-	.video-modal__bar {
-		display: flex;
-		align-items: flex-end;
-		justify-content: space-between;
-		gap: var(--space-16);
-	}
-
-	.video-modal__title {
-		margin: 0;
-		max-width: 18ch;
-		font-family: var(--font-display);
-		font-size: clamp(1.6rem, 3vw, 2.4rem);
-		line-height: 0.9;
-		text-transform: uppercase;
-		color: var(--color-hero);
-	}
-
-	.video-modal__stage {
-		aspect-ratio: 16 / 9;
-		background: var(--color-carbon);
-	}
-
-	.video-modal__stage :global(iframe),
-	.video-modal__stage :global(video) {
-		display: block;
-		width: 100%;
-		height: 100%;
-		border: 0;
-		background: var(--color-anti);
-	}
-
-	.video-modal [data-video-close]:focus-visible {
-		outline: 2px solid var(--color-ignition);
-		outline-offset: 3px;
-	}
-
-	.video-modal [data-video-close]:active {
-		background: var(--color-ember);
-		color: var(--color-hero);
+		gap: var(--space-48);
+		min-width: 0;
 	}
 
 	@media (min-width: 900px) {
@@ -233,7 +254,7 @@ const cards = videos.map((video, index) => {
 			grid-template-columns: minmax(0, 1.15fr) minmax(14rem, 0.45fr);
 			column-gap: var(--space-48);
 			align-items: end;
-			padding: calc(var(--header-h) + var(--space-64)) 8vw var(--space-64) 12vw;
+			padding: calc(var(--header-h) + var(--space-64)) 8vw var(--space-48) 12vw;
 		}
 
 		.videos-hero p {
@@ -241,33 +262,64 @@ const cards = videos.map((video, index) => {
 			margin-bottom: var(--space-16);
 		}
 
-		.video-grid {
+		.video-lead {
+			padding: 0 8vw var(--space-96) 12vw;
+		}
+
+		.video-lead :global(.video-card--lead) {
 			display: grid;
-			grid-template-columns: minmax(0, 1.45fr) minmax(16rem, 0.7fr);
-			column-gap: var(--space-64);
-			row-gap: var(--space-48);
+			grid-template-columns: minmax(0, 1.35fr) minmax(18rem, 0.72fr);
+			column-gap: var(--space-48);
+			align-items: end;
+		}
+
+		.video-lead :global(.video-card--lead .video-card__body) {
+			max-width: 100%;
+			padding-bottom: var(--space-24);
+		}
+
+		.video-group {
+			padding: 0 8vw var(--space-96) 12vw;
+		}
+
+		.video-group--live .group-grid {
+			display: grid;
+			grid-template-columns: minmax(0, 1.15fr) minmax(16rem, 0.72fr);
+			column-gap: var(--space-48);
 			align-items: start;
-			padding: 0 8vw var(--space-128) 12vw;
 		}
 
-		.video-grid :global(.video-card--lead) {
-			grid-column: 1;
-			grid-row: 1 / span 4;
+		.video-group--live .group-grid :global(.video-card:nth-child(even)) {
+			margin-top: 8vh;
 		}
 
-		.video-grid :global(.video-card:not(.video-card--lead)) {
-			grid-column: 2;
+		.video-group--clips .group-grid {
+			display: grid;
+			grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
+			column-gap: var(--space-32);
+			align-items: start;
 		}
 
-		.video-grid :global(.video-card:not(.video-card--lead):nth-child(2)) {
-			margin-top: clamp(5rem, 18vh, 11rem);
+		.video-group--clips .group-grid :global(.video-card:nth-child(2)) {
+			margin-top: 14vh;
 		}
-	}
 
-	@media (prefers-reduced-motion: reduce) {
-		.video-modal,
-		.video-modal::backdrop {
-			transition: none;
+		.video-group--promos {
+			display: grid;
+			grid-template-columns: minmax(9rem, 0.32fr) minmax(0, 1.68fr);
+			column-gap: var(--space-32);
+			align-items: end;
+			padding-bottom: var(--space-128);
+		}
+
+		.video-group--promos .group-head {
+			margin-bottom: 0;
+		}
+
+		.group-grid--compact {
+			display: grid;
+			grid-template-columns: repeat(4, minmax(0, 1fr));
+			gap: var(--space-16);
 		}
 	}
 </style>

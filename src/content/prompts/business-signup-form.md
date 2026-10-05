@@ -3,7 +3,7 @@ title: "Add an email signup form"
 useItFor: "Start collecting emails on your site, with permission, done properly."
 category: Prompts
 goal: business
-source: todo-older-live-2
+source: email-the-channel-nobody-can-take
 order: 701
 ---
 

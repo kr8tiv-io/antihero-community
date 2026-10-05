@@ -3,7 +3,7 @@ title: "Email header image"
 useItFor: "Make a header image for an email that looks like it belongs to your brand."
 category: Video
 goal: images-video
-source: todo-older-live-2
+source: email-the-channel-nobody-can-take
 order: 504
 ---
 

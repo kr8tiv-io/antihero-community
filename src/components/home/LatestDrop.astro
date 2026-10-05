@@ -54,7 +54,7 @@ const replay = guide?.data.replay ? await getEntry(guide.data.replay) : undefine
 const coverSrc = guide ? mediaSrc(guide.data.cover) : null;
 
 function readyLoop(stem: string | undefined): string | null {
-	if (!stem || !localMedia(`${stem}.mp4`) || !localMedia(`${stem}-poster.jpg`)) return null;
+	if (!stem || !localMedia(`${stem}.mp4`) || !localMedia(`${stem}.webm`) || !localMedia(`${stem}-poster.jpg`)) return null;
 	return stem;
 }
 
@@ -63,21 +63,10 @@ const replayLoop = readyLoop(replay?.data.loop);
 const posterSrc =
 	replay && replay.data.placeholder === false ? mediaSrc(replay.data.poster) : null;
 
-function replayHref(id: string, youtubeId?: string, videoUrl?: string): string {
-	if (youtubeId) return `https://www.youtube.com/watch?v=${encodeURIComponent(youtubeId)}`;
-	if (videoUrl) return videoUrl;
-	return `/videos#${encodeURIComponent(id)}`;
-}
-
-const player =
-	replay && posterSrc
-		? {
-				href: replayHref(replay.id, replay.data.youtubeId, replay.data.videoUrl),
-				external: Boolean(replay.data.youtubeId || replay.data.videoUrl),
-				poster: posterSrc,
-				title: replay.data.title,
-			}
-		: null;
+const replayPage = replay ? `/videos/${replay.id}` : null;
+const replayExternal = Boolean(replay?.data.placeholder && replay.data.fbUrl);
+const replayHref = replayExternal && replay?.data.fbUrl ? replay.data.fbUrl : replayPage;
+const replayLabel = replay?.data.placeholder ? "Watch on Facebook" : "Play";
 
 const date = guide ? dropDate(guide.data.date) : null;
 ---
@@ -156,47 +145,43 @@ const date = guide ? dropDate(guide.data.date) : null;
 				</article>
 
 				<aside class="drop-replay" data-drop-in>
-					{replay && replayLoop ? (
+					{replay && replayHref ? (
 						<a
 							class="drop-play"
-							href={`/videos#${encodeURIComponent(replay.id)}`}
+							href={replayHref}
 							data-hover-card
-							aria-label={`${replay.data.title}. Replay coming soon.`}
+							aria-label={`${replayLabel} ${replay.data.title}`}
+							target={replayExternal ? "_blank" : undefined}
+							rel={replayExternal ? "noopener noreferrer" : undefined}
 						>
 							<span class="drop-play-frame">
 								<span class="drop-play-zoom" data-zoom>
-									<HoverVideo
-										stem={replayLoop}
-										poster={`${replayLoop}-poster.jpg`}
-										aspect="16:9"
-										class="drop-film"
-									/>
-								</span>
-							</span>
-							<span class="drop-soon">Replay coming soon. The guide's already here.</span>
-						</a>
-					) : player ? (
-						<a
-							class="drop-play"
-							href={player.href}
-							aria-label={`Play ${player.title}`}
-							target={player.external ? "_blank" : undefined}
-							rel={player.external ? "noopener noreferrer" : undefined}
-						>
-							<span class="drop-play-frame">
-								<span class="drop-play-zoom" data-zoom>
-									<Raster
-										src={player.poster}
-										alt={`Still from ${player.title}.`}
-										sizes="(min-width: 768px) 28vw, 80vw"
-										widths={[480, 800, 1280]}
-										fallbackWidth={1280}
-										fallbackHeight={720}
-									/>
+									{replayLoop ? (
+										<HoverVideo
+											stem={replayLoop}
+											poster={`${replayLoop}-poster.jpg`}
+											aspect="16:9"
+											class="drop-film"
+											desktopOnly
+										/>
+									) : posterSrc ? (
+										<Raster
+											src={posterSrc}
+											alt={`Still from ${replay.data.title}.`}
+											sizes="(min-width: 768px) 28vw, 80vw"
+											widths={[480, 800, 1280]}
+											fallbackWidth={1280}
+											fallbackHeight={720}
+										/>
+									) : (
+										<span class="drop-cover-plate">
+											<span class="drop-cover-note">Poster still to come.</span>
+										</span>
+									)}
 								</span>
 							</span>
 							<span class="drop-play-label label">
-								Play
+								{replayLabel}
 								<svg data-nudge viewBox="0 0 16 16" aria-hidden="true" focusable="false">
 									<path d="M4 2.5v11L13.5 8 4 2.5z" />
 								</svg>
@@ -204,8 +189,7 @@ const date = guide ? dropDate(guide.data.date) : null;
 						</a>
 					) : (
 						<div class="drop-wait">
-							{replay && <p class="drop-wait-title label-box">{replay.data.title}</p>}
-							<p class="drop-soon">Replay coming soon. The guide's already here.</p>
+							<p class="drop-soon">The next guide lands here after a live.</p>
 						</div>
 					)}
 				</aside>

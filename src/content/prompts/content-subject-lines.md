@@ -3,7 +3,7 @@ title: "Honest subject lines"
 useItFor: "Get subject lines that earn the open without sounding like spam."
 category: Prompts
 goal: content
-source: todo-older-live-2
+source: email-the-channel-nobody-can-take
 order: 606
 ---
 

@@ -3,7 +3,7 @@ title: "Pick an email platform"
 useItFor: "Choose the platform you will actually send from, without 6 weeks of comparing."
 category: Prompts
 goal: business
-source: todo-older-live-2
+source: email-the-channel-nobody-can-take
 order: 702
 ---
 

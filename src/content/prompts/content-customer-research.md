@@ -3,7 +3,7 @@ title: "Customer research for topics"
 useItFor: "Find out what your customers care about, then get article and email topics from it."
 category: Prompts
 goal: content
-source: todo-older-live-2
+source: email-the-channel-nobody-can-take
 order: 603
 ---
 

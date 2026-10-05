@@ -16,10 +16,23 @@ interface Props {
 	spot: number;
 	/** First card is in view, so it must not wait on lazy loading. */
 	priority?: boolean;
+	/** Local PDF. A separate control, so it is not nested inside the guide link. */
+	pdf?: string | null;
 }
 
-const { href, title, category, summary, dateIso, dateLabel, cover, loop = null, spot, priority = false } =
-	Astro.props;
+const {
+	href,
+	title,
+	category,
+	summary,
+	dateIso,
+	dateLabel,
+	cover,
+	loop = null,
+	spot,
+	priority = false,
+	pdf = null,
+} = Astro.props;
 const categoryId = category.toLowerCase();
 ---
 
@@ -68,6 +81,14 @@ const categoryId = category.toLowerCase();
 		<RevealHeading as="h2" class="guide-card__title" text={title} wordsPerLine={2} />
 		<p class="guide-card__summary">{summary}</p>
 	</a>
+	{
+		pdf && (
+			<a class="guide-card__pdf label" href={pdf} download>
+				PDF
+				<span class="visually-hidden"> of {title}</span>
+			</a>
+		)
+	}
 </article>
 
 <style>
@@ -162,6 +183,26 @@ const categoryId = category.toLowerCase();
 	.guide-card__summary {
 		margin: 0;
 		color: var(--color-bone);
+	}
+
+	.guide-card__pdf {
+		display: inline-flex;
+		align-items: center;
+		align-self: flex-start;
+		min-height: 44px;
+		margin-top: calc(var(--space-8) * -1);
+		color: var(--color-hero);
+		text-decoration: none;
+		text-underline-offset: 0.22em;
+	}
+
+	.guide-card__pdf:hover {
+		text-decoration: underline;
+	}
+
+	.guide-card__pdf:focus-visible {
+		outline: 2px solid var(--color-hero);
+		outline-offset: 3px;
 	}
 
 	@media (min-width: 768px) {

@@ -77,7 +77,14 @@ const videos = defineCollection({
     date: z.coerce.date(),
     duration: z.string().min(1).optional(),
     youtubeId: z.string().min(1).optional(),
-    videoUrl: z.string().url().optional(),
+    videoUrl: z
+      .string()
+      .regex(/^(https:\/\/|\/media\/(replays|clips)\/[a-z0-9-]+\.mp4$)/, "Use https:// or a /media/replays or /media/clips mp4.")
+      .optional(),
+    /** live = full replay, clip = short video, promo = the 10-second heads-up before a live. */
+    kind: z.enum(["live", "clip", "promo"]).optional(),
+    /** The original post on Facebook. */
+    fbUrl: z.string().url().optional(),
     poster: z.string().min(1),
     preview: z.string().min(1).optional(),
     loop: z

@@ -62,7 +62,10 @@ function guideDate(date: Date): { iso: string; label: string } {
 					const date = guideDate(guide.data.date);
 					const loopStem = guide.data.loop;
 					const loop =
-						loopStem && localMedia(`${loopStem}.mp4`) && localMedia(`${loopStem}-poster.jpg`)
+						loopStem &&
+						localMedia(`${loopStem}.mp4`) &&
+						localMedia(`${loopStem}.webm`) &&
+						localMedia(`${loopStem}-poster.jpg`)
 							? loopStem
 							: null;
 					return (
@@ -75,6 +78,7 @@ function guideDate(date: Date): { iso: string; label: string } {
 							dateLabel={date.label}
 							cover={localMedia(guide.data.cover)}
 							loop={loop}
+							pdf={localMedia(guide.data.pdf)}
 							spot={index}
 							priority={index === 0}
 						/>

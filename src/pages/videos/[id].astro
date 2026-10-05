@@ -1,0 +1,463 @@
+---
+import { existsSync } from "node:fs";
+import { join } from "node:path";
+import { getCollection, getEntry } from "astro:content";
+import type { CollectionEntry } from "astro:content";
+import RevealHeading from "../../components/RevealHeading.astro";
+import { SITE_URL } from "../../data/site";
+import BaseLayout from "../../layouts/BaseLayout.astro";
+
+function byNewest(a: CollectionEntry<"videos">, b: CollectionEntry<"videos">): number {
+	const byDate = b.data.date.getTime() - a.data.date.getTime();
+	if (byDate !== 0) return byDate;
+	return a.id.localeCompare(b.id);
+}
+
+export async function getStaticPaths() {
+	const videos = await getCollection("videos");
+	return videos.map((video) => ({ params: { id: video.id } }));
+}
+
+const id = Astro.params.id;
+if (typeof id !== "string" || id.length === 0) {
+	throw new Error("Missing video id.");
+}
+
+const videos = await getCollection("videos");
+videos.sort(byNewest);
+const index = videos.findIndex((entry) => entry.id === id);
+const video = videos[index];
+if (!video) {
+	throw new Error(`Video not found: ${id}`);
+}
+
+const newer = index > 0 ? videos[index - 1] : null;
+const older = index < videos.length - 1 ? videos[index + 1] : null;
+
+function publicFile(urlPath: string): string | null {
+	if (!urlPath.startsWith("/") || urlPath.startsWith("//")) return null;
+	const relative = decodeURIComponent(urlPath.split("?")[0]?.slice(1) ?? "");
+	if (!relative || relative.split("/").includes("..")) return null;
+	const file = join(process.cwd(), "public", ...relative.split("/").filter(Boolean));
+	return existsSync(file) ? file : null;
+}
+
+function localMedia(urlPath: string): string | null {
+	return publicFile(urlPath) ? urlPath : null;
+}
+
+function mediaSrc(value: string | undefined): string | null {
+	if (!value) return null;
+	if (/^https?:\/\//.test(value)) return value;
+	return localMedia(value);
+}
+
+function isoDay(date: Date): string {
+	const y = date.getUTCFullYear();
+	const m = String(date.getUTCMonth() + 1).padStart(2, "0");
+	const d = String(date.getUTCDate()).padStart(2, "0");
+	return `${y}-${m}-${d}`;
+}
+
+function stamp(date: Date): string {
+	return isoDay(date).replaceAll("-", ".");
+}
+
+function isoDuration(value: string | undefined): string | undefined {
+	if (!value) return undefined;
+	const parts = value.split(":").map((part) => Number(part));
+	if (parts.length < 2 || parts.some((part) => !Number.isInteger(part) || part < 0)) return undefined;
+	if (parts.length === 2) return `PT${parts[0]}M${parts[1]}S`;
+	return `PT${parts[0]}H${parts[1]}M${parts[2]}S`;
+}
+
+function sourceGuideId(source: unknown): string | null {
+	if (!source) return null;
+	if (typeof source === "string") return source;
+	if (typeof source === "object" && "id" in source) {
+		const guideId = (source as { id: unknown }).id;
+		return typeof guideId === "string" ? guideId : null;
+	}
+	return null;
+}
+
+const mp4 = mediaSrc(video.data.videoUrl);
+const webm = localMedia(`/media/clips/${video.id}.webm`);
+const poster = mediaSrc(video.data.poster);
+const posterAvif = poster?.endsWith(".jpg") ? localMedia(poster.replace(/\.jpg$/, ".avif")) : null;
+const posterWebp = poster?.endsWith(".jpg") ? localMedia(poster.replace(/\.jpg$/, ".webp")) : null;
+const paragraphs = (video.body ?? "")
+	.split(/\n\s*\n/)
+	.map((paragraph) => paragraph.trim())
+	.filter((paragraph) => paragraph.length > 0 && !paragraph.startsWith("TODO"));
+const description = paragraphs[0] ?? video.data.title;
+const kind = video.data.kind === "clip" || video.data.kind === "promo" ? video.data.kind : "live";
+const kindLabel = kind === "live" ? "Live replay" : kind === "clip" ? "Clip" : "Promo";
+const dateLabel = stamp(video.data.date);
+const durationLabel = video.data.duration ?? null;
+
+const guide = video.data.guide ? await getEntry(video.data.guide) : undefined;
+const guideLink =
+	guide && guide.data.draft === false
+		? { href: `/guides/${guide.data.slug}`, title: guide.data.title }
+		: null;
+
+const prompts = await getCollection("prompts");
+const related = guide
+	? prompts
+			.filter((prompt) => sourceGuideId(prompt.data.source) === guide.id)
+			.sort((a, b) => a.data.order - b.data.order || a.id.localeCompare(b.id))
+	: [];
+
+const pageUrl = new URL(`/videos/${video.id}`, SITE_URL).href;
+const jsonLd = JSON.stringify({
+	"@context": "https://schema.org",
+	"@type": "VideoObject",
+	name: video.data.title,
+	description,
+	thumbnailUrl: poster ? new URL(poster, SITE_URL).href : undefined,
+	uploadDate: isoDay(video.data.date),
+	duration: isoDuration(video.data.duration),
+	contentUrl: mp4 ? new URL(mp4, SITE_URL).href : undefined,
+	url: pageUrl,
+	publisher: {
+		"@type": "Organization",
+		name: "AntiHero AI",
+	},
+}).replace(/</g, "\\u003c");
+---
+
+<BaseLayout title={video.data.title} description={description} image={poster ?? undefined} jsonLd={jsonLd}>
+	<article slot="main" class="watch" data-watch>
+		<div class="watch-stage">
+			{
+				mp4 ? (
+					<video
+						class="watch-player"
+						controls
+						playsinline
+						preload="none"
+						poster={poster ?? undefined}
+						data-watch-player
+					>
+						{webm && <source src={webm} type="video/webm" />}
+						<source src={mp4} type="video/mp4" />
+					</video>
+				) : poster ? (
+					<picture class="watch-still">
+						{posterAvif && <source srcset={posterAvif} type="image/avif" />}
+						{posterWebp && <source srcset={posterWebp} type="image/webp" />}
+						<img src={poster} alt={`Still from ${video.data.title}.`} width="1280" height="720" />
+					</picture>
+				) : (
+					<div class="watch-plate" aria-hidden="true"></div>
+				)
+			}
+		</div>
+
+		<div class="watch-copy" data-reveal="stagger">
+			<p class="watch-kicker mono" data-reveal="fade-up">{kindLabel}</p>
+			<RevealHeading as="h1" class="watch-title" text={video.data.title} wordsPerLine={2} />
+			<p class="watch-meta">
+				<time datetime={isoDay(video.data.date)}>{dateLabel}</time>
+				{durationLabel && <span class="watch-duration label-box label-box--red">{durationLabel}</span>}
+			</p>
+			{
+				paragraphs.map((paragraph) => (
+					<p class="watch-body" data-reveal="fade-up">{paragraph}</p>
+				))
+			}
+			<div class="watch-actions" data-reveal="fade-up">
+				{
+					video.data.fbUrl && (
+						<a class="watch-facebook label" href={video.data.fbUrl} target="_blank" rel="noopener noreferrer">
+							Watch on Facebook
+							<span class="visually-hidden"> (opens in a new tab)</span>
+						</a>
+					)
+				}
+				{
+					guideLink && (
+						<a class="watch-guide" href={guideLink.href}>
+							Guide: {guideLink.title}
+						</a>
+					)
+				}
+			</div>
+		</div>
+
+		{
+			related.length > 0 && (
+				<section class="watch-prompts" data-reveal="stagger" aria-labelledby="watch-prompts-title">
+					<RevealHeading as="h2" id="watch-prompts-title" text="Prompts from this live" wordsPerLine={2} />
+					<ol class="watch-prompt-list">
+						{related.map((prompt) => (
+							<li>
+								<a class="watch-prompt" data-nudge href={`/prompts#${encodeURIComponent(prompt.id)}`}>
+									<h3>{prompt.data.title}</h3>
+									<p>{prompt.data.useItFor}</p>
+								</a>
+							</li>
+						))}
+					</ol>
+				</section>
+			)
+		}
+
+		<nav class="watch-nav" data-reveal="stagger" aria-label="Other videos">
+			{
+				older && (
+					<a class="watch-nav__prev" href={`/videos/${older.id}`} data-reveal="shift">
+						<span class="watch-nav__kicker caption">Previous</span>
+						<span class="watch-nav__title">{older.data.title}</span>
+					</a>
+				)
+			}
+			{
+				newer && (
+					<a class="watch-nav__next" href={`/videos/${newer.id}`} data-reveal="shift" data-shift="out">
+						<span class="watch-nav__kicker caption">Next</span>
+						<span class="watch-nav__title">{newer.data.title}</span>
+					</a>
+				)
+			}
+		</nav>
+	</article>
+</BaseLayout>
+
+<style>
+	.watch {
+		display: grid;
+		grid-template-columns: 1fr;
+		gap: var(--space-32);
+		padding: calc(var(--header-h) + var(--space-16)) var(--space-16) var(--space-96);
+		overflow-x: clip;
+		background: var(--color-anti);
+	}
+
+	.watch-stage {
+		min-width: 0;
+		background: var(--color-carbon);
+	}
+
+	.watch-player,
+	.watch-still,
+	.watch-still img,
+	.watch-plate {
+		display: block;
+		width: 100%;
+		aspect-ratio: 16 / 9;
+		object-fit: cover;
+		background: var(--color-carbon);
+	}
+
+	.watch-copy {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: var(--space-16);
+		min-width: 0;
+	}
+
+	.watch-kicker {
+		margin: 0;
+		color: var(--color-bone);
+		font-size: 0.75rem;
+		letter-spacing: 0.14em;
+		text-transform: uppercase;
+	}
+
+	.watch-title {
+		margin: 0;
+		max-width: 100%;
+		font-size: clamp(2.4rem, 8vw, 5rem);
+	}
+
+	.watch-meta {
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		gap: var(--space-12);
+		margin: 0;
+		color: var(--color-bone);
+		font-family: var(--font-mono);
+		font-size: 0.85rem;
+	}
+
+	.watch-duration {
+		font-family: var(--font-mono);
+		font-size: 0.85rem;
+		letter-spacing: 0.08em;
+		text-transform: none;
+	}
+
+	.watch-body {
+		max-width: 38rem;
+		margin: 0;
+		color: var(--color-bone);
+		font-size: var(--type-body-size);
+		line-height: var(--type-body-leading);
+	}
+
+	.watch-actions {
+		display: flex;
+		flex-direction: column;
+		align-items: flex-start;
+		gap: var(--space-8);
+		margin-top: var(--space-8);
+	}
+
+	.watch-facebook,
+	.watch-guide,
+	.watch-prompt,
+	.watch-nav a {
+		color: var(--color-hero);
+		text-decoration: none;
+	}
+
+	.watch-facebook,
+	.watch-guide {
+		display: inline-flex;
+		align-items: center;
+		min-height: 44px;
+	}
+
+	.watch-guide {
+		color: var(--color-bone);
+		font-size: var(--type-body-size);
+		line-height: var(--type-body-leading);
+		text-underline-offset: 0.22em;
+	}
+
+	.watch-guide:hover,
+	.watch-facebook:hover {
+		text-decoration: underline;
+	}
+
+	.watch-facebook:focus-visible,
+	.watch-guide:focus-visible,
+	.watch-prompt:focus-visible,
+	.watch-nav a:focus-visible {
+		outline: 2px solid var(--color-hero);
+		outline-offset: 4px;
+	}
+
+	.watch-prompts {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-24);
+		padding-top: var(--space-32);
+	}
+
+	.watch-prompts h2 {
+		max-width: 10em;
+		margin: 0;
+	}
+
+	.watch-prompt-list {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-12);
+		margin: 0;
+		padding: 0;
+		list-style: none;
+	}
+
+	.watch-prompt {
+		display: block;
+		max-width: 40rem;
+		padding: var(--space-16);
+		background: var(--color-carbon);
+	}
+
+	.watch-prompt h3 {
+		max-width: 28ch;
+		margin: 0 0 var(--space-8);
+		font-family: var(--font-label);
+		font-size: clamp(1.15rem, 2vw, 1.45rem);
+		font-weight: 600;
+		line-height: 1.15;
+		letter-spacing: 0.01em;
+		text-transform: none;
+		color: var(--color-hero);
+	}
+
+	.watch-prompt p {
+		max-width: 46ch;
+		margin: 0;
+		color: var(--color-bone);
+		font-size: var(--type-small-size);
+		line-height: var(--type-small-leading);
+	}
+
+	.watch-nav {
+		display: grid;
+		gap: var(--space-32);
+		padding-top: var(--space-32);
+		border-top: 1px solid var(--color-graphite);
+	}
+
+	.watch-nav a {
+		display: flex;
+		flex-direction: column;
+		gap: var(--space-8);
+		min-height: 44px;
+	}
+
+	.watch-nav__kicker {
+		margin: 0;
+	}
+
+	.watch-nav__title {
+		max-width: 16ch;
+		font-family: var(--font-display);
+		font-size: clamp(1.8rem, 4vw, 3rem);
+		line-height: 0.9;
+		text-transform: uppercase;
+		text-wrap: balance;
+	}
+
+	@media (min-width: 900px) {
+		.watch {
+			grid-template-columns: minmax(0, 0.86fr) minmax(0, 1.14fr);
+			column-gap: var(--space-48);
+			align-items: end;
+			padding: calc(var(--header-h) + var(--space-48)) 8vw var(--space-96) 10vw;
+		}
+
+		.watch-title {
+			font-size: clamp(2.2rem, 3.4vw, 3.5rem);
+		}
+
+		.watch-stage {
+			grid-column: 2;
+			grid-row: 1;
+		}
+
+		.watch-copy {
+			grid-column: 1;
+			grid-row: 1;
+			padding-bottom: var(--space-16);
+		}
+
+		.watch-prompts,
+		.watch-nav {
+			grid-column: 1 / -1;
+		}
+
+		.watch-prompt-list li:nth-child(2n) .watch-prompt {
+			margin-left: 8vw;
+		}
+
+		.watch-nav {
+			grid-template-columns: 1fr 1fr;
+			align-items: end;
+		}
+
+		.watch-nav__next {
+			justify-self: end;
+			text-align: right;
+			align-items: flex-end;
+		}
+	}
+</style>

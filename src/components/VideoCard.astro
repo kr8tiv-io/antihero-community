@@ -14,12 +14,11 @@ interface Props {
 	loop?: string | null;
 	guideHref: string | null;
 	guideTitle: string | null;
-	/** Placeholder cards link out. The others open the page modal. */
-	mode: "placeholder" | "youtube" | "file";
-	youtubeId: string | null;
-	videoUrl: string | null;
 	lead: boolean;
-	groupUrl: string;
+	compact?: boolean;
+	/** No local file yet. The poster links to the Facebook post. The title opens the page. */
+	placeholder?: boolean;
+	fbUrl?: string | null;
 }
 
 const {
@@ -32,120 +31,80 @@ const {
 	loop = null,
 	guideHref,
 	guideTitle,
-	mode,
-	youtubeId,
-	videoUrl,
 	lead,
-	groupUrl,
+	compact = false,
+	placeholder = false,
+	fbUrl = null,
 } = Astro.props;
 
-const soon = mode === "placeholder";
+const pageHref = `/videos/${id}`;
+const watchHref = placeholder && fbUrl ? fbUrl : pageHref;
+const external = watchHref.startsWith("http");
+const watchLabel = placeholder ? "Watch on Facebook" : "Play";
 ---
 
 <article
-	class:list={["video-card", lead && "video-card--lead"]}
+	class:list={["video-card", lead && "video-card--lead", compact && "video-card--compact"]}
 	id={id}
 	data-video-card
 	data-hover-card
 	data-lead={lead ? "true" : "false"}
+	data-placeholder={placeholder ? "true" : "false"}
 >
 	<div class="video-card__frame">
-		{
-			soon ? (
-				<a
-					class="video-hit"
-					href={groupUrl}
-					target="_blank"
-					rel="noopener noreferrer"
-					data-cursor="Play"
-				>
-					<span class="video-card__media" data-video-media>
-						<span class="video-card__zoom" data-zoom>
-							{
-								loop ? (
-									<HoverVideo
-										stem={loop}
-										poster={poster ?? `${loop}-poster.jpg`}
-										aspect="16:9"
-										class="video-card__film"
-									/>
-								) : poster ? (
-									<Raster
-										src={poster}
-										alt={`Still from ${title}.`}
-										sizes="(min-width: 1024px) 48vw, 92vw"
-										widths={[480, 800, 1280]}
-										fallbackWidth={1280}
-										fallbackHeight={720}
-										reveal
-									/>
-								) : (
-									<span class="video-card__plate" />
-								)
-							}
-						</span>
-					</span>
-					<span class="label-box label-box--red video-card__play" data-nudge>
-						<span class="swap-label">
-							<span class="swap-label__line">Replay coming soon</span>
-							<span class="swap-label__line" aria-hidden="true">Replay coming soon</span>
-						</span>
-					</span>
-					<span class="visually-hidden">{title}. Opens in a new tab.</span>
-				</a>
-			) : (
-				<button
-					type="button"
-					class="video-hit"
-					data-video-open
-					data-cursor="Play"
-					data-video-title={title}
-					data-youtube-id={mode === "youtube" ? youtubeId : undefined}
-					data-video-url={mode === "file" ? videoUrl : undefined}
-					data-video-poster={poster ?? undefined}
-				>
-					<span class="video-card__media" data-video-media>
-						<span class="video-card__zoom" data-zoom>
-							{
-								loop ? (
-									<HoverVideo
-										stem={loop}
-										poster={poster ?? `${loop}-poster.jpg`}
-										aspect="16:9"
-										class="video-card__film"
-									/>
-								) : poster ? (
-									<Raster
-										src={poster}
-										alt={`Still from ${title}.`}
-										sizes="(min-width: 1024px) 48vw, 92vw"
-										widths={[480, 800, 1280]}
-										fallbackWidth={1280}
-										fallbackHeight={720}
-										reveal
-									/>
-								) : (
-									<span class="video-card__plate">
-										<span class="video-card__plate-note">Poster still to come.</span>
-									</span>
-								)
-							}
-						</span>
-					</span>
-					<span class="label-box label-box--red video-card__play" data-nudge>
-						<span class="swap-label">
-							<span class="swap-label__line">Play</span>
-							<span class="swap-label__line" aria-hidden="true">Play</span>
-						</span>
-					</span>
-					<span class="visually-hidden">Play {title}</span>
-				</button>
-			)
-		}
+		<a
+			class="video-hit"
+			href={watchHref}
+			target={external ? "_blank" : undefined}
+			rel={external ? "noopener noreferrer" : undefined}
+			data-cursor={placeholder ? "Watch" : "Play"}
+		>
+			<span class="video-card__media" data-video-media>
+				<span class="video-card__zoom" data-zoom>
+					{
+						loop ? (
+							<HoverVideo
+								stem={loop}
+								poster={poster ?? `${loop}-poster.jpg`}
+								aspect="16:9"
+								class="video-card__film"
+								desktopOnly
+							/>
+						) : poster ? (
+							<Raster
+								src={poster}
+								alt={`Still from ${title}.`}
+								sizes="(min-width: 1024px) 48vw, 92vw"
+								widths={[480, 800, 1280]}
+								fallbackWidth={1280}
+								fallbackHeight={720}
+								reveal
+							/>
+						) : (
+							<span class="video-card__plate">
+								<span class="video-card__plate-note">Poster still to come.</span>
+							</span>
+						)
+					}
+				</span>
+			</span>
+			<span class:list={["label-box", "video-card__play", lead && "label-box--red"]} data-nudge>
+				<span class="swap-label">
+					<span class="swap-label__line">{watchLabel}</span>
+					<span class="swap-label__line" aria-hidden="true">{watchLabel}</span>
+				</span>
+			</span>
+			<span class="visually-hidden">
+				{watchLabel} {title}
+				{external ? ". Opens in a new tab." : "."}
+			</span>
+		</a>
 	</div>
 
 	<div class="video-card__body">
-		<RevealHeading as="h2" text={title} wordsPerLine={2} />
+		<a class="video-card__title" href={pageHref}>
+			<RevealHeading as="h2" text={title} wordsPerLine={compact ? 1 : 2} />
+		</a>
 		<p class="video-card__meta mono">
 			<time datetime={dateIso}>{dateLabel}</time>
 			{duration && <span>{duration}</span>}
@@ -239,6 +198,8 @@ const soon = mode === "placeholder";
 		position: absolute;
 		left: var(--space-16);
 		bottom: var(--space-16);
+		max-width: calc(100% - (var(--space-16) * 2));
+		font-size: clamp(1.35rem, 3.2vw, 2rem);
 	}
 
 	.video-card__body {
@@ -247,6 +208,23 @@ const soon = mode === "placeholder";
 		align-items: flex-start;
 		gap: var(--space-8);
 		max-width: 22ch;
+		min-width: 0;
+	}
+
+	.video-card--compact .video-card__body {
+		max-width: 100%;
+	}
+
+	.video-card__title {
+		display: block;
+		max-width: 100%;
+		color: inherit;
+		text-decoration: none;
+	}
+
+	.video-card__title:focus-visible {
+		outline: 2px solid var(--color-hero);
+		outline-offset: 4px;
 	}
 
 	.video-card h2 {
@@ -256,10 +234,20 @@ const soon = mode === "placeholder";
 		line-height: 0.9;
 	}
 
+	.video-card--compact h2 {
+		font-size: clamp(1.35rem, 1.6vw, 1.7rem);
+	}
+
 	.video-card--lead h2 {
 		font-size: clamp(2.6rem, 4.5vw, 4.75rem);
 		line-height: 0.86;
 		max-width: 100%;
+	}
+
+	@media (min-width: 900px) {
+		.video-card--lead h2 {
+			font-size: clamp(2rem, 2.4vw, 2.8rem);
+		}
 	}
 
 	.video-card__meta {

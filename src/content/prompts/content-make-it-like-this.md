@@ -3,7 +3,7 @@ title: "Make it like this, in my brand"
 useItFor: "Show your AI an email you admire and get your own version of it."
 category: Prompts
 goal: content
-source: todo-older-live-2
+source: email-the-channel-nobody-can-take
 order: 608
 ---
 

@@ -2,6 +2,7 @@
  * One hover film for doors, guide cards, the latest drop, and video cards.
  * A fine pointer fades the film in on hover or keyboard focus.
  * Phones and coarse pointers play the single most visible card.
+ * A card marked data-hover-desktop stays on its poster on a phone.
  * Save-data, 2g, reduced motion, or a failed load stay on the poster.
  */
 
@@ -23,6 +24,7 @@ type Slot = {
 	want: boolean;
 	ratio: number;
 	pauseTimer: number;
+	desktopOnly: boolean;
 };
 
 const NEAR = "300px";
@@ -150,6 +152,10 @@ function sync(): void {
 		if (!best || slot.ratio > best.ratio) best = slot;
 	}
 	slots.forEach((slot) => {
+		if (slot.desktopOnly) {
+			hide(slot);
+			return;
+		}
 		if (slot === best) show(slot);
 		else hide(slot);
 	});
@@ -239,6 +245,7 @@ export function bootHoverVideos(): void {
 				want: false,
 				ratio: 0,
 				pauseTimer: 0,
+				desktopOnly: root.dataset.hoverDesktop === "true",
 			},
 		];
 	});
@@ -260,7 +267,7 @@ export function bootHoverVideos(): void {
 				entries.forEach((entry) => {
 					if (!entry.isIntersecting) return;
 					const slot = slots.find((item) => item.root === entry.target);
-					if (!slot) return;
+					if (!slot || (slot.desktopOnly && !hoverMode())) return;
 					arm(slot);
 				});
 			},

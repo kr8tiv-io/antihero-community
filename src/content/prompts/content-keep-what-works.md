@@ -3,7 +3,7 @@ title: "Keep what works"
 useItFor: "Tell your AI exactly which email to copy the qualities of, and why."
 category: Prompts
 goal: content
-source: todo-older-live-2
+source: email-the-channel-nobody-can-take
 order: 607
 ---
 

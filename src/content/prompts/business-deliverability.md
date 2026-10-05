@@ -3,7 +3,7 @@ title: "Stay out of spam"
 useItFor: "Set up SPF, DKIM and DMARC with your AI walking you through it."
 category: Prompts
 goal: business
-source: todo-older-live-2
+source: email-the-channel-nobody-can-take
 order: 704
 ---
 

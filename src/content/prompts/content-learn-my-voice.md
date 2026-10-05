@@ -3,7 +3,7 @@ title: "Learn my voice from my posts"
 useItFor: "Have your AI read what you already wrote and turn it into a voice guide."
 category: Prompts
 goal: content
-source: todo-older-live-2
+source: email-the-channel-nobody-can-take
 order: 604
 ---
 

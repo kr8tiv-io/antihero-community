@@ -69,8 +69,8 @@ If the host answers with a 500 after upload, the first place to look is `public/
 - [ ] `SITE_URL` in `src/data/site.ts` is the real domain, then you built again.
 - [ ] `MAILCHIMP_FORM_ACTION` is the real https action, and `b_TODO_TODO` in `src/components/EmailForm.astro` is the real bot-field name, then you built again.
 - [ ] `public/.htaccess` sends www where you actually want it.
-- [ ] The PDFs in `public/guides` are the real guides. Two filenames are still stand-ins: `todo-older-live-1.pdf` and `todo-older-live-2.pdf`.
-- [ ] The files in `public/media` are the real stills and video. Matching stand-in covers: `public/media/covers/todo-older-live-1.jpg` and `todo-older-live-2.jpg`.
+- [ ] The PDFs in `public/guides` are the real guides. The old stand-in filenames now redirect to `antihero-website-masterclass` and `email-the-channel-nobody-can-take`.
+- [ ] The files in `public/media` are the real stills and video. Full replays live in `public/media/replays` on the build machine and stay out of git.
 - [ ] Every TODO below is either done or a line you have chosen to ship.
 - [ ] You uploaded only the contents of `dist/`.
 - [ ] Home, Guides, a guide, Prompts, the copy button, Videos, Blog, About, Join, Credits, and a bad URL all look right on a phone.

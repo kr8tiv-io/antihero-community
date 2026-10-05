@@ -1,32 +1,55 @@
 ---
+import { getCollection } from "astro:content";
 import HoverVideo from "../HoverVideo.astro";
+
+const guides = await getCollection("guides", ({ data }) => data.draft === false);
+guides.sort((a, b) => {
+	const byDate = b.data.date.getTime() - a.data.date.getTime();
+	if (byDate !== 0) return byDate;
+	if (a.data.featured !== b.data.featured) return a.data.featured ? -1 : 1;
+	return a.data.slug.localeCompare(b.data.slug);
+});
+
+const prompts = await getCollection("prompts");
+prompts.sort((a, b) => b.data.order - a.data.order || a.id.localeCompare(b.id));
+
+const videos = await getCollection("videos");
+videos.sort((a, b) => b.data.date.getTime() - a.data.date.getTime() || a.id.localeCompare(b.id));
+const newestPlayable = videos.find((video) => video.data.placeholder !== true) ?? videos[0];
+
+const posts = await getCollection("blog", ({ data }) => data.draft === false);
+posts.sort((a, b) => b.data.date.getTime() - a.data.date.getTime() || a.id.localeCompare(b.id));
+
+function countLine(count: number, one: string, many: string): string {
+	return `${count} ${count === 1 ? one : many}`;
+}
 
 const doors = [
 	{
-		href: "/guides",
+		href: guides[0] ? `/guides/${guides[0].data.slug}` : "/guides",
 		title: "Guides",
-		line: "Step-by-step PDFs from every live.",
+		line: countLine(guides.length, "guide", "guides"),
 		stem: "/media/door-guides",
 		poster: "/media/door-guides-poster.jpg",
 	},
 	{
-		href: "/prompts",
+		href: prompts[0] ? `/prompts#${encodeURIComponent(prompts[0].id)}` : "/prompts",
 		title: "Prompts",
-		line: "Copy, paste, done.",
+		line: countLine(prompts.length, "prompt", "prompts"),
 		stem: "/media/door-prompts",
 		poster: "/media/door-prompts-poster.jpg",
 	},
 	{
-		href: "/videos",
+		href: newestPlayable ? `/videos/${newestPlayable.id}` : "/videos",
 		title: "Videos",
-		line: "Every live, minus the buffering.",
+		line: countLine(videos.length, "video", "videos"),
 		stem: "/media/door-videos",
 		poster: "/media/door-videos-poster.jpg",
 	},
 	{
-		href: "/blog",
+		href: posts[0] ? `/blog/${posts[0].id}` : "/blog",
 		title: "Blog",
-		line: "Notes from the trenches.",
+		line: countLine(posts.length, "note", "notes"),
 		stem: "/media/door-blog",
 		poster: "/media/door-blog-poster.jpg",
 	},

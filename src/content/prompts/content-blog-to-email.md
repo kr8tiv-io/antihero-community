@@ -3,7 +3,7 @@ title: "Blog post to email"
 useItFor: "Turn one article into an email people actually open: the gift at the top, a soft ask at the bottom."
 category: Prompts
 goal: content
-source: todo-older-live-2
+source: email-the-channel-nobody-can-take
 order: 605
 ---
 

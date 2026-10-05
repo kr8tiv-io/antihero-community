@@ -43,3 +43,10 @@ dist_*.zip
 /*.zip
 *.tmp
 .cache/
+
+# Full replay files are large (about 2 GB). They live in public/media/replays on the build machine and ship in dist, but stay out of git.
+public/media/replays/
+
+# Raw downloads and the encode drop. Sources only. Never commit them.
+media-drop/
+

@@ -5,9 +5,11 @@ interface Props {
 	poster: string;
 	aspect: "4:5" | "16:9";
 	class?: string;
+	/** Video cards. Phones keep the poster. Laptops play it on hover. */
+	desktopOnly?: boolean;
 }
 
-const { stem = null, poster, aspect, class: className } = Astro.props;
+const { stem = null, poster, aspect, class: className, desktopOnly = false } = Astro.props;
 const avif = poster.replace(/\.jpe?g$/i, ".avif");
 const webm = stem ? `${stem}.webm` : null;
 const mp4 = stem ? `${stem}.mp4` : null;
@@ -20,6 +22,7 @@ const height = aspect === "16:9" ? 720 : 1080;
 	class:list={["hover-video", className]}
 	data-hover-video
 	data-aspect={aspect}
+	data-hover-desktop={desktopOnly ? "true" : undefined}
 	style={`--hover-aspect: ${ratio};`}
 >
 	<picture>

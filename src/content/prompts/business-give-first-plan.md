@@ -3,7 +3,7 @@ title: "Give first: a month of emails"
 useItFor: "Plan 4 weeks of emails with 3 useful ones for every 1 ask."
 category: Prompts
 goal: business
-source: todo-older-live-2
+source: email-the-channel-nobody-can-take
 order: 703
 ---
 
