@@ -25,6 +25,15 @@ export interface Credit {
 
 export const credits: Credit[] = [
   {
+    name: "Founder photo",
+    author: "Matt Haynes (his Facebook profile photo)",
+    license: "Original work, used with permission",
+    link: "https://www.facebook.com/mattchaynes",
+    usedFor: "The portrait in the founder block on the About page.",
+    category: "Images and video",
+    files: ["public/founders/matt.jpg", "public/founders/matt.webp"],
+  },
+  {
     name: "Astro",
     author: "withastro",
     license: "MIT",

@@ -70,7 +70,7 @@ const lines = [
 
 		<section class="about-founder" data-reveal="stagger" aria-label="A note from Matt">
 			<div class="about-portrait" data-reveal="fade-up">
-				<p class="caption">Portrait still to come.</p>
+				<picture><source srcset="/founders/matt.webp" type="image/webp" /><img src="/founders/matt.jpg" alt="Matt Haynes walking his French bulldog along a beach at sunset, the dog carrying a stick." width="600" height="800" loading="lazy" decoding="async" /></picture>
 			</div>
 			<div class="about-note" data-reveal="fade-up">
 				<p>TODO: Matt writes this note. A few plain sentences, first person.</p>
@@ -237,6 +237,19 @@ const lines = [
 		max-width: 16rem;
 		padding: var(--space-16);
 		background: var(--color-graphite);
+	}
+
+	.about-portrait:has(picture) {
+		padding: 0;
+		overflow: hidden;
+	}
+
+	.about-portrait picture,
+	.about-portrait img {
+		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
 	}
 
 	.about-portrait p {
