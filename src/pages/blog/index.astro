@@ -54,7 +54,7 @@ const notes = posts.map((post) => {
 				<ul class="note-list" data-reveal="stagger">
 					{notes.map((note) => (
 						<li>
-							<a class="note" href={`/blog/${note.id}`} data-label={note.title}>
+							<a class="note" href={`/blog/${note.id}`} data-label={note.title} data-tracer="edge">
 								<span class="note-kicker">
 									<time class="mono" datetime={note.dateIso}>
 										{note.dateLabel}

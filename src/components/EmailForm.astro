@@ -48,10 +48,11 @@ const ready = action.length > 0;
             inputmode="email"
             spellcheck="false"
             placeholder="you@email.com"
+            data-tracer="outline"
           />
           <span class="email-field__line" aria-hidden="true"></span>
         </span>
-        <button class="email-form__submit" type="submit">
+        <button class="email-form__submit" type="submit" data-tracer="outline">
           <span class="swap-label">
             <span class="swap-label__line">Send me the good stuff</span>
             <span class="swap-label__line" aria-hidden="true">Send me the good stuff</span>
@@ -76,10 +77,10 @@ const ready = action.length > 0;
           Email
         </label>
         <span class="email-field">
-          <input id={id} type="email" name="EMAIL" autocomplete="email" disabled value="" />
+          <input id={id} type="email" name="EMAIL" autocomplete="email" disabled value="" data-tracer="outline" />
           <span class="email-field__line" aria-hidden="true"></span>
         </span>
-        <button class="email-form__submit" type="button" disabled>
+        <button class="email-form__submit" type="button" disabled data-tracer="outline">
           <span class="swap-label">
             <span class="swap-label__line">Send me the good stuff</span>
             <span class="swap-label__line" aria-hidden="true">Send me the good stuff</span>

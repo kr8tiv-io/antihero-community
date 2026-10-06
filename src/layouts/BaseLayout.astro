@@ -102,6 +102,7 @@ const rssUrl = new URL("/rss.xml", Astro.site ?? SITE_URL).href;
 			import { bootReveals } from "../scripts/reveals";
 			import { initSmoothScroll } from "../scripts/smooth-scroll";
 			import { bootStarfield } from "../scripts/starfield";
+			import { bootTracers } from "../scripts/tracers";
 			import { bootTransitions } from "../scripts/transitions";
 
 			initSmoothScroll();
@@ -110,6 +111,7 @@ const rssUrl = new URL("/rss.xml", Astro.site ?? SITE_URL).href;
 			bootCursor();
 			bootEasterEgg();
 			bootStarfield();
+			bootTracers();
 			bootTransitions();
 		</script>
 	</body>

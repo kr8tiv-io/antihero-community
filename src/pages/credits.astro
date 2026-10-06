@@ -25,7 +25,7 @@ const intro = "AntiHero stands on the generosity of open-source makers. Thank yo
 			groups.map((group, groupIndex) => (
 				<section class="credits-group" aria-labelledby={`credits-${group.category.replaceAll(" ", "-")}`}>
 					<h2 id={`credits-${group.category.replaceAll(" ", "-")}`} class="credits-cat label">
-						<span class="credits-rule" data-reveal="rule" aria-hidden="true"></span>
+						<span class="credits-rule" data-reveal="rule" data-tracer="rule" aria-hidden="true"></span>
 						{group.category}
 					</h2>
 					<ul class="credits-list">

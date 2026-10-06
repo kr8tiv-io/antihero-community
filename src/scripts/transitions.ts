@@ -6,6 +6,7 @@ import { bootPointer, releasePointer } from "./pointer";
 import { bootReveals, releaseReveals } from "./reveals";
 import { destroySmoothScroll, initSmoothScroll } from "./smooth-scroll";
 import { bootStarfield, releaseStarfield } from "./starfield";
+import { bootTracers, destroyTracers } from "./tracers";
 
 /**
  * Page modules stay out of this file's static graph. Each one loads on the
@@ -99,6 +100,7 @@ function onSwap(event: Event): void {
 	finish = swap.viewTransition?.finished ?? null;
 	syncCurrent(swap.to?.pathname ?? window.location.pathname);
 	releaseStarfield();
+	destroyTracers();
 	releaseCursorMotion();
 	closeMenu();
 	closeDialogs();
@@ -139,6 +141,7 @@ function onPage(): void {
 	bootCursor();
 	bootEasterEgg();
 	bootStarfield();
+	bootTracers();
 	bootJoinBands();
 	syncCurrent(window.location.pathname);
 	const band = document.querySelector<HTMLElement>("[data-route-band]");

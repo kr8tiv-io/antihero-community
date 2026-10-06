@@ -63,6 +63,7 @@ function highlightBrackets(raw: string): string {
 	data-prompt-card
 	data-category={category.toLowerCase()}
 	data-spot={spot % 4}
+	data-tracer={spot % 4 === 0 ? "edge" : undefined}
 >
 	<header class="prompt-card__head">
 		<p class="prompt-card__cat mono">{category}</p>
@@ -78,7 +79,15 @@ function highlightBrackets(raw: string): string {
 	</div>
 
 	<div class="prompt-tools">
-		<button type="button" class="prompt-copy" data-copy data-cursor="Copy" data-magnetic="true" aria-label="Copy">
+		<button
+			type="button"
+			class="prompt-copy"
+			data-copy
+			data-cursor="Copy"
+			data-magnetic="true"
+			aria-label="Copy"
+			data-tracer={spot % 4 === 1 ? "outline" : undefined}
+		>
 			<span class="swap-label">
 				<span class="swap-label__line" data-copy-label aria-hidden="true">Copy</span>
 				<span class="swap-label__line" data-copy-label aria-hidden="true">Copy</span>

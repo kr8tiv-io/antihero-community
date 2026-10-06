@@ -27,6 +27,7 @@ const path = Astro.url.pathname;
 							href={link.href}
 							data-nav
 							data-label={link.label}
+							data-tracer="underline"
 							aria-current={isCurrentPath(link.href, path) ? "page" : undefined}
 						>
 							{link.label}
@@ -38,6 +39,8 @@ const path = Astro.url.pathname;
 					href={facebookGroupUrl}
 					target="_blank"
 					rel="noopener noreferrer"
+					data-tracer="outline"
+					data-tracer-hot
 					aria-label="Join the group (opens in a new tab)"
 					data-cursor="Join"
 					data-magnetic="true"
@@ -52,6 +55,7 @@ const path = Astro.url.pathname;
 				class="menu-btn"
 				type="button"
 				data-menu-button
+				data-tracer="outline"
 				aria-expanded="false"
 				aria-controls="site-menu"
 			>

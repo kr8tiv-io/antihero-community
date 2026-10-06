@@ -70,7 +70,7 @@ const hasRelated = Boolean(relatedGuide || relatedPrompt);
 		{
 			hasRelated && (
 				<aside class="post-refs" data-reveal="stagger">
-					<span class="post-end" data-reveal="rule" aria-hidden="true"></span>
+					<span class="post-end" data-reveal="rule" data-tracer="rule" aria-hidden="true"></span>
 					{relatedGuide && (
 						<a class="post-ref" data-nudge="y" href={relatedGuide.href}>
 							<p class="label">Related guide</p>
