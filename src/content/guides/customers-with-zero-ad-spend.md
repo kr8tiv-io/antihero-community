@@ -1,5 +1,6 @@
 ---
 title: "Customers With Zero Ad Spend"
+cardTitle: "Zero Ad Spend"
 slug: customers-with-zero-ad-spend
 summary:
   - "The September 26 live. Get found on Google and in the AI chatbots."

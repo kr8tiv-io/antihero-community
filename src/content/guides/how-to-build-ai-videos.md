@@ -1,5 +1,6 @@
 ---
 title: "How to Build AI Videos"
+cardTitle: "Build AI Videos"
 slug: how-to-build-ai-videos
 summary:
   - "The October 4 live. A full AI video from scratch, in five steps and five tools."

@@ -1,5 +1,6 @@
 ---
 title: "Run Your Service Business for Free"
+cardTitle: "Run It for Free"
 slug: run-your-service-business-for-free
 summary:
   - "The October 7 live. My AI runs my business. For free."

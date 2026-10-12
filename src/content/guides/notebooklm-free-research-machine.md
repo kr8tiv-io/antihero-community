@@ -1,5 +1,6 @@
 ---
 title: "NotebookLM: The Free Research Machine"
+cardTitle: "NotebookLM"
 slug: notebooklm-free-research-machine
 summary:
   - "The September 23 live, the very first one in the group."

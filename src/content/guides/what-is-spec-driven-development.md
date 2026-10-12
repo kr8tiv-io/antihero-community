@@ -1,5 +1,6 @@
 ---
 title: "What Is Spec-Driven Development?"
+cardTitle: "Spec-Driven"
 slug: what-is-spec-driven-development
 summary:
   - "The super simple version, not tied to a live."

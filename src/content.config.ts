@@ -36,6 +36,8 @@ const guides = defineCollection({
   }),
   schema: z.object({
     title: z.string().min(1),
+    /** Index card label. The guide page and the card's accessible name keep `title`. */
+    cardTitle: z.string().min(1).optional(),
     slug,
     summary,
     category,

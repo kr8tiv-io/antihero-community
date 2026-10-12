@@ -1,5 +1,6 @@
 ---
 title: "How to Use Grok Bot as a Full Team"
+cardTitle: "Grok Bot Team"
 slug: grok-bot-as-a-full-team
 summary:
   - "The September 30 live. One chief of staff and a crew of specialists it builds for you."

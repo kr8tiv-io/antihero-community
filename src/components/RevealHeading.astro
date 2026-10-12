@@ -10,6 +10,8 @@ interface Props {
 	text?: string;
 	/** 0 keeps the whole string in one box. Cards use 2. */
 	wordsPerLine?: number;
+	/** Accessible name when the visible boxes are a shorter label. */
+	label?: string;
 	id?: string;
 	class?: string;
 }
@@ -19,6 +21,7 @@ const {
 	lines,
 	text = "",
 	wordsPerLine = 0,
+	label,
 	id,
 	class: className,
 } = Astro.props;
@@ -35,21 +38,42 @@ function splitWords(value: string, per: number): Line[] {
 }
 
 const items = lines && lines.length > 0 ? lines : splitWords(text, wordsPerLine);
+const accessible = label?.trim();
+const named = accessible && accessible !== text.trim() ? accessible : undefined;
+
+function lineLength(value: string): { chars: number; long: boolean } {
+	const words = value.split(/\s+/).filter(Boolean);
+	const awkward = words.some((word) => word.length >= 12 || (/[-:]/.test(word) && word.length >= 10));
+	return { chars: Math.max(value.length, 1), long: value.length > 16 || awkward };
+}
 ---
 
-<Tag id={id} class:list={["label-stack", "reveal-heading", className]} data-reveal-heading>
+<Tag
+	id={id}
+	class:list={["label-stack", "reveal-heading", className]}
+	data-reveal-heading
+	aria-label={named}
+>
 	{
-		items.map((line) => (
-			<span
-				class:list={[
-					"label-box",
-					"reveal-heading__line",
-					line.red ? "label-box--red" : "label-box--white",
-				]}
-			>
-				<span class="reveal-heading__text">{line.text}</span>
-			</span>
-		))
+		items.map((line) => {
+			const fit = lineLength(line.text);
+			return (
+				<span
+					class:list={[
+						"label-box",
+						"reveal-heading__line",
+						line.red ? "label-box--red" : "label-box--white",
+					]}
+				>
+					<span
+						class:list={["reveal-heading__text", fit.long && "is-long"]}
+						style={`--title-chars: ${fit.chars}`}
+					>
+						{line.text}
+					</span>
+				</span>
+			);
+		})
 	}
 </Tag>
 

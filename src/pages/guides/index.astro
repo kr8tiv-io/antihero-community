@@ -76,6 +76,7 @@ function guideDate(date: Date): { iso: string; label: string } {
 						<GuideCard
 							href={`/guides/${guide.data.slug}`}
 							title={guide.data.title}
+							cardTitle={guide.data.cardTitle}
 							category={guide.data.category}
 							summary={guide.data.summary[0]}
 							dateIso={date.iso}
@@ -136,10 +137,13 @@ function guideDate(date: Date): { iso: string; label: string } {
 
 	.guide-grid {
 		position: relative;
+		z-index: 1;
+		isolation: isolate;
 		display: flex;
 		flex-direction: column;
 		gap: var(--space-48);
 		padding: var(--space-48) var(--space-16) var(--space-96);
+		scroll-margin-top: calc(var(--header-h) + 5.75rem);
 	}
 
 	.guide-empty {
